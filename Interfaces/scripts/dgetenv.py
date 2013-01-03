@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+
+"""
+print DCommands session environment variables
+"""
+
+import os
+
+import DIRAC
+
+from DIRAC.COMDIRAC.Interfaces import critical
+
+from DIRAC.COMDIRAC.Interfaces import DSession
+
+if __name__ == "__main__":
+  import sys
+  from DIRAC.Core.Base import Script
+
+  Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
+                                       'Usage:',
+                                       '  %s [[section.]option]' % Script.scriptName,
+                                       'Arguments:',
+                                       ' section:     display all options in section',
+                                       '++ OR ++',
+                                       ' section.option:     display section specific option',] )
+                          )
+
+  Script.parseCommandLine( ignoreErrors = True )
+  args = Script.getPositionalArgs()
+
+  session = DSession( )
+
+  if not args:
+    retVal = session.listEnv( )
+    if not retVal[ "OK" ]:
+      print "Error:", retVal[ "Message" ]
+      DIRAC.exit( -1 )
+    for o, v in retVal[ "Value" ]:
+      print o + "=" + v
+    DIRAC.exit( 0 )
+
+  arg = args[ 0 ]
+
+  section = None
+  option = None
+
+  if "." in arg:
+    section, option = arg.split( "." )
+  else:
+    option = arg
+
+  ret = None
+  if section:
+    ret = session.get( section, option )
+  else:
+    ret = session.getEnv( option )
+
+  if not ret[ "OK" ]:
+    print critical( ret[ "Message" ] )
+
+  print ret[ "Value" ]
+
+
