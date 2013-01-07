@@ -8,6 +8,7 @@ import os
 
 import DIRAC
 from DIRAC.COMDIRAC.Interfaces import DConfig, DSession, critical
+from DIRAC.COMDIRAC.Interfaces.Utilities.DSession import sessionFromProxy
 from DIRAC.Core.Base import Script
 
 class Params:
@@ -35,7 +36,7 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Arguments:',
                                      ' profile_name:     existing profile section in DCommands config',] )
                         )
-Script.registerSwitch( "p", "from-proxy", "build session from existing proxy", params.setFromProxy )
+Script.registerSwitch( "p", "fromProxy", "build session from existing proxy", params.setFromProxy )
 Script.registerSwitch( "D", "destroy", "destroy session information", params.setDestroy )
 
 Script.parseCommandLine( ignoreErrors = True )
