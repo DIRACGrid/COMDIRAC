@@ -86,7 +86,9 @@ class DConfig( object ):
     return self.config.has_section( profile )
 
   def defaultProfile( self ):
-    return self.get( "global", "default_profile" )[ "Value" ]
+    retVal = self.get( "global", "default_profile" )
+    if not retVal[ "OK" ]: return None
+    return retVal[ "Value" ]
 
   def sections( self ):
     return self.config.sections( )
