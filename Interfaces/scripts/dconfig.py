@@ -8,7 +8,7 @@ import sys
 
 from DIRAC.Core.Base import Script
 
-from DIRAC.COMDIRAC.Interfaces import DConfig, createMinimalConfig
+from DIRAC.COMDIRAC.Interfaces import DConfig, createMinimalConfig, critical
 
 class Params:
   def __init__ ( self ):
