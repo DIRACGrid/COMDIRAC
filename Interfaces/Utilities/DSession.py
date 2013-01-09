@@ -10,7 +10,7 @@ import uuid
 from DIRAC.COMDIRAC.Interfaces import DConfig
 
 import DIRAC
-from DIRAC import S_OK, S_ERROR
+from DIRAC import S_OK, S_ERROR, gConfig
 import DIRAC.Core.Security.ProxyInfo as ProxyInfo
 import DIRAC.FrameworkSystem.Client.ProxyGeneration as ProxyGeneration
 from DIRAC.ConfigurationSystem.Client.Helpers import Registry
@@ -171,32 +171,91 @@ class DSession( DConfig ):
     if create:
       self.proxyInit( )
 
+def guessConfigFromCS( config, section, userName, groupName ):
+  '''
+  try toguess best DCommands default values from Configuration Server
+  '''
+  # write group name
+  config.set( section, "group_name", groupName )
+
+  # guess FileCatalog home directory
+  vo = gConfig.getValue( "/Registry/Groups/%s/VO" % groupName )
+  firstLetter = userName[0]
+  homeDir = "/%s/user/%s/%s" % ( vo, firstLetter, userName )
+
+  config.set( section, "home_dir", homeDir )
+
+  # try to guess default SE DIRAC name
+  voDefaultSEName = "VO_%s_DEFAULT_SE" % vo.upper( )
+  voDefaultSEName = voDefaultSEName.replace( ".", "_" )
+  voDefaultSEName = voDefaultSEName.replace( "-", "_" )
+  try:
+    voDefaultSEHost = os.environ[ voDefaultSEName ]
+  except KeyError:
+    voDefaultSEHost = None
+  if voDefaultSEHost:
+    retVal = gConfig.getSections( "/Resources/StorageElements" )
+    if retVal[ "OK" ]:
+      defaultSESite = None
+      for seSite in retVal[ "Value" ]:
+        # look for a SE with same host name
+        host = gConfig.getValue( "/Resources/StorageElements/%s/AccessProtocol.1/Host" % seSite )
+        if host and host == voDefaultSEHost:
+          # check if SE has rw access
+          retVal = gConfig.getOptionsDict( "/Resources/StorageElements/%s" %
+                                          seSite )
+          if retVal[ "OK" ]:
+            od = retVal[ "Value" ]
+            r = "ReadAccess"
+            w = "WriteAccess"
+            active = "Active"
+            ok = r in od and od[ w ] == active
+            ok &= w in od and od[ w ] == active
+
+            if ok:
+              defaultSESite = seSite
+          # don't check other SE sites
+          break
+
+      if defaultSESite:
+        #write to config
+        config.set( section, "default_se", defaultSESite )
+
 def sessionFromProxy( config = DConfig( ) ):
-  proxy_path = _getProxyLocation( )
-  if not proxy_path:
+  proxyPath = _getProxyLocation( )
+  if not proxyPath:
     print "No proxy found"
     return None
 
-  retVal = _getProxyInfo( proxy_path )
+  retVal = _getProxyInfo( proxyPath )
   if not retVal[ "OK" ]:
     raise Exception( retVal[ "Message" ] )
 
   pi = retVal[ "Value" ]
   try:
-    group_name = pi[ "group" ]
+    groupName = pi[ "group" ]
   except KeyError:
-    group_name = None
+    groupName = None
 
   sections = config.sections( )
   match = None
 
   for s in sections:
-    if config.has( s, "group_name" ) and config.get( s, "group_name" )[ "Value" ] == group_name:
+    if config.has( s, "group_name" ) and config.get( s, "group_name" )[ "Value" ] == groupName:
       match = s
       break
 
   if not match:
-    raise KeyError( "Profile with group name \"%s\" not found in configuration." % group_name )
+    if not groupName:
+      raise Exception( "cannot guess profile defaults without a DIRAC group in Proxy" )
 
-  return DSession( match, config )
+    match = "__guessed_profile__"
+    userName = pi["username"]
+    guessConfigFromCS( config, match, userName, groupName )
+    
+  session = DSession( match, config )
 
+  # force copy of config profile options to environment
+  session.copyProfile( )
+
+  return session
