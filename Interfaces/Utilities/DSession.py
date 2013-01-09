@@ -43,7 +43,7 @@ class DSession( DConfig ):
       if "DCOMMANDS_PPID" in os.environ:
         self.pid = int( os.environ[ "DCOMMANDS_PPID" ] )
       else:
-        self = os.getppid( )
+        self.pid = os.getppid( )
 
     super( DSession, self ).__init__( self.origin.configDir, self.sessionFilename( self.pid ) )
 
