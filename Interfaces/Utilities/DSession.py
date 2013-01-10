@@ -5,6 +5,7 @@ manage DCommands session
 """
 
 import os
+import re
 import uuid
 
 from DIRAC.COMDIRAC.Interfaces import DConfig
@@ -33,8 +34,12 @@ class DSession( DConfig ):
   __ENV_SECTION = "session:environment"
 
   @classmethod
+  def sessionFilePrefix( cls ):
+    return "dsession.%x" % ( uuid.getnode( ), )
+
+  @classmethod
   def sessionFilename( cls, pid ):
-    return "dsession.%x.%d" % (uuid.getnode( ), pid)
+    return cls.sessionFilePrefix( ) + ".%d" % ( pid, )
 
   def __init__( self, profileName = None, config = None, sessionDir = None, pid = None ):
     self.origin = config or DConfig( )
@@ -55,6 +60,8 @@ class DSession( DConfig ):
     super( DSession, self ).__init__( sessionDir,
                                       self.sessionFilename( self.pid ) )
 
+    self.__cleanSessionDirectory( )
+
     oldProfileName = self.getEnv( "profile_name", "" )[ "Value" ]
     profileName = profileName or oldProfileName or self.origin.defaultProfile( )
     self.profileName = profileName
@@ -64,6 +71,14 @@ class DSession( DConfig ):
       self.copyProfile( )
       self.setEnv( "profile_name", self.profileName )
       self.setCwd( self.homeDir( ) )
+
+  def __cleanSessionDirectory( self ):
+    sessionPat = "^" + self.sessionFilePrefix( ) + "\.[0-9]+$"
+    sessionRe = re.compile( sessionPat )
+    for f in os.listdir( self.configDir ):
+      if sessionRe.match( f ):
+        if f != self.configFilename:
+          os.unlink( os.path.join( self.configDir, f ) )
 
   def getEnv( self, option, defaultValue = None ):
     return  self.get( DSession.__ENV_SECTION, option, defaultValue )
