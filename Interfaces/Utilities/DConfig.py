@@ -21,12 +21,19 @@ def critical( msg ):
   DIRAC.exit( -1 )
 
 class DConfig( object ):
-  def __init__( self, configDir = os.path.expanduser( "~/.dirac" ),
-                configFilename = "dcommands.conf" ):
+  def __init__( self, configDir = None, configFilename = "dcommands.conf" ):
     try:
       self.config = SafeConfigParser( allow_no_value = True )
     except TypeError:
       self.config = SafeConfigParser( )
+
+    if not configDir:
+      var = "DCOMMANDS_CONFIG_DIR"
+      if var in os.environ:
+        configDir = os.environ[ var ]
+      else:
+        configDir = os.path.expanduser( "~/.dirac" )
+
     self.configDir = configDir
     self.configFilename = configFilename
     self.configPath = os.path.join( self.configDir, self.configFilename )

@@ -36,7 +36,7 @@ class DSession( DConfig ):
   def sessionFilename( cls, pid ):
     return "dsession.%x.%d" % (uuid.getnode( ), pid)
 
-  def __init__( self, profileName = None, config = None, pid = None ):
+  def __init__( self, profileName = None, config = None, sessionDir = None, pid = None ):
     self.origin = config or DConfig( )
     self.pid = pid
     if not self.pid:
@@ -45,13 +45,21 @@ class DSession( DConfig ):
       else:
         self.pid = os.getppid( )
 
-    super( DSession, self ).__init__( self.origin.configDir, self.sessionFilename( self.pid ) )
+    if not sessionDir:
+      var = "DCOMMANDS_SESSION_DIR"
+      if var in os.environ:
+        sessionDir = os.environ[ var ]
+      else:
+        sessionDir = self.origin.configDir
 
-    old_profile_name = self.getEnv( "profile_name", "" )[ "Value" ]
-    profileName = profileName or old_profile_name or  self.origin.defaultProfile( )
+    super( DSession, self ).__init__( sessionDir,
+                                      self.sessionFilename( self.pid ) )
+
+    oldProfileName = self.getEnv( "profile_name", "" )[ "Value" ]
+    profileName = profileName or oldProfileName or self.origin.defaultProfile( )
     self.profileName = profileName
 
-    if not os.path.isfile( self.configPath ) or self.profileName != old_profile_name:
+    if not os.path.isfile( self.configPath ) or self.profileName != oldProfileName:
       self.__clearEnv( )
       self.copyProfile( )
       self.setEnv( "profile_name", self.profileName )
@@ -221,7 +229,7 @@ def guessConfigFromCS( config, section, userName, groupName ):
         #write to config
         config.set( section, "default_se", defaultSESite )
 
-def sessionFromProxy( config = DConfig( ) ):
+def sessionFromProxy( config = DConfig( ), sessionDir = None ):
   proxyPath = _getProxyLocation( )
   if not proxyPath:
     print "No proxy found"
@@ -253,7 +261,7 @@ def sessionFromProxy( config = DConfig( ) ):
     userName = pi["username"]
     guessConfigFromCS( config, match, userName, groupName )
     
-  session = DSession( match, config )
+  session = DSession( match, config, sessionDir = sessionDir )
 
   # force copy of config profile options to environment
   session.copyProfile( )
