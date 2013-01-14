@@ -7,8 +7,8 @@ initialize DCommands session
 import os
 
 import DIRAC
-from DIRAC.COMDIRAC.Interfaces import DConfig, DSession, critical
-from DIRAC.COMDIRAC.Interfaces.Utilities.DSession import sessionFromProxy
+from COMDIRAC.Interfaces import DConfig, DSession, critical
+from COMDIRAC.Interfaces.Utilities.DSession import sessionFromProxy
 from DIRAC.Core.Base import Script
 
 class Params:

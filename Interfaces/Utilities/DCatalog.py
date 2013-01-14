@@ -9,8 +9,8 @@ import os
 from DIRAC.Resources.Catalog.FileCatalogFactory import FileCatalogFactory
 
 
-from DIRAC.COMDIRAC.Interfaces import critical
-from DIRAC.COMDIRAC.Interfaces import DSession
+from COMDIRAC.Interfaces import critical
+from COMDIRAC.Interfaces import DSession
 
 def createCatalog( fctype = "FileCatalog" ):
   result = FileCatalogFactory( ).createCatalog( fctype )

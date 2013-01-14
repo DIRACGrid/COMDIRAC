@@ -8,7 +8,7 @@ import os
 import re
 import uuid
 
-from DIRAC.COMDIRAC.Interfaces import DConfig
+from COMDIRAC.Interfaces import DConfig
 
 import DIRAC
 from DIRAC import S_OK, S_ERROR, gConfig

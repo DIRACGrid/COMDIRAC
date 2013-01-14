@@ -8,9 +8,9 @@ import os
 
 import DIRAC
 
-from DIRAC.COMDIRAC.Interfaces import critical
+from COMDIRAC.Interfaces import critical
 
-from DIRAC.COMDIRAC.Interfaces import DSession
+from COMDIRAC.Interfaces import DSession
 
 if __name__ == "__main__":
   import sys

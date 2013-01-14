@@ -9,10 +9,10 @@ import os
 import DIRAC
 from DIRAC.Core.Base import Script
 
-from DIRAC.COMDIRAC.Interfaces import critical
-from DIRAC.COMDIRAC.Interfaces import DSession
-from DIRAC.COMDIRAC.Interfaces import createCatalog
-from DIRAC.COMDIRAC.Interfaces import pathFromArguments
+from COMDIRAC.Interfaces import critical
+from COMDIRAC.Interfaces import DSession
+from COMDIRAC.Interfaces import createCatalog
+from COMDIRAC.Interfaces import pathFromArguments
 
 if __name__ == "__main__":
   import sys

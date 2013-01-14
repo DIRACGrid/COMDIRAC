@@ -8,10 +8,10 @@ import os
 
 import DIRAC
 
-from DIRAC.COMDIRAC.Interfaces import critical
-from DIRAC.COMDIRAC.Interfaces import DSession
-from DIRAC.COMDIRAC.Interfaces import DCatalog
-from DIRAC.COMDIRAC.Interfaces import pathFromArgument
+from COMDIRAC.Interfaces import critical
+from COMDIRAC.Interfaces import DSession
+from COMDIRAC.Interfaces import DCatalog
+from COMDIRAC.Interfaces import pathFromArgument
 
 if __name__ == "__main__":
   import sys
