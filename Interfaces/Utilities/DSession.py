@@ -165,7 +165,11 @@ class DSession( DConfig ):
     if not result[ "OK" ]:
       raise Exception( result[ "Message" ] )
 
-    self.addVomsExt( result[ "Value" ] )
+    try:
+      self.addVomsExt( result[ "Value" ] )
+    except:
+      # silently skip VOMS errors
+      pass
 
   def addVomsExt( self, proxy ):
     retVal = self.getEnv( "group_name" )
