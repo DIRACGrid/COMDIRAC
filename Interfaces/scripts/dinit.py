@@ -10,6 +10,7 @@ import DIRAC
 from COMDIRAC.Interfaces import DConfig, DSession, critical
 from COMDIRAC.Interfaces.Utilities.DSession import sessionFromProxy
 from DIRAC.Core.Base import Script
+import DIRAC.Core.Security.ProxyInfo as ProxyInfo
 
 class Params:
   def __init__ ( self ):
@@ -74,4 +75,5 @@ if not retVal[ "OK" ]:
   print retVal[ "Message" ]
   DIRAC.exit( -1 )
 
-print retVal[ "Value" ]
+print ProxyInfo.formatProxyInfoAsString( retVal[ "Value" ] )
+
