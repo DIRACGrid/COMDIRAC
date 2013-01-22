@@ -5,7 +5,9 @@ configure DCommands
 """
 
 import sys
+import types
 
+import DIRAC
 from DIRAC.Core.Base import Script
 
 from COMDIRAC.Interfaces import DConfig, createMinimalConfig, critical
@@ -20,29 +22,45 @@ class Params:
   def getMinimal( self ):
     return self.minimal
 
-params = Params( )
+params = Params()
 
 Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Usage:',
                                      '  %s [options] [section[.option[=value]]]...' % Script.scriptName,
                                      'Arguments:',
+                                     ' without argument: display whole configuration content',
+                                     '++ OR ++',
                                      ' section:     display all options in section',
                                      '++ OR ++',
                                      ' section.option:     display option',
                                      '++ OR ++',
-                                     ' section.option=value:     set option value',] )
+                                     ' section.option=value:     set option value', ] )
                         )
 Script.registerSwitch( "m", "minimal", "verify and fill minimal configuration", params.setMinimal )
 
-Script.enableCS( )
+Script.disableCS()
 
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
 
 if params.minimal:
-  createMinimalConfig( )
+  createMinimalConfig()
 
-dconfig = DConfig( )
+dconfig = DConfig()
+
+if not args:
+  sections = dconfig.sections()
+  for s in sections:
+    retVal = dconfig.get( s, None )
+    if not retVal[ "OK" ]:
+      critical( retVal[ "Message" ] )
+
+    print "[%s]" % s
+    for o, v in retVal["Value" ]:
+      print o, "=", v
+    print
+  DIRAC.exit( 0 )
+
 
 modified = False
 
@@ -64,7 +82,7 @@ for arg in args:
     retVal = dconfig.get( section, option )
     if not retVal[ "OK" ]: critical( retVal[ "Message" ] )
     ret = retVal[ "Value" ]
-    if type( ret ) == type( [ ] ):
+    if type( ret ) == types.ListType:
       print "[%s]" % section
       for o, v in ret:
         print o, "=", v
@@ -72,4 +90,4 @@ for arg in args:
       print option, "=", ret
 
 if modified:
-  dconfig.write( )
+  dconfig.write()
