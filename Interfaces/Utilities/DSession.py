@@ -156,7 +156,7 @@ class DSession( DConfig ):
     params = ProxyGeneration.CLIParams( )
     retVal = self.getEnv( "group_name" )
     if not retVal[ "OK" ]:
-      raise Exception( result[ "Message" ] )
+      raise Exception( retVal[ "Message" ] )
 
     params.diracGroup = retVal[ "Value" ]
 
@@ -174,7 +174,7 @@ class DSession( DConfig ):
   def addVomsExt( self, proxy ):
     retVal = self.getEnv( "group_name" )
     if not retVal[ "OK" ]:
-      raise Exception( result[ "Message" ] )
+      raise Exception( retVal[ "Message" ] )
 
     group = retVal[ "Value" ]
     vomsAttr = Registry.getVOMSAttributeForGroup( group )

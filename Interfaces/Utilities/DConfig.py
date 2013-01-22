@@ -70,7 +70,7 @@ class DConfig( object ):
         return S_ERROR( "Option \"%s\" missing in section \"%s\" from configuration \"%s\"" % ( option, section, self.configPath ) )
     except NoSectionError:
       if defaultValue == None:
-         return S_ERROR( "Section missing \"%s\" from configuration \"%s\"" % ( section, self.configPath ) )
+        return S_ERROR( "Section missing \"%s\" from configuration \"%s\"" % ( section, self.configPath ) )
     return S_OK( value )
 
   def set( self, section, option = None, value = "" ):
