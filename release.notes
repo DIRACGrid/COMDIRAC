@@ -1,3 +1,11 @@
+[v0r2]
+
+FIX: Utilities - some undefined variables
+FIX: dinit - silently skip VOMS error
+FIX: dinit - better behaviour when initializing session
+CHANGE: dinit - ProxyInfo pretty printing
+CHANGE: dconfig - prints whole configuration when called without argument
+
 [v0r1]
 
 NEW: first release of a brand new COMDIRAC package
