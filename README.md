@@ -60,6 +60,10 @@ commands:
 File Catalog Files And Directories
 ==================================
 
+These commands, like others in COMDIRAC, require LFN path arguments for files and directories. These LFN paths are specified without any prefix (no "lfn:").
+
+The main feature of these commands is to provide a sort of File Catalog "working directory" within user session. This working directory can be set and printed with dcd and dpwd, respectively. When correctly set, working directory allows user to name LFNs using relative paths.
+
 commands:
 * `dpwd` - print File Catalog working directory
 * `dcd` - change File Catalog working directory
@@ -71,6 +75,10 @@ commands:
 
 Data Management
 ===============
+
+These commands, like others in COMDIRAC, require LFN path arguments for files and directories. These LFN paths are specified without any prefix (no "lfn:").
+
+When a local path is needed, as with dget or dput, it is deduced from command context. For example, local path is last argument with command dget, while it is first with dput.
 
 commands:
 * `dput` - register local file in the File Catalog (and copies replica to a Storage Element)

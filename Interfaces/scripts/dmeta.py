@@ -105,7 +105,13 @@ if __name__ == "__main__":
                                        ' - manipulate metadata for lfn',
                                        'Arguments:',
                                        ' lfn:           path',
-                                       ' meta:          metadata (with value for add)',] )
+                                       ' meta:          metadata (with value for add)',
+                                       '', 'Examples:',
+                                       '  $ dmeta add ./some_lfn_file some_meta="some_value"',
+                                       '  $ dmeta ls ./some_lfn_file',
+                                       '  $ dmeta rm ./some_lfn_file some_meta',
+                                       '  $ dmeta ls ./some_lfn_file',
+                                       ] )
                           )
   Script.registerSwitch( "i:", "index=", "set or remove metadata indices", params.setIndex )
   Script.registerSwitch( "I", "list-index", "list defined metadata indices", params.setListIndex )

@@ -32,7 +32,11 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      '  %s [options] mode Path...' % Script.scriptName,
                                      'Arguments:',
                                      '  mode:     octal mode bits',
-                                     '  Path:     path to file',] )
+                                     '  Path:     path to file',
+                                     '', 'Examples:',
+                                     '  $ dchmod 755 ././some_lfn_file',
+                                     '  $ dchmod -R 700 ./',
+                                     ] )
                         )
 Script.registerSwitch( "R", "recursive", "recursive", params.setRecursive )
 

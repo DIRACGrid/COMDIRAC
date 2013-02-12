@@ -16,7 +16,11 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Usage:',
                                      '  %s [Path]' % Script.scriptName,
                                      'Arguments:',
-                                     '  Path:     path to new working directory (defaults to home directory)',] )
+                                     '  Path:     path to new working directory (defaults to home directory)',
+                                     '', 'Examples:',
+                                     '  $ dcd /dirac/user',
+                                     '  $ dcd',
+                                     ] )
                         )
 
 Script.parseCommandLine( ignoreErrors = True )
