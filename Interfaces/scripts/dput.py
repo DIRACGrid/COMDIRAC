@@ -41,7 +41,8 @@ if __name__ == "__main__":
                                        ' local_path:   local file',
                                        ' lfn:          file or directory entry in the file catalog',
                                        '', 'Examples:',
-                                       '  $ dmkdir ./some_lfn_dir',
+                                       '  $ dput some_local_file ./some_lfn_file',
+                                       '  $ dput local_file1 local_file2 ./some_lfn_dir/',
                                        ] )
                           )
   Script.registerSwitch( "D:", "destination-se=", "Storage Element where to put replica", params.setDestinationSE )
