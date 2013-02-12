@@ -10,6 +10,11 @@ In the second mode, when no destination is given, drepl will look for COMDIRAC c
 If found, those variables will define a list of SEs where to put replicas.
 If not found drepl will fallback to configuration option "default_se".
 
+Supported schemes for automated replication (in option "replication_scheme") are:
+* all() - replicate file to all SEs listed in option "replication_ses"
+* first(N) - replicate file to N first SEs listed in option "replication_ses"
+* random(N) - replicatefile to N randomly chosen SEs from the list in option "replication_ses"
+
 """
 
 import os
