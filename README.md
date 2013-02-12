@@ -75,6 +75,7 @@ Data Management
 commands:
 * `dput` - register local file in the File Catalog (and copies replica to a Storage Element)
 * `dget` - retrieves a local copy of a File Catalog file
+* `drm` - remove a file from the File Catalog (and all associated replicas)
 * `drepl` - replicates a File Catalog file
 * `dchmod` - change access rights of a File Catalog file
 
