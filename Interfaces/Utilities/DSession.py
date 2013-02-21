@@ -43,7 +43,8 @@ class DSession( DConfig ):
 
   def __init__( self, profileName = None, config = None, sessionDir = None, pid = None ):
     self.origin = config or DConfig()
-    self.origin.fillMinimal()
+    modified = self.origin.fillMinimal()
+    if modified: self.origin.write()
 
     self.pid = pid
     if not self.pid:
