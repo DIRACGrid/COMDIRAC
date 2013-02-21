@@ -114,6 +114,7 @@ class DConfig( object ):
     modified |= existsOrCreate( "global", "default_profile", "dirac_user" )
     modified |= existsOrCreate( "dirac_user", "group_name", "dirac_user" )
     modified |= existsOrCreate( "dirac_user", "home_dir", "/" )
+    modified |= existsOrCreate( "dirac_user", "default_se", "DIRAC-USER" )
 
     return modified
 
