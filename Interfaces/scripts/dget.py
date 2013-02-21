@@ -19,7 +19,10 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      '  %s lfn... [local_path]' % Script.scriptName,
                                      'Arguments:',
                                      ' lfn:          file to download',
-                                     ' local_path:   destination directory',] )
+                                     ' local_path:   destination directory',
+                                       '', 'Examples:',
+                                       '  $ dget ./some_lfn_file /tmp',
+                                       ] )
                         )
 
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-remove files from the FileCatalog (and from Storage Elements)
+remove files from the FileCatalog (and all replicas from Storage Elements)
 """
 
 import os
@@ -23,7 +23,10 @@ if __name__ == "__main__":
                                        'Usage:',
                                        '  %s [lfn]...' % Script.scriptName,
                                        'Arguments:',
-                                       '  lfn:     logical file name',] )
+                                       '  lfn:     logical file name',
+                                       '', 'Examples:',
+                                       '  $ drm ./some_lfn_file',
+                                       ] )
                           )
 
   Script.parseCommandLine( ignoreErrors = True )

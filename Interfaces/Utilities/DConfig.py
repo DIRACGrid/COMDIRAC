@@ -25,7 +25,7 @@ class DConfig( object ):
     try:
       self.config = SafeConfigParser( allow_no_value = True )
     except TypeError:
-      self.config = SafeConfigParser( )
+      self.config = SafeConfigParser()
 
     if not configDir:
       var = "DCOMMANDS_CONFIG_DIR"
@@ -37,7 +37,7 @@ class DConfig( object ):
     self.configDir = configDir
     self.configFilename = configFilename
     self.configPath = os.path.join( self.configDir, self.configFilename )
-    self.bootstrapFile( )
+    self.bootstrapFile()
 
   def bootstrapFile( self ):
     if not os.path.exists( self.configDir ):
@@ -54,7 +54,7 @@ class DConfig( object ):
   def write( self ):
     file = open( self.configPath, "w" )
     self.config.write( file )
-    file.close( )
+    file.close()
 
   def has( self, section, option ):
     return self.config.has_option( section, option )
@@ -74,7 +74,7 @@ class DConfig( object ):
     return S_OK( value )
 
   def set( self, section, option = None, value = "" ):
-    if section.lower( ) != "default" and not self.config.has_section( section ):
+    if section.lower() != "default" and not self.config.has_section( section ):
       self.config.add_section( section )
     if option:
       self.config.set( section, option, value )
@@ -82,12 +82,12 @@ class DConfig( object ):
   def remove( self, section, option = None ):
     if option:
       if not self.config.has_section( section ):
-        return S_ERROR( "No such section \"%s\" in file \"%s\"" % ( section, self.configFilename) )
+        return S_ERROR( "No such section \"%s\" in file \"%s\"" % ( section, self.configFilename ) )
       self.config.remove_option( section, option )
     else:
       self.config.remove_setcion( self, section )
 
-    return S_OK( )
+    return S_OK()
 
   def hasProfile( self, profile ):
     return self.config.has_section( profile )
@@ -98,25 +98,31 @@ class DConfig( object ):
     return retVal[ "Value" ]
 
   def sections( self ):
-    return self.config.sections( )
+    return self.config.sections()
 
   def items( self, section ):
     return self.config.items( section )
 
+  def fillMinimal( self ):
+    def existsOrCreate( section, option, value ):
+      if self.config.has_section( section ) and self.config.has_option( section, option ):
+        return False
+      self.set( section, option, value )
+      return True
+
+    modified = False
+    modified |= existsOrCreate( "global", "default_profile", "dirac_user" )
+    modified |= existsOrCreate( "dirac_user", "group_name", "dirac_user" )
+    modified |= existsOrCreate( "dirac_user", "home_dir", "/" )
+    modified |= existsOrCreate( "dirac_user", "default_se", "DIRAC-USER" )
+
+    return modified
+
 def createMinimalConfig( configDir = os.path.expanduser( "~/.dirac" ),
                          configFilename = "dcommands.conf" ):
-  def existsOrCreate( section, option, value ):
-    if dconfig.config.has_section( section ) and dconfig.config.has_option( section, option ):
-      return False
-    dconfig.set( section, option, value )
-    return True
 
   dconfig = DConfig( configDir, configFilename )
-  modified = False
 
-  modified |= existsOrCreate( "global", "default_profile", "dirac_user" )
-  modified |= existsOrCreate( "dirac_user", "group_name", "dirac_user" )
-  modified |= existsOrCreate( "dirac_user", "home_dir", "/" )
-#  modified |= existsOrCreate( "", "", "" )
+  modified = dconfig.fillMinimal()
 
-  if modified: dconfig.write( )
+  if modified: dconfig.write()
