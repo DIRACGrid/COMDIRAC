@@ -45,7 +45,12 @@ if __name__ == "__main__":
                                        'Usage:',
                                        '  %s [options] [path]' % Script.scriptName,
                                        'Arguments:',
-                                       ' path:     file/directory path',] )
+                                       ' path:     file/directory path',
+                                       '', 'Examples:',
+                                       '  $ dls',
+                                       '  $ dls ..',
+                                       '  $ dls /',
+                                       ] )
                           )
   Script.registerSwitch( "l", "long", "detailled listing", params.setLong )
   Script.registerSwitch( "L", "list-replicas", "detailled listing with replicas", params.setReplicas )

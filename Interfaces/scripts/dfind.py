@@ -23,7 +23,10 @@ if __name__ == "__main__":
                                        '  %s [options] lfn metaspec...' % Script.scriptName,
                                        'Arguments:',
                                        ' lfn:         directory entry in the FileCatalog',
-                                       ' metaspec:    metadata index specifcation (of the form: "meta=value" or "meta<value", "meta!=value", etc.)',] )
+                                       ' metaspec:    metadata index specifcation (of the form: "meta=value" or "meta<value", "meta!=value", etc.)',
+                                       '', 'Examples:',
+                                       '  $ dfind . "some_integer_metadata>1"',
+                                       ] )
                           )
 
   Script.parseCommandLine( ignoreErrors = True )

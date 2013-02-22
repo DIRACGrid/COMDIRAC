@@ -23,7 +23,10 @@ if __name__ == "__main__":
                                        'Usage:',
                                        '  %s Path...' % Script.scriptName,
                                        'Arguments:',
-                                       '  Path:     path to new directory',] )
+                                       '  Path:     path to new directory',
+                                       '', 'Examples:',
+                                       '  $ dmkdir ./some_lfn_dir',
+                                       ] )
                           )
 
   Script.parseCommandLine( ignoreErrors = True )

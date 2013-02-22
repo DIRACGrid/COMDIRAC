@@ -22,7 +22,10 @@ if __name__ == "__main__":
                                        'Usage:',
                                        '  %s [Path]...' % Script.scriptName,
                                        'Arguments:',
-                                       '  Path:     directory path',] )
+                                       '  Path:     directory path',
+                                       '', 'Examples:',
+                                       '  $ drmdir ./some_lfn_directory',
+                                       ] )
                           )
 
   Script.parseCommandLine( ignoreErrors = True )

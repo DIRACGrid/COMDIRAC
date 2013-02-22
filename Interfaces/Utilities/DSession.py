@@ -42,13 +42,16 @@ class DSession( DConfig ):
     return cls.sessionFilePrefix( ) + ".%d" % ( pid, )
 
   def __init__( self, profileName = None, config = None, sessionDir = None, pid = None ):
-    self.origin = config or DConfig( )
+    self.origin = config or DConfig()
+    modified = self.origin.fillMinimal()
+    if modified: self.origin.write()
+
     self.pid = pid
     if not self.pid:
       if "DCOMMANDS_PPID" in os.environ:
         self.pid = int( os.environ[ "DCOMMANDS_PPID" ] )
       else:
-        self.pid = os.getppid( )
+        self.pid = os.getppid()
 
     if not sessionDir:
       var = "DCOMMANDS_SESSION_DIR"
@@ -63,7 +66,7 @@ class DSession( DConfig ):
     self.__cleanSessionDirectory( )
 
     oldProfileName = self.getEnv( "profile_name", "" )[ "Value" ]
-    profileName = profileName or oldProfileName or self.origin.defaultProfile( )
+    profileName = profileName or oldProfileName or self.origin.defaultProfile()
     self.profileName = profileName
 
     if not os.path.isfile( self.configPath ) or self.profileName != oldProfileName:

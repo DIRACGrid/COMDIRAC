@@ -2,6 +2,8 @@
 
 """
 put files in the FileCatalog (and Storage Element)
+
+When destination SE is not specified, dput will use COMDIRAC configuration option "default_se".
 """
 
 import os
@@ -37,7 +39,11 @@ if __name__ == "__main__":
                                        '  %s [options] local_path[... lfn]' % Script.scriptName,
                                        'Arguments:',
                                        ' local_path:   local file',
-                                       ' lfn:          file or directory entry in the file catalog',] )
+                                       ' lfn:          file or directory entry in the file catalog',
+                                       '', 'Examples:',
+                                       '  $ dput some_local_file ./some_lfn_file',
+                                       '  $ dput local_file1 local_file2 ./some_lfn_dir/',
+                                       ] )
                           )
   Script.registerSwitch( "D:", "destination-se=", "Storage Element where to put replica", params.setDestinationSE )
 

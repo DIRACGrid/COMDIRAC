@@ -16,7 +16,8 @@ if __name__ == "__main__":
 
   Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                        'Usage:',
-                                       '  %s [options]' % Script.scriptName,] )
+                                       '  %s [options]' % Script.scriptName,
+                                       ] )
                           )
 
   Script.parseCommandLine( ignoreErrors = True )
