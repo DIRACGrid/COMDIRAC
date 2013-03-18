@@ -1,3 +1,9 @@
+[v0r3]
+
+DOC: add examples in usage messages
+CHANGE: allow minimal session without config file
+Fix: missing import in drepl
+
 [v0r2]
 
 FIX: Utilities - some undefined variables
