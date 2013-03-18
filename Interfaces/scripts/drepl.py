@@ -20,6 +20,7 @@ Supported schemes for automated replication (in option "replication_scheme") are
 import os
 
 import DIRAC
+from DIRAC import S_OK, S_ERROR
 
 from COMDIRAC.Interfaces import critical
 from COMDIRAC.Interfaces import DSession
