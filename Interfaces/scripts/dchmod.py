@@ -14,13 +14,14 @@ from COMDIRAC.Interfaces import DCatalog
 from COMDIRAC.Interfaces import pathFromArgument
 
 from DIRAC.Core.Base import Script
-
+from DIRAC import S_OK
 class Params:
   def __init__ ( self ):
     self.recursive = False
 
-  def setRecursive( self ):
+  def setRecursive( self, opt):
     self.recursive = True
+    return S_OK()
 
   def getRecursive( self ):
     return self.recursive
