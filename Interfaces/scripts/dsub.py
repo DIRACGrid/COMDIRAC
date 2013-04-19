@@ -96,14 +96,39 @@ class Params:
     return self.attribs["OutputPath"]
 
   def setOutputSE( self, arg = None ):
-    self.attribs["OutputSE"] = pathFromArgument( self.__session, arg )
+    self.attribs["OutputSE"] = arg
   def getOutputSE( self ):
     return self.attribs["OutputSE"]
+
+  def setCPUTime( self, arg = None ):
+    self.attribs["CPUTime"] = arg
+  def getCPUTime( self ):
+    return self.attribs["CPUTime"]
+
+  def setSite( self, arg = None ):
+    self.attribs["Site"] = self.listArg( arg )
+  def getSite( self ):
+    return self.attribs["Site"]
+
+  def setBannedSite( self, arg = None ):
+    self.attribs["BannedSite"] = self.listArg( arg )
+  def getBannedSite( self ):
+    return self.attribs["BannedSite"]
+
+  def setPlatform( self, arg = None ):
+    self.attribs["Platform"] = self.listArg( arg )
+  def getPlatform( self ):
+    return self.attribs["Platform"]
 
   def set( self, arg = None ):
     self.attribs[""] = arg
   def get( self ):
     return self.attribs[""]
+
+  def setPriority( self, arg = None ):
+    self.attribs["Priority"] = arg
+  def getPriority( self ):
+    return self.attribs["Priority"]
 
   def modifyClassAd( self, classAd ):
     classAd.contents.update( self.attribs )
@@ -129,7 +154,12 @@ Script.registerSwitch( "", "OutputData=", "job output data", params.setOutputDat
 Script.registerSwitch( "", "InputData=", "job input data", params.setInputData )
 Script.registerSwitch( "", "OutputPath=", "job output data path prefix", params.setOutputPath )
 Script.registerSwitch( "", "OutputSE=", "job output data SE", params.setOutputSE )
-# Script.registerSwitch( ":", "=", "", params.set )
+Script.registerSwitch( "", "CPUTime=", "job CPU time limit (in seconds)", params.setCPUTime )
+Script.registerSwitch( "", "Site=", "job Site list", params.setSite )
+Script.registerSwitch( "", "BannedSite=", "job Site exclusion list", params.setBannedSite )
+Script.registerSwitch( "", "Platform=", "job Platform list", params.setPlatform )
+Script.registerSwitch( "", "Priority=", "job priority", params.setPriority )
+# Script.registerSwitch( "", "=", "", params.set )
 
 Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
 
