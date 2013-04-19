@@ -132,6 +132,9 @@ class DSession( DConfig ):
 
     return eval( replication_scheme, schemes )
 
+  def getJDL( self ):
+    return self.getEnv( "jdl", "" )["Value"]
+
   def proxyInfo( self, proxyPath = None ):
     return _getProxyInfo( proxyPath )
 
