@@ -34,9 +34,9 @@ if __name__ == "__main__":
     section = None
     option = None
 
-    arg, value = arg.split( "=" )
+    arg, value = arg.split( "=", 1 )
     if "." in arg:
-      section, option = arg.split( "." )
+      section, option = arg.split( ".", 1 )
     else:
       option = arg
 
