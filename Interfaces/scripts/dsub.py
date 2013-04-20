@@ -15,15 +15,6 @@ from DIRAC.Core.Utilities.ClassAd.ClassAdLight import ClassAd
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import pathFromArgument
 
-def getDefaultJDL( session ):
-  JDL = session.getJDL()
-
-  if JDL == "":
-    # overall default JDL
-    JDL = "[OutputSandbox = {\"std.out\",\"std.err\"};]"
-
-  return JDL
-
 def classAdUpdate( toClassAd, fromClassAd ):
   toClassAd.contents.update( fromClassAd.contents )
 
@@ -31,6 +22,7 @@ class Params:
   def __init__ ( self, session ):
     self.__session = session
     self.attribs = {}
+    self.jdl = self.getDefaultJDL()
     self.verbose = False
 
   def listArg( self, arg ):
@@ -48,6 +40,26 @@ class Params:
     for path in args:
       pathlist.append( pathFromArgument( self.__session, path ) )
     return "{" + ",".join( pathlist ) + "}"
+
+  def getDefaultJDL( self ):
+    JDL = self.__session.getJDL()
+
+    if JDL == "":
+      # overall default JDL
+      JDL = "[OutputSandbox = {\"std.out\",\"std.err\"};]"
+
+    return JDL
+
+  def setJDL( self, arg = None ):
+    if os.path.isfile( arg ):
+      f = open( arg, 'r' )
+      arg = f.read()
+      f.close()
+
+    self.jdl = arg
+
+  def getJDL( self ):
+    return self.jdl
 
   def setVerbose( self, arg = None ):
     self.verbose = True
@@ -120,15 +132,15 @@ class Params:
   def getPlatform( self ):
     return self.attribs["Platform"]
 
-  def set( self, arg = None ):
-    self.attribs[""] = arg
-  def get( self ):
-    return self.attribs[""]
-
   def setPriority( self, arg = None ):
     self.attribs["Priority"] = arg
   def getPriority( self ):
     return self.attribs["Priority"]
+
+  def setJobGroup( self, arg = None ):
+    self.attribs["JobGroup"] = arg
+  def getJobGroup( self ):
+    return self.attribs["JobGroup"]
 
   def modifyClassAd( self, classAd ):
     classAd.contents.update( self.attribs )
@@ -145,7 +157,8 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      '  arguments: arguments to pass to executable',
                                      '             if some arguments are to begin with a dash \'-\', prepend \'--\' before them', ] ) )
 
-Script.registerSwitch( "N:", "name=", "job name", params.setName )
+Script.registerSwitch( "J:", "JDL=", "JDL file or inline", params.setJDL )
+Script.registerSwitch( "N:", "JobName=", "job name", params.setName )
 Script.registerSwitch( "E:", "StdError=", "job standard error file", params.setStdError )
 Script.registerSwitch( "O:", "StdOutput=", "job standard output file", params.setStdOutput )
 Script.registerSwitch( "", "OutputSandbox=", "job output sandbox", params.setOutputSandbox )
@@ -159,6 +172,7 @@ Script.registerSwitch( "", "Site=", "job Site list", params.setSite )
 Script.registerSwitch( "", "BannedSite=", "job Site exclusion list", params.setBannedSite )
 Script.registerSwitch( "", "Platform=", "job Platform list", params.setPlatform )
 Script.registerSwitch( "", "Priority=", "job priority", params.setPriority )
+Script.registerSwitch( "", "JobGroup=", "job JobGroup", params.setJobGroup )
 # Script.registerSwitch( "", "=", "", params.set )
 
 Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
@@ -178,8 +192,7 @@ dirac = Dirac()
 exitCode = 0
 errorList = []
 
-jdlString = getDefaultJDL( session )
-classAdJob = ClassAd( jdlString )
+classAdJob = ClassAd( params.getJDL() )
 
 params.modifyClassAd( classAdJob )
 
