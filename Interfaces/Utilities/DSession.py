@@ -19,12 +19,12 @@ from DIRAC.Core.Security import Locations, VOMS
 
 import random
 
-def _getProxyLocation( ):
-  return Locations.getProxyLocation( )
+def _getProxyLocation():
+  return Locations.getProxyLocation()
 
 def _getProxyInfo( proxyPath = False ):
   if not proxyPath:
-    proxyPath = _getProxyLocation( )
+    proxyPath = _getProxyLocation()
 
   proxy_info = ProxyInfo.getProxyInfo( proxyPath, False )
 
@@ -35,11 +35,11 @@ class DSession( DConfig ):
 
   @classmethod
   def sessionFilePrefix( cls ):
-    return "dsession.%x" % ( uuid.getnode( ), )
+    return "dsession.%x" % ( uuid.getnode(), )
 
   @classmethod
   def sessionFilename( cls, pid ):
-    return cls.sessionFilePrefix( ) + ".%d" % ( pid, )
+    return cls.sessionFilePrefix() + ".%d" % ( pid, )
 
   def __init__( self, profileName = None, config = None, sessionDir = None, pid = None ):
     self.origin = config or DConfig()
@@ -63,20 +63,20 @@ class DSession( DConfig ):
     super( DSession, self ).__init__( sessionDir,
                                       self.sessionFilename( self.pid ) )
 
-    self.__cleanSessionDirectory( )
+    self.__cleanSessionDirectory()
 
     oldProfileName = self.getEnv( "profile_name", "" )[ "Value" ]
     profileName = profileName or oldProfileName or self.origin.defaultProfile()
     self.profileName = profileName
 
     if not os.path.isfile( self.configPath ) or self.profileName != oldProfileName:
-      self.__clearEnv( )
-      self.copyProfile( )
+      self.__clearEnv()
+      self.copyProfile()
       self.setEnv( "profile_name", self.profileName )
-      self.setCwd( self.homeDir( ) )
+      self.setCwd( self.homeDir() )
 
   def __cleanSessionDirectory( self ):
-    sessionPat = "^" + self.sessionFilePrefix( ) + "\.[0-9]+$"
+    sessionPat = "^" + self.sessionFilePrefix() + "\.[0-9]+$"
     sessionRe = re.compile( sessionPat )
     for f in os.listdir( self.configDir ):
       if sessionRe.match( f ):
@@ -106,7 +106,7 @@ class DSession( DConfig ):
     return self.getEnv( "home_dir", "/" )[ "Value" ]
 
   def getCwd( self ):
-    return self.getEnv( "cwd", self.homeDir( ) )[ "Value" ]
+    return self.getEnv( "cwd", self.homeDir() )[ "Value" ]
 
   def setCwd( self, value ):
     self.setEnv( "cwd", value )
@@ -139,7 +139,7 @@ class DSession( DConfig ):
     return _getProxyInfo( proxyPath )
 
   def proxyIsValid( self, timeLeft = 60 ):
-    proxy_path = _getProxyLocation( )
+    proxy_path = _getProxyLocation()
     if not proxy_path: return False
 
     retVal = self.proxyInfo( proxy_path )
@@ -159,7 +159,7 @@ class DSession( DConfig ):
              pi[ "group" ] == group_name )
 
   def proxyInit( self ):
-    params = ProxyGeneration.CLIParams( )
+    params = ProxyGeneration.CLIParams()
     retVal = self.getEnv( "group_name" )
     if not retVal[ "OK" ]:
       raise Exception( retVal[ "Message" ] )
@@ -187,7 +187,7 @@ class DSession( DConfig ):
     if not vomsAttr:
       raise Exception( "Requested adding a VOMS extension but no VOMS attribute defined for group %s" % group )
 
-    result = VOMS.VOMS( ).setVOMSAttributes( proxy, attribute = vomsAttr, vo = Registry.getVOForGroup( group ))
+    result = VOMS.VOMS().setVOMSAttributes( proxy, attribute = vomsAttr, vo = Registry.getVOForGroup( group ) )
     if not result[ 'OK' ]:
       raise Exception( "Could not add VOMS extensions to the proxy\nFailed adding VOMS attribute: %s" % result[ 'Message' ] )
 
@@ -197,16 +197,25 @@ class DSession( DConfig ):
   def checkProxyOrInit( self ):
     create = False
     try:
-      create = not self.proxyIsValid( )
+      create = not self.proxyIsValid()
     except:
       create = True
 
     if create:
-      self.proxyInit( )
+      self.proxyInit()
+
+  def getUserName( self ):
+    proxyPath = _getProxyLocation()
+    if not proxyPath:
+      return S_ERROR( "no proxy location" )
+    retVal = self.proxyInfo()
+    if not retVal["OK"]: return retVal
+
+    return S_OK( retVal["Value"]["username"] )
 
 def guessConfigFromCS( config, section, userName, groupName ):
   '''
-  try toguess best DCommands default values from Configuration Server
+  try to guess best DCommands default values from Configuration Server
   '''
   # write group name
   config.set( section, "group_name", groupName )
@@ -219,7 +228,7 @@ def guessConfigFromCS( config, section, userName, groupName ):
   config.set( section, "home_dir", homeDir )
 
   # try to guess default SE DIRAC name
-  voDefaultSEName = "VO_%s_DEFAULT_SE" % vo.upper( )
+  voDefaultSEName = "VO_%s_DEFAULT_SE" % vo.upper()
   voDefaultSEName = voDefaultSEName.replace( ".", "_" )
   voDefaultSEName = voDefaultSEName.replace( "-", "_" )
   try:
@@ -254,8 +263,8 @@ def guessConfigFromCS( config, section, userName, groupName ):
         #write to config
         config.set( section, "default_se", defaultSESite )
 
-def sessionFromProxy( config = DConfig( ), sessionDir = None ):
-  proxyPath = _getProxyLocation( )
+def sessionFromProxy( config = DConfig(), sessionDir = None ):
+  proxyPath = _getProxyLocation()
   if not proxyPath:
     print "No proxy found"
     return None
@@ -270,7 +279,7 @@ def sessionFromProxy( config = DConfig( ), sessionDir = None ):
   except KeyError:
     groupName = None
 
-  sections = config.sections( )
+  sections = config.sections()
   match = None
 
   for s in sections:
@@ -285,10 +294,10 @@ def sessionFromProxy( config = DConfig( ), sessionDir = None ):
     match = "__guessed_profile__"
     userName = pi["username"]
     guessConfigFromCS( config, match, userName, groupName )
-    
+
   session = DSession( match, config, sessionDir = sessionDir )
 
   # force copy of config profile options to environment
-  session.copyProfile( )
+  session.copyProfile()
 
   return session
