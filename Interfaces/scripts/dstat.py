@@ -6,6 +6,9 @@
 __RCSID__ = "$Id$"
 
 import os
+
+import json
+
 import DIRAC
 from DIRAC import S_OK, S_ERROR
 from DIRAC import exit as DIRACExit
@@ -40,6 +43,19 @@ def getJobSummary( jobs ):
 DEFAULT_DISPLAY_COLUMNS = [
   "Owner", "JobName", "OwnerGroup", "JobGroup", "Site", "Status", "MinorStatus", "SubmissionTime",
 ]
+
+def formatJSON( summaries, headers = DEFAULT_DISPLAY_COLUMNS ):
+  d = {}
+  for j, s in summaries.items():
+    d[j] = {}
+    for header in headers:
+      d[j][header] = s[header]
+
+    # to get an integer jobid
+    d[j]["JobID"] = j
+
+  return json.dumps( d )
+
 def formatCSV( summaries, headers = DEFAULT_DISPLAY_COLUMNS ):
   ret = "JobID,"
   for c in headers:
@@ -89,7 +105,7 @@ def formatPretty( summaries, headers = DEFAULT_DISPLAY_COLUMNS ):
 
 from COMDIRAC.Interfaces import DSession
 
-OUTPUT_FORMATS = {"pretty" : formatPretty, "csv" : formatCSV}
+OUTPUT_FORMATS = {"pretty" : formatPretty, "csv" : formatCSV, "json" : formatJSON}
 
 class Params:
   def __init__ ( self, session ):
