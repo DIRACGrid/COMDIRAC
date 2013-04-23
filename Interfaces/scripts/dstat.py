@@ -189,7 +189,15 @@ if not result['OK']:
   print "ERROR: %s" % result['Message']
   DIRAC.exit( 2 )
 
-summaries = result['Value']
+# filter on job statuses
+summaries = {}
+statuses = params.getStatus()
+if "all" in statuses:
+  summaries = result['Value']
+else:
+  for j, s in result['Value'].items():
+    if s["Status"].lower() in statuses:
+      summaries[j] = s
 
 print params.getFmt() ( summaries )
 
