@@ -22,10 +22,14 @@ JOB_STATES = ['Received', 'Checking', 'Staging', 'Waiting', 'Matched',
               'Running', 'Stalled', 'Done', 'Completed', 'Failed']
 JOB_FINAL_STATES = ['Done', 'Completed', 'Failed']
 
-def selectJobs( owner, date ):
-  conditions = {'Owner':owner}
+def selectJobs( owner, date, jobGroup, jobName ):
+  conditions = {'Owner' : owner}
+  if jobGroup: conditions["JobGroup"] = jobGroup
+  if jobName: conditions["JobName"] = jobName
+
   monitoring = RPCClient( 'WorkloadManagement/JobMonitoring' )
   result = monitoring.getJobs( conditions, date )
+
   return result
 
 def getJobSummary( jobs ):
@@ -114,6 +118,9 @@ class Params:
     self.status = map( lambda e: e.lower(), set( JOB_STATES ) - set( JOB_FINAL_STATES ) )
     self.fmt = OUTPUT_FORMATS["pretty"]
     self.jobDate = 10
+    self.fields = DEFAULT_DISPLAY_COLUMNS
+    self.jobGroup = None
+    self.jobName = None
 
   def setUser( self, arg = None ):
     self.user = arg
@@ -139,6 +146,24 @@ class Params:
   def getJobDate( self ):
     return self.jobDate
 
+  def setFields( self, arg = None ):
+    self.fields = arg.split( "," )
+
+  def getFields( self ):
+    return self.fields
+
+  def setJobGroup( self, arg = None ):
+    self.jobGroup = arg
+
+  def getJobGroup( self ):
+    return self.jobGroup
+
+  def setJobName( self, arg = None ):
+    self.jobName = arg
+
+  def getJobName( self ):
+    return self.jobName
+
 session = DSession()
 params = Params( session )
 
@@ -147,9 +172,12 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      '  %s [option|cfgfile] ' % Script.scriptName,
                                      'Arguments:', ] ) )
 Script.registerSwitch( "u:", "User=", "job owner", params.setUser )
-Script.registerSwitch( "", "Status=", "statuses of jobs to display", params.setStatus )
+Script.registerSwitch( "", "Status=", "select job by status", params.setStatus )
+Script.registerSwitch( "", "JobGroup=", "select job by job group", params.setJobGroup )
+Script.registerSwitch( "", "JobName=", "select job by job name", params.setJobName )
 Script.registerSwitch( "", "Fmt=", "display format (pretty, csv)", params.setFmt )
 Script.registerSwitch( "", "JobDate=", "age of jobs to display", params.setJobDate )
+Script.registerSwitch( "", "Fields=", "display list of fields", params.setFields )
 
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
@@ -170,7 +198,8 @@ elif userName == "*" or userName.lower() == "__all__":
   # jobs from all users
   userName = None
 
-result = selectJobs( owner = userName, date = jobDate )
+result = selectJobs( owner = userName, date = jobDate, jobGroup = params.getJobGroup(),
+                     jobName = params.getJobName() )
 if not result['OK']:
   print "Error:", result['Message']
   DIRACExit( -1 )
@@ -199,6 +228,6 @@ else:
     if s["Status"].lower() in statuses:
       summaries[j] = s
 
-print params.getFmt() ( summaries )
+print params.getFmt() ( summaries, params.getFields() )
 
 DIRAC.exit( exitCode )
