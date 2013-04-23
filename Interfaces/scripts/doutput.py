@@ -14,6 +14,7 @@ class Params:
     self.__session = session
     self.outputDir = None
     self.outputData = False
+    self.verbose = False
 
   def setOutputDir( self, arg = None ):
     self.outputDir = arg
@@ -27,6 +28,12 @@ class Params:
   def getOutputData( self ):
     return self.outputData
 
+  def setVerbose( self, arg = None ):
+    self.verbose = True
+
+  def getVerbose( self ):
+    return self.verbose
+
 session = DSession()
 params = Params( session )
 
@@ -38,6 +45,7 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
 
 Script.registerSwitch( "D:", "OutputDir=", "destination directory", params.setOutputDir )
 Script.registerSwitch( "", "Data", "retrieve output data", params.setOutputData )
+Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
 
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
@@ -62,19 +70,31 @@ if jobs:
     os.makedirs( outputDir )
 
   errors = []
+  outputs = {}
   for job in jobs:
+    destinationDir = os.path.join( outputDir, job )
+    outputs[job] = {"destinationDir" : destinationDir}
     result = dirac.getOutputSandbox( job, outputDir = outputDir )
-    if not result['OK']:
+    if result['OK']:
+      outputs[job]["osb"] = destinationDir
+    else:
       errors.append( result["Message"] )
       exitCode = 2
     if params.getOutputData():
-      result = dirac.getJobOutputData( job, destinationDir = os.path.join( outputDir, job ) )
-      if not result['OK']:
+      result = dirac.getJobOutputData( job, destinationDir = destinationDir )
+      if result['OK']:
+        outputs[job]["data"] = result["Value"]
+      else:
         errors.append( result["Message"] )
         exitCode = 2
 
   for error in errors:
     print "ERROR: %s" % error
+
+  if params.getVerbose():
+    for j, d in outputs.items():
+      if "osb" in d: print "%s: OutputSandbox" % j, d["osb"]
+      if "data" in d: print "%s: OutputData" % j, d["data"]
 
 DIRAC.exit( exitCode )
 
