@@ -12,13 +12,21 @@ from DIRAC import exit as DIRACExit
 from DIRAC.Core.Base import Script
 from DIRAC.Core.Utilities.Time import toString, date, day
 from DIRAC.Core.DISET.RPCClient import RPCClient
+
 # TODO: how to import job states from JobDB in client installation (lacks MySQLdb module)?
 # from DIRAC.WorkloadManagementSystem.DB.JobDB import JOB_STATES, JOB_FINAL_STATES
 JOB_STATES = ['Received', 'Checking', 'Staging', 'Waiting', 'Matched',
               'Running', 'Stalled', 'Done', 'Completed', 'Failed']
 JOB_FINAL_STATES = ['Done', 'Completed', 'Failed']
 
+def selectJobs( owner, date ):
+  conditions = {'Owner':owner}
+  monitoring = RPCClient( 'WorkloadManagement/JobMonitoring' )
+  result = monitoring.getJobs( conditions, date )
+  return result
+
 def getJobSummary( jobs ):
+  if not jobs: return S_OK( {} )
   monitoring = RPCClient( 'WorkloadManagement/JobMonitoring' )
   result = monitoring.getJobsSummary( jobs )
   try:
@@ -130,8 +138,6 @@ Script.registerSwitch( "", "JobDate=", "age of jobs to display", params.setJobDa
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
 
-from DIRAC.Interfaces.API.Dirac  import Dirac
-dirac = Dirac()
 exitCode = 0
 
 # time interval
@@ -148,7 +154,7 @@ elif userName == "*" or userName.lower() == "__all__":
   # jobs from all users
   userName = None
 
-result = dirac.selectJobs( owner = userName, date = jobDate )
+result = selectJobs( owner = userName, date = jobDate )
 if not result['OK']:
   print "Error:", result['Message']
   DIRACExit( -1 )
