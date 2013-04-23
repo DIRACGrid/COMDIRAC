@@ -32,28 +32,58 @@ def getJobSummary( jobs ):
 DEFAULT_DISPLAY_COLUMNS = [
   "Owner", "JobName", "JobGroup", "Site", "Status", "MinorStatus", "SubmissionTime",
 ]
-def formatCSV( summaries, columns = DEFAULT_DISPLAY_COLUMNS ):
+def formatCSV( summaries, headers = DEFAULT_DISPLAY_COLUMNS ):
   ret = "JobID,"
-  for c in columns:
+  for c in headers:
     ret += c + ","
   ret += "\n"
 
 
   for j, s in summaries.items():
     ret += str( j ) + ","
-    for c in columns:
+    for c in headers:
       ret += s[c] + ","
+    ret += "\n"
+
+  return ret
+
+def formatPretty( summaries, headers = DEFAULT_DISPLAY_COLUMNS ):
+  allHeaders = ["JobID"] + headers
+  headerWidths = {}
+  for c in allHeaders:
+    headerWidths[c] = len( c )
+
+  for j, s in summaries.items():
+    for c in allHeaders:
+      l = len ( str( s[c] ) )
+      if l > headerWidths[c]:
+        headerWidths[c] = l
+
+  ret = ""
+  for header in allHeaders:
+    ret += "{field:^{width}} ".format( field = header, width = headerWidths[header] )
+  ret += "\n"
+  for header in allHeaders:
+    ret += "{field} ".format( field = "-" * headerWidths[header] )
+  ret += "\n"
+
+  for j, s in summaries.items():
+    for header in allHeaders:
+      ret += "{field:^{width}} ".format( field = s[header], width = headerWidths[header] )
     ret += "\n"
 
   return ret
 
 from COMDIRAC.Interfaces import DSession
 
+OUTPUT_FORMATS = {"pretty" : formatPretty, "csv" : formatCSV}
+
 class Params:
   def __init__ ( self, session ):
     self.__session = session
     self.user = None
     self.status = map( lambda e: e.lower(), set( JOB_STATES ) - set( JOB_FINAL_STATES ) )
+    self.fmt = OUTPUT_FORMATS["pretty"]
 
   def setUser( self, arg = None ):
     self.user = arg
@@ -67,6 +97,12 @@ class Params:
   def getStatus( self ):
     return self.status
 
+  def setFmt( self, arg = None ):
+    self.fmt = OUTPUT_FORMATS[arg.lower()]
+
+  def getFmt( self ):
+    return self.fmt
+
 session = DSession()
 params = Params( session )
 
@@ -76,6 +112,7 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Arguments:', ] ) )
 Script.registerSwitch( "u:", "User=", "job owner", params.setUser )
 Script.registerSwitch( "", "Status=", "statuses of jobs to display", params.setStatus )
+Script.registerSwitch( "", "Fmt=", "display format (pretty, csv)", params.setFmt )
 
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
@@ -118,6 +155,6 @@ if not result['OK']:
 
 summaries = result['Value']
 
-print formatCSV( summaries )
+print params.getFmt() ( summaries )
 
 DIRAC.exit( exitCode )
