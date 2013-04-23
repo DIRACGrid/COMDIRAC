@@ -38,8 +38,10 @@ def formatCSV( summaries, headers = DEFAULT_DISPLAY_COLUMNS ):
     ret += c + ","
   ret += "\n"
 
-
-  for j, s in summaries.items():
+  jobs = summaries.keys()
+  jobs.sort()
+  for j in jobs:
+    s = summaries[j]
     ret += str( j ) + ","
     for c in headers:
       ret += s[c] + ","
@@ -67,7 +69,10 @@ def formatPretty( summaries, headers = DEFAULT_DISPLAY_COLUMNS ):
     ret += "{field} ".format( field = "-" * headerWidths[header] )
   ret += "\n"
 
-  for j, s in summaries.items():
+  jobs = summaries.keys()
+  jobs.sort()
+  for j in jobs:
+    s = summaries[j]
     for header in allHeaders:
       ret += "{field:^{width}} ".format( field = s[header], width = headerWidths[header] )
     ret += "\n"
