@@ -27,10 +27,10 @@ def getJobSummary( jobs ):
     return S_ERROR( 'Problem while converting result from job monitoring' )
   return S_OK( jobSummary )
 
-# to consider: "JobType", "ApplicationStatus", "OwnerGroup", "StartExecTime", "EndExecTime",
+# to consider: "JobType", "ApplicationStatus", "StartExecTime", "EndExecTime",
 # "CPUTime"
 DEFAULT_DISPLAY_COLUMNS = [
-  "Owner", "JobName", "JobGroup", "Site", "Status", "MinorStatus", "SubmissionTime",
+  "Owner", "JobName", "OwnerGroup", "JobGroup", "Site", "Status", "MinorStatus", "SubmissionTime",
 ]
 def formatCSV( summaries, headers = DEFAULT_DISPLAY_COLUMNS ):
   ret = "JobID,"
@@ -84,6 +84,7 @@ class Params:
     self.user = None
     self.status = map( lambda e: e.lower(), set( JOB_STATES ) - set( JOB_FINAL_STATES ) )
     self.fmt = OUTPUT_FORMATS["pretty"]
+    self.jobDate = 10
 
   def setUser( self, arg = None ):
     self.user = arg
@@ -103,6 +104,12 @@ class Params:
   def getFmt( self ):
     return self.fmt
 
+  def setJobDate( self, arg = None ):
+    self.jobDate = int( arg )
+
+  def getJobDate( self ):
+    return self.jobDate
+
 session = DSession()
 params = Params( session )
 
@@ -113,6 +120,7 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
 Script.registerSwitch( "u:", "User=", "job owner", params.setUser )
 Script.registerSwitch( "", "Status=", "statuses of jobs to display", params.setStatus )
 Script.registerSwitch( "", "Fmt=", "display format (pretty, csv)", params.setFmt )
+Script.registerSwitch( "", "JobDate=", "age of jobs to display", params.setJobDate )
 
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
@@ -121,7 +129,8 @@ from DIRAC.Interfaces.API.Dirac  import Dirac
 dirac = Dirac()
 exitCode = 0
 
-jobDate = toString( date() - 30 * day )
+# time interval
+jobDate = toString( date() - params.getJobDate() * day )
 
 # job owner
 userName = params.getUser()
