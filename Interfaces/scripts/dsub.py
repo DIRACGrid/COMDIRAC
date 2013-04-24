@@ -7,6 +7,8 @@
 """
 
 import os.path
+import re
+from types import IntType
 
 import DIRAC
 from DIRAC.Core.Base import Script
@@ -15,14 +17,12 @@ from DIRAC.Core.Utilities.ClassAd.ClassAdLight import ClassAd
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import pathFromArgument
 
-def classAdUpdate( toClassAd, fromClassAd ):
-  toClassAd.contents.update( fromClassAd.contents )
-
 class Params:
   def __init__ ( self, session ):
     self.__session = session
     self.attribs = {}
     self.jdl = self.getDefaultJDL()
+    self.parametric = None
     self.verbose = False
 
   def listArg( self, arg ):
@@ -142,8 +142,51 @@ class Params:
   def getJobGroup( self ):
     return self.attribs["JobGroup"]
 
+  def setParametric( self, arg = None ):
+    self.parametric = arg.split( ',' )
+  def getParametric( self ):
+    return self.parametric
+
   def modifyClassAd( self, classAd ):
     classAd.contents.update( self.attribs )
+
+  def parameterizeClassAd( self, classAd ):
+    def classAdClone( classAd ):
+      return ClassAd( classAd.asJDL() )
+
+    if not self.parametric: return [classAd]
+
+    loop_re = re.compile( "^(?P<start>\d+):(?P<stop>\d+)(:(?P<step>\d+))?$" )
+    parameters = []
+    loops = []
+    for param in self.parametric:
+      m = loop_re.match( param )
+      if m:
+        loop = m.groupdict()
+        start = int( loop["start"] )
+        stop = int( loop["stop"] )
+        step = 1
+        if "step" in loop and loop["step"]:
+          step = int( loop["step"] )
+        loops.append( ( start, stop, step ) )
+      else:
+        parameters.append( param )
+
+    ret = []
+    if parameters:
+      new = classAdClone( classAd )
+      new.insertAttributeVectorString( "Parameters", parameters )
+      ret.append( new )
+
+    for start, stop, step in loops:
+      new = classAdClone( classAd )
+      number = ( stop - start ) / step + 1
+      new.insertAttributeInt( "ParameterStart", start )
+      new.insertAttributeInt( "Parameters", number )
+      new.insertAttributeInt( "ParameterStep", step )
+      ret.append( new )
+
+    return ret
 
 session = DSession()
 params = Params( session )
@@ -173,7 +216,8 @@ Script.registerSwitch( "", "BannedSite=", "job Site exclusion list", params.setB
 Script.registerSwitch( "", "Platform=", "job Platform list", params.setPlatform )
 Script.registerSwitch( "", "Priority=", "job priority", params.setPriority )
 Script.registerSwitch( "", "JobGroup=", "job JobGroup", params.setJobGroup )
-# Script.registerSwitch( "", "=", "", params.set )
+Script.registerSwitch( "", "Parametric=", "comma separated list or named parameters or loops (in the form<start>:<stop>:<step>)",
+                       params.setParametric )
 
 Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
 
@@ -210,22 +254,30 @@ if cmd is not None:
   if cmdArgs:
     classAdJob.insertAttributeString( "Arguments", " ".join( cmdArgs ) )
 
+classAdJobs = params.parameterizeClassAd( classAdJob )
+
 if params.getVerbose():
   print "JDL:"
-  print classAdJob.asJDL()
-  print
+  for p in params.parameterizeClassAd( classAdJob ):
+    print p.asJDL()
 
-# DIRAC.exit( exitCode )
+jobIDs = []
+for classAdJob in classAdJobs:
+  jdlString = classAdJob.asJDL()
+  result = dirac.submit( jdlString )
+  if result['OK']:
+    if type( result['Value'] ) == IntType:
+      jobIDs.append( result['Value'] )
+    else:
+      jobIDs += result['Value']
+  else:
+    errorList.append( ( jdlString, result['Message'] ) )
+    exitCode = 2
 
-jdlString = classAdJob.asJDL()
-result = dirac.submit( jdlString )
-if result['OK']:
+if jobIDs:
   if params.getVerbose():
     print "JobID:",
-  print '%s' % ( result['Value'] )
-else:
-  errorList.append( ( jdlString, result['Message'] ) )
-  exitCode = 2
+  print ','.join( map ( str, jobIDs ) )
 
 for error in errorList:
   print "ERROR %s: %s" % error
