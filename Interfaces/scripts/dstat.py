@@ -119,6 +119,9 @@ class Params:
     self.fmt = OUTPUT_FORMATS["pretty"]
     self.jobDate = 10
     self.fields = DEFAULT_DISPLAY_COLUMNS
+    customFields = session.getEnv( "dstat_fields", "" )['Value']
+    if customFields:
+      self.fields = customFields.split( ',' )
     self.jobGroup = None
     self.jobName = None
 
@@ -175,7 +178,7 @@ Script.registerSwitch( "u:", "User=", "job owner", params.setUser )
 Script.registerSwitch( "", "Status=", "select job by status", params.setStatus )
 Script.registerSwitch( "", "JobGroup=", "select job by job group", params.setJobGroup )
 Script.registerSwitch( "", "JobName=", "select job by job name", params.setJobName )
-Script.registerSwitch( "", "Fmt=", "display format (pretty, csv)", params.setFmt )
+Script.registerSwitch( "", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
 Script.registerSwitch( "", "JobDate=", "age of jobs to display", params.setJobDate )
 Script.registerSwitch( "", "Fields=", "display list of fields", params.setFields )
 
