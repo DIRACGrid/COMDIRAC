@@ -10,6 +10,7 @@ from DIRAC.Core.Base import Script
 class Params:
   def __init__ ( self ):
     self.delete = False
+    self.verbose = False
 
   def setDelete( self, arg = None ):
     self.delete = True
