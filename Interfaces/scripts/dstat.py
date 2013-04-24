@@ -134,6 +134,9 @@ class Params:
   def setStatus( self, arg = None ):
     self.status = arg.lower().split( "," )
 
+  def setStatusAll( self, arg = None ):
+    self.status = map( lambda e: e.lower(), JOB_STATES )
+
   def getStatus( self ):
     return self.status
 
@@ -176,6 +179,7 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Arguments:', ] ) )
 Script.registerSwitch( "u:", "User=", "job owner", params.setUser )
 Script.registerSwitch( "", "Status=", "select job by status", params.setStatus )
+Script.registerSwitch( "a", "StatusAll", "display jobs of any status", params.setStatusAll )
 Script.registerSwitch( "", "JobGroup=", "select job by job group", params.setJobGroup )
 Script.registerSwitch( "", "JobName=", "select job by job name", params.setJobName )
 Script.registerSwitch( "", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
