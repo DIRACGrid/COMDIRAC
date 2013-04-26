@@ -9,36 +9,18 @@ from DIRAC.Core.DISET.RPCClient import RPCClient
 import os, shutil, datetime
 
 from COMDIRAC.Interfaces import DSession
-
-def formatPretty( summaries, headers = ["Status", "MinorStatus", "ApplicationStatus", "Time", "Source"] ):
-  headerWidths = {}
-  for i, c in enumerate( headers ):
-    headerWidths[i] = len( c )
-
-  for s in summaries:
-    for i, v in enumerate( s ):
-      l = len ( str( v ) )
-      if l > headerWidths[i]:
-        headerWidths[i] = l
-
-  ret = ""
-  for i, header in enumerate( headers ):
-    ret += "{field:^{width}} ".format( field = header, width = headerWidths[i] )
-  ret += "\n"
-  for i, header in enumerate( headers ):
-    ret += "{field} ".format( field = "-" * headerWidths[i] )
-  ret += "\n"
-
-  for s in summaries:
-    for i, header in enumerate( headers ):
-      ret += "{field:^{width}} ".format( field = s[i], width = headerWidths[i] )
-    ret += "\n"
-
-  return ret
+from COMDIRAC.Interfaces.Utilities.DCommands import ArrayFormatter
 
 class Params:
   def __init__ ( self, session ):
     self.__session = session
+    self.fmt = "pretty"
+
+  def setFmt( self, arg = None ):
+    self.fmt = arg.lower()
+
+  def getFmt( self ):
+    return self.fmt
 
 session = DSession()
 params = Params( session )
@@ -48,6 +30,7 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      '  %s [option|cfgfile] ... JobID ...' % Script.scriptName,
                                      'Arguments:',
                                      '  JobID:    DIRAC Job ID' ] ) )
+Script.registerSwitch( "", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
 
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
@@ -57,11 +40,13 @@ exitCode = 0
 jobs = map( int, args )
 
 monitoring = RPCClient( 'WorkloadManagement/JobMonitoring' )
+af = ArrayFormatter( params.getFmt() )
+headers = ["Status", "MinorStatus", "ApplicationStatus", "Time", "Source"]
 errors = []
 for job in jobs:
   result = monitoring.getJobLoggingInfo( job )
   if result['OK']:
-    print formatPretty( result['Value'] )
+    print af.listFormat( result['Value'], headers, sort = headers.index( "Time" ) )
   else:
     errors.append( result["Message"] )
     exitCode = 2

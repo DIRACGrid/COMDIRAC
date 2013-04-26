@@ -16,6 +16,8 @@ from DIRAC.Core.Base import Script
 from DIRAC.Core.Utilities.Time import toString, date, day
 from DIRAC.Core.DISET.RPCClient import RPCClient
 
+from COMDIRAC.Interfaces.Utilities.DCommands import ArrayFormatter
+
 # TODO: how to import job states from JobDB in client installation (lacks MySQLdb module)?
 # from DIRAC.WorkloadManagementSystem.DB.JobDB import JOB_STATES, JOB_FINAL_STATES
 JOB_STATES = ['Received', 'Checking', 'Staging', 'Waiting', 'Matched',
@@ -48,75 +50,14 @@ DEFAULT_DISPLAY_COLUMNS = [
   "Owner", "JobName", "OwnerGroup", "JobGroup", "Site", "Status", "MinorStatus", "SubmissionTime",
 ]
 
-def formatJSON( summaries, headers = DEFAULT_DISPLAY_COLUMNS ):
-  d = {}
-  for j, s in summaries.items():
-    d[j] = {}
-    for header in headers:
-      d[j][header] = s[header]
-
-    # to get an integer jobid
-    d[j]["JobID"] = j
-
-  return json.dumps( d )
-
-def formatCSV( summaries, headers = DEFAULT_DISPLAY_COLUMNS ):
-  ret = "JobID,"
-  for c in headers:
-    ret += c + ","
-  ret += "\n"
-
-  jobs = summaries.keys()
-  jobs.sort()
-  for j in jobs:
-    s = summaries[j]
-    ret += str( j ) + ","
-    for c in headers:
-      ret += s[c] + ","
-    ret += "\n"
-
-  return ret
-
-def formatPretty( summaries, headers = DEFAULT_DISPLAY_COLUMNS ):
-  allHeaders = ["JobID"] + headers
-  headerWidths = {}
-  for c in allHeaders:
-    headerWidths[c] = len( c )
-
-  for j, s in summaries.items():
-    for c in allHeaders:
-      l = len ( str( s[c] ) )
-      if l > headerWidths[c]:
-        headerWidths[c] = l
-
-  ret = ""
-  for header in allHeaders:
-    ret += "{field:^{width}} ".format( field = header, width = headerWidths[header] )
-  ret += "\n"
-  for header in allHeaders:
-    ret += "{field} ".format( field = "-" * headerWidths[header] )
-  ret += "\n"
-
-  jobs = summaries.keys()
-  jobs.sort()
-  for j in jobs:
-    s = summaries[j]
-    for header in allHeaders:
-      ret += "{field:^{width}} ".format( field = s[header], width = headerWidths[header] )
-    ret += "\n"
-
-  return ret
-
 from COMDIRAC.Interfaces import DSession
-
-OUTPUT_FORMATS = {"pretty" : formatPretty, "csv" : formatCSV, "json" : formatJSON}
 
 class Params:
   def __init__ ( self, session ):
     self.__session = session
     self.user = None
     self.status = map( lambda e: e.lower(), set( JOB_STATES ) - set( JOB_FINAL_STATES ) )
-    self.fmt = OUTPUT_FORMATS["pretty"]
+    self.fmt = "pretty"
     self.jobDate = 10
     self.fields = DEFAULT_DISPLAY_COLUMNS
     customFields = session.getEnv( "dstat_fields", "" )['Value']
@@ -141,7 +82,7 @@ class Params:
     return self.status
 
   def setFmt( self, arg = None ):
-    self.fmt = OUTPUT_FORMATS[arg.lower()]
+    self.fmt = arg.lower()
 
   def getFmt( self ):
     return self.fmt
@@ -225,6 +166,8 @@ if not result['OK']:
   print "ERROR: %s" % result['Message']
   DIRAC.exit( 2 )
 
+af = ArrayFormatter( params.getFmt() )
+
 # filter on job statuses
 summaries = {}
 statuses = params.getStatus()
@@ -235,6 +178,8 @@ else:
     if s["Status"].lower() in statuses:
       summaries[j] = s
 
-print params.getFmt() ( summaries, params.getFields() )
+for s in summaries.values():
+  s["JobID"] = int( s["JobID"] )
+print af.dictFormat( summaries, ["JobID"] + params.getFields(), sort = "JobID" )
 
 DIRAC.exit( exitCode )
