@@ -44,7 +44,7 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      '  JobID:    DIRAC Job ID' ] ) )
 
 Script.registerSwitch( "D:", "OutputDir=", "destination directory", params.setOutputDir )
-Script.registerSwitch( "", "Data", "retrieve output data", params.setOutputData )
+Script.registerSwitch( "", "Data", "donwload also output data", params.setOutputData )
 Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
 
 Script.parseCommandLine( ignoreErrors = True )

@@ -125,7 +125,7 @@ Script.registerSwitch( "", "JobGroup=", "select job by job group", params.setJob
 Script.registerSwitch( "", "JobName=", "select job by job name", params.setJobName )
 Script.registerSwitch( "", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
 Script.registerSwitch( "", "JobDate=", "age of jobs to display", params.setJobDate )
-Script.registerSwitch( "", "Fields=", "display list of fields", params.setFields )
+Script.registerSwitch( "", "Fields=", "display list of job fields", params.setFields )
 
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
