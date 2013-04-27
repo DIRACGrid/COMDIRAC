@@ -21,27 +21,23 @@ if __name__ == "__main__":
                                        'Usage:',
                                        '  %s lfn...' % Script.scriptName,
                                        'Arguments:',
-                                       '  lfn:     logical file name',] )
+                                       '  lfn:     logical file name', ] )
                           )
 
   Script.parseCommandLine( ignoreErrors = True )
   args = Script.getPositionalArgs()
 
-  from optparse import OptionParser
+  session = DSession()
+  catalog = DCatalog()
 
-  parser = OptionParser( )
-
-  ( options, args ) = parser.parse_args( )
-
-  session = DSession( )
-  catalog = DCatalog( )
+  print Script.localCfg.cliAdditionalCFGFiles
 
   if len( args ) < 1:
     print "No argument provided\n%s:" % Script.scriptName
-    Script.showHelp( )
+    Script.showHelp()
     DIRAC.exit( -1 )
 
-  Script.enableCS( )
+  Script.enableCS()
 
   from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import FileCatalogClientCLI
   fccli = FileCatalogClientCLI( catalog.catalog )
