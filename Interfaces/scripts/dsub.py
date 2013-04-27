@@ -251,6 +251,10 @@ if cmd is not None:
 
     classAdJob.insertAttributeVectorString( "InputSandbox", isb )
 
+    # set job name based on script file name
+    if not classAdJob.lookupAttribute("JobName"):
+      classAdJob.insertAttributeString( "JobName", cmd )
+
   if cmdArgs:
     classAdJob.insertAttributeString( "Arguments", " ".join( cmdArgs ) )
 
