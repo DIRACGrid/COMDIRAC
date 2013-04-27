@@ -1,11 +1,12 @@
 """
-  Retrieve output sandbox for a DIRAC job
+  Retrieve input sandbox for a DIRAC job
 """
 
 import DIRAC
 from DIRAC.Core.Base import Script
 
 import os
+import pprint
 
 from COMDIRAC.Interfaces import DSession
 
@@ -13,8 +14,8 @@ class Params:
   def __init__ ( self, session ):
     self.__session = session
     self.outputDir = None
-    self.outputData = False
     self.verbose = False
+    self.downloadJDL = False
 
   def setOutputDir( self, arg = None ):
     self.outputDir = arg
@@ -22,11 +23,11 @@ class Params:
   def getOutputDir( self ):
     return self.outputDir
 
-  def setOutputData( self, arg = None ):
-    self.outputData = True
+  def setDownloadJDL( self, arg = None ):
+    self.downloadJDL = True
 
-  def getOutputData( self ):
-    return self.outputData
+  def getDownloadJDL( self ):
+    return self.downloadJDL
 
   def setVerbose( self, arg = None ):
     self.verbose = True
@@ -44,7 +45,7 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      '  JobID:    DIRAC Job ID' ] ) )
 
 Script.registerSwitch( "D:", "OutputDir=", "destination directory", params.setOutputDir )
-Script.registerSwitch( "", "Data", "retrieve output data", params.setOutputData )
+Script.registerSwitch( "j", "JDL", "also download job JDL", params.setDownloadJDL )
 Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
 
 Script.parseCommandLine( ignoreErrors = True )
@@ -61,7 +62,7 @@ outputDir = params.getOutputDir() or os.path.curdir
 
 for arg in args:
   if os.path.isdir( os.path.join( outputDir, arg ) ):
-    print "Output for job %s already retrieved, remove the output directory to redownload" % arg
+    print "Input for job %s already retrieved, remove the output directory to redownload" % arg
   else:
     jobs.append( arg )
 
@@ -72,18 +73,22 @@ if jobs:
   errors = []
   inputs = {}
   for job in jobs:
-    destinationDir = os.path.join( outputDir, job )
+    destinationDir = os.path.join( outputDir, "InputSandbox%s" % job )
     inputs[job] = {"destinationDir" : destinationDir}
-    result = dirac.getOutputSandbox( job, outputDir = outputDir )
+    result = dirac.getInputSandbox( job, outputDir = outputDir )
     if result['OK']:
-      inputs[job]["osb"] = destinationDir
+      inputs[job]["isb"] = destinationDir
     else:
       errors.append( result["Message"] )
       exitCode = 2
-    if params.getOutputData():
-      result = dirac.getJobOutputData( job, destinationDir = destinationDir )
+    if params.getDownloadJDL():
+      result = dirac.getJobJDL( job, printOutput = False )
       if result['OK']:
-        inputs[job]["data"] = result["Value"]
+        jdl = pprint.pformat( result["Value"] )
+        f = open ( os.path.join( destinationDir, "%s.jdl" % job ), 'w' )
+        f.write( jdl )
+        f.close()
+        inputs[job]["jdl"] = jdl
       else:
         errors.append( result["Message"] )
         exitCode = 2
@@ -93,8 +98,7 @@ if jobs:
 
   if params.getVerbose():
     for j, d in inputs.items():
-      if "osb" in d: print "%s: OutputSandbox" % j, d["osb"]
-      if "data" in d: print "%s: OutputData" % j, d["data"]
-
+      if "isb" in d: print "%s: InputSandbox" % j, d["isb"]
+      if "jdl" in d: print "%s: JDL" % j, d["jdl"]
 DIRAC.exit( exitCode )
 
