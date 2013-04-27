@@ -6,8 +6,9 @@
   Default JDL can be configured from session in the "JDL" option
 """
 
-import os.path
+import os.path, sys
 import re
+import tempfile
 from types import IntType
 
 import DIRAC
@@ -16,6 +17,19 @@ from DIRAC.Core.Utilities.ClassAd.ClassAdLight import ClassAd
 
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import pathFromArgument
+
+def classAdAppendToInputSandbox( classAd, f ):
+  classAdAppendToSandbox( classAd, f, "InputSandbox" )
+
+def classAdAppendToOutputSandbox( classAd, f ):
+  classAdAppendToSandbox( classAd, f, "OutputSandbox" )
+
+def classAdAppendToSandbox( classAd, f, sbName ):
+  sb = []
+  if classAd.isAttributeList( sbName ):
+    sb = classAd.getListFromExpression( sbName )
+  sb.append ( f )
+  classAdJob.insertAttributeVectorString( sbName, sb )
 
 class Params:
   def __init__ ( self, session ):
@@ -197,6 +211,7 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Arguments:',
                                      '  executable: command to be run inside the job. ',
                                      '              If a relative path, local file will be included in InputSandbox',
+                                     '              If no executable is given, standard input will be read for executable contents',
                                      '  arguments: arguments to pass to executable',
                                      '             if some arguments are to begin with a dash \'-\', prepend \'--\' before them', ] ) )
 
@@ -240,19 +255,29 @@ classAdJob = ClassAd( params.getJDL() )
 
 params.modifyClassAd( classAdJob )
 
-if cmd is not None:
+tempFiles = []
+if cmd is None:
+  contents = sys.stdin.read()
+
+  f = tempfile.NamedTemporaryFile( delete = False )
+  fn = f.name
+  f.write( contents )
+  f.close()
+  tempFiles.append( fn )
+  classAdJob.insertAttributeString( "Executable", os.path.basename( fn ) )
+
+  classAdAppendToInputSandbox( classAdJob, fn )
+
+  if not classAdJob.lookupAttribute( "JobName" ):
+    classAdJob.insertAttributeString( "JobName", "STDIN" )
+
+else:
   classAdJob.insertAttributeString( "Executable", cmd )
   if not cmd.startswith( "/" ) and os.path.isfile( cmd ):
-    isb = []
-    if classAdJob.isAttributeList( "Inputandbox" ):
-      isb = classAdJob.getListFromExpression( "InputSandbox" )
-
-    isb.append ( cmd )
-
-    classAdJob.insertAttributeVectorString( "InputSandbox", isb )
+    classAdAppendToInputSandbox( classAdJob, cmd )
 
     # set job name based on script file name
-    if not classAdJob.lookupAttribute("JobName"):
+    if not classAdJob.lookupAttribute( "JobName" ):
       classAdJob.insertAttributeString( "JobName", cmd )
 
   if cmdArgs:
@@ -282,6 +307,12 @@ if jobIDs:
   if params.getVerbose():
     print "JobID:",
   print ','.join( map ( str, jobIDs ) )
+
+for f in tempFiles:
+  try:
+    os.unlink( f )
+  except Exception, e:
+    errorList.append( str( e ) )
 
 for error in errorList:
   print "ERROR %s: %s" % error
