@@ -37,6 +37,7 @@ class Params:
     self.attribs = {}
     self.jdl = self.getDefaultJDL()
     self.parametric = None
+    self.forceExecUpload = False
     self.verbose = False
 
   def listArg( self, arg ):
@@ -80,6 +81,11 @@ class Params:
 
   def getVerbose( self ):
     return self.verbose
+
+  def setForceExecUpload( self, arg = None ):
+    self.forceExecUpload = True
+  def getForceExecUpload( self, arg = None ):
+    return self.forceExecUpload
 
   def setName( self, arg = None ):
     self.attribs["JobName"] = arg
@@ -231,8 +237,10 @@ Script.registerSwitch( "", "BannedSite=", "job Site exclusion list", params.setB
 Script.registerSwitch( "", "Platform=", "job Platform list", params.setPlatform )
 Script.registerSwitch( "", "Priority=", "job priority", params.setPriority )
 Script.registerSwitch( "", "JobGroup=", "job JobGroup", params.setJobGroup )
-Script.registerSwitch( "", "Parametric=", "comma separated list or named parameters or loops (in the form<start>:<stop>:<step>)",
+Script.registerSwitch( "", "Parametric=", "comma separated list or named parameters or integer loops (in the form<start>:<stop>[:<step>])",
                        params.setParametric )
+Script.registerSwitch( "", "ForceExecUpload", "Force upload of executable with InputSandbox",
+                       params.setForceExecUpload )
 
 Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
 
@@ -257,6 +265,7 @@ params.modifyClassAd( classAdJob )
 
 tempFiles = []
 if cmd is None:
+  # get executable script from stdin
   contents = sys.stdin.read()
 
   f = tempfile.NamedTemporaryFile( delete = False )
@@ -272,8 +281,19 @@ if cmd is None:
     classAdJob.insertAttributeString( "JobName", "STDIN" )
 
 else:
-  classAdJob.insertAttributeString( "Executable", cmd )
-  if not cmd.startswith( "/" ) and os.path.isfile( cmd ):
+  # Executable name provided
+  if params.getForceExecUpload() and cmd.startswith( "/" ):
+    # job will use uploaded executable (relative path)
+    classAdJob.insertAttributeString( "Executable", os.path.basename( cmd ) )
+  else:
+    classAdJob.insertAttributeString( "Executable", cmd )
+
+  uploadExec = params.getForceExecUpload() or not cmd.startswith( "/" )
+  if uploadExec:
+    if not os.path.isfile( cmd ):
+      print "ERROR: executable file \"%s\" not found" % cmd
+      DIRAC.exit( 2 )
+
     classAdAppendToInputSandbox( classAdJob, cmd )
 
     # set job name based on script file name
@@ -308,6 +328,7 @@ if jobIDs:
     print "JobID:",
   print ','.join( map ( str, jobIDs ) )
 
+# remove temporary generated files, if any
 for f in tempFiles:
   try:
     os.unlink( f )
