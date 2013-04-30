@@ -301,3 +301,17 @@ def sessionFromProxy( config = DConfig(), sessionDir = None ):
   session.copyProfile()
 
   return session
+
+def getDNFromProxy():
+  proxyPath = _getProxyLocation()
+  if not proxyPath:
+    print "No proxy found"
+    return None
+
+  retVal = _getProxyInfo( proxyPath )
+  if not retVal[ "OK" ]:
+    return retVal
+
+  pi = retVal[ "Value" ]
+
+  return S_OK( pi["identity"] )
