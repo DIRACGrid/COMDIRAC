@@ -10,17 +10,25 @@ import types
 import DIRAC
 from DIRAC.Core.Base import Script
 
-from COMDIRAC.Interfaces import DConfig, createMinimalConfig, critical
+from COMDIRAC.Interfaces import DConfig, createMinimalConfig, critical, guessProfilesFromCS
+from COMDIRAC.Interfaces import getDNFromProxy
 
 class Params:
   def __init__ ( self ):
     self.minimal = False
+    self.guessProfile = False
 
   def setMinimal( self, arg ):
     self.minimal = True
 
   def getMinimal( self ):
     return self.minimal
+
+  def setGuessProfiles( self, arg ):
+    self.guessProfile = True
+
+  def getGuessProfiles( self ):
+    return self.guessProfile
 
 params = Params()
 
@@ -37,6 +45,7 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      ' section.option=value:     set option value', ] )
                         )
 Script.registerSwitch( "m", "minimal", "verify and fill minimal configuration", params.setMinimal )
+Script.registerSwitch( "", "guess", "", params.setGuessProfiles )
 
 Script.disableCS()
 
@@ -47,6 +56,27 @@ if params.minimal:
   createMinimalConfig()
 
 dconfig = DConfig()
+modified = False
+
+if params.getGuessProfiles():
+  Script.enableCS()
+  result = getDNFromProxy()
+  if not result["OK"]:
+    print "ERROR: %s" % result["Message"]
+    DIRAC.exit( 2 )
+  dn = result["Value"]
+  result = guessProfilesFromCS( dn )
+  if not result["OK"]:
+    print "ERROR: %s" % result["Message"]
+    DIRAC.exit( 2 )
+  profiles = result["Value"]
+
+  for p, pOpts in profiles.items():
+    for opt, val in pOpts.items():
+      modified |= dconfig.existsOrCreate( p, opt, val )
+
+  if modified and not args:
+    dconfig.write()
 
 if not args:
   sections = dconfig.sections()
@@ -61,8 +91,6 @@ if not args:
     print
   DIRAC.exit( 0 )
 
-
-modified = False
 
 for arg in args:
   value = None
