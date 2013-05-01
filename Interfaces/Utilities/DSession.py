@@ -71,8 +71,13 @@ class DSession( DConfig ):
 
     if not os.path.isfile( self.configPath ) or self.profileName != oldProfileName:
       self.__clearEnv()
+      # set default common options from section [global]
+      self.copyProfile( "global" )
+      # overwrite with options from profile section
       self.copyProfile()
+      # add profile name
       self.setEnv( "profile_name", self.profileName )
+      # set working directory option
       self.setCwd( self.homeDir() )
 
   def __cleanSessionDirectory( self ):
@@ -98,8 +103,8 @@ class DSession( DConfig ):
   def __clearEnv( self ):
     self.config.remove_section( DSession.__ENV_SECTION )
 
-  def copyProfile( self ):
-    for o, v in self.origin.items( self.profileName ):
+  def copyProfile( self, profileName = None ):
+    for o, v in self.origin.items( profileName or self.profileName ):
       self.setEnv( o, v )
 
   def homeDir( self ):
