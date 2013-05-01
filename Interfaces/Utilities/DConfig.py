@@ -103,26 +103,79 @@ class DConfig( object ):
   def items( self, section ):
     return self.config.items( section )
 
-  def fillMinimal( self ):
-    def existsOrCreate( section, option, value ):
-      if self.config.has_section( section ) and self.config.has_option( section, option ):
-        return False
-      self.set( section, option, value )
-      return True
+  def existsOrCreate( self, section, option, value ):
+    if self.config.has_section( section ) and self.config.has_option( section, option ):
+      return False
+    self.set( section, option, value )
+    return True
 
+  def fillMinimal( self ):
     modified = False
-    modified |= existsOrCreate( "global", "default_profile", "dirac_user" )
-    modified |= existsOrCreate( "dirac_user", "group_name", "dirac_user" )
-    modified |= existsOrCreate( "dirac_user", "home_dir", "/" )
-    modified |= existsOrCreate( "dirac_user", "default_se", "DIRAC-USER" )
+    modified |= self.existsOrCreate( "global", "default_profile", "dirac_user" )
+    modified |= self.existsOrCreate( "dirac_user", "group_name", "dirac_user" )
+    modified |= self.existsOrCreate( "dirac_user", "home_dir", "/" )
+    modified |= self.existsOrCreate( "dirac_user", "default_se", "DIRAC-USER" )
 
     return modified
 
 def createMinimalConfig( configDir = os.path.expanduser( "~/.dirac" ),
-                         configFilename = "dcommands.conf" ):
+                            configFilename = "dcommands.conf" ):
 
   dconfig = DConfig( configDir, configFilename )
 
   modified = dconfig.fillMinimal()
 
   if modified: dconfig.write()
+
+def guessProfilesFromCS( DN ):
+  cfg = DIRAC.gConfig
+
+  # determine user name
+  usersPath = "/Registry/Users"
+  result = cfg.getSections( usersPath )
+  if not result["OK"]: return result
+
+  userName = None
+  users = result["Value"]
+  for u in users:
+    result = cfg.getOption( "%s/%s/DN" % ( usersPath, u ) )
+    if not result["OK"]:
+      # silently skip misconfigured users
+      continue
+    if result["Value"] == DN:
+      userName = u
+
+  if not userName: return S_ERROR( "Could not find user with DN: %s" % DN )
+
+  # build list of groups user belongs to
+  groupsPath = "/Registry/Groups"
+  result = cfg.getSections( groupsPath )
+  if not result["OK"]: return result
+
+  userGroups = []
+  groups = result["Value"]
+  for g in groups:
+    result = cfg.getOption( "%s/%s/Users" % ( groupsPath, g ) )
+    if not result["OK"]:
+      # silently skip misconfigured groups
+      continue
+
+    users = map( lambda e: e.strip(), result["Value"].split( "," ) )
+    if userName in users:
+      userGroups.append( g )
+
+  profiles = {}
+  for g in userGroups:
+    profiles[g] = {"group_name" : g}
+  # guess a decent home directory
+
+  for g in userGroups:
+    profiles[g]["home_dir"] = "/"
+    result = cfg.getOption( "%s/%s/VOMSVO" % ( groupsPath, g ) )
+    if not result["OK"]:
+      # silently skip misconfigured groups
+      continue
+
+    profiles[g]["home_dir"] = "/%s/user/%s/%s" % ( result["Value"], userName[0], userName )
+
+  return S_OK( profiles )
