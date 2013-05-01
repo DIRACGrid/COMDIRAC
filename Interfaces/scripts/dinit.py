@@ -8,7 +8,7 @@ import os
 
 import DIRAC
 from COMDIRAC.Interfaces import DConfig, DSession, critical
-from COMDIRAC.Interfaces.Utilities.DSession import sessionFromProxy
+from COMDIRAC.Interfaces.Utilities.DCommands import sessionFromProxy
 from DIRAC.Core.Base import Script
 import DIRAC.Core.Security.ProxyInfo as ProxyInfo
 
