@@ -7,7 +7,6 @@ import stat
 import json
 import random
 
-from types import ListType, DictType
 from ConfigParser import SafeConfigParser, NoOptionError, NoSectionError
 
 import DIRAC
@@ -18,12 +17,17 @@ from DIRAC.ConfigurationSystem.Client.Helpers import Registry
 from DIRAC.Core.Security import Locations, VOMS
 from DIRAC.Resources.Catalog.FileCatalogFactory import FileCatalogFactory
 
+# TODO: replace error() and critical() functions with DIRACish ones?
 def error( msg ):
   print msg
 
 def critical( msg ):
   error( msg )
   DIRAC.exit( -1 )
+
+#-----------------------------
+# Proxy manipulation functions
+#-----------------------------
 
 def _getProxyLocation():
   return Locations.getProxyLocation()
@@ -35,6 +39,10 @@ def _getProxyInfo( proxyPath = False ):
   proxy_info = ProxyInfo.getProxyInfo( proxyPath, False )
 
   return proxy_info
+
+#----------------------------
+# Output formatting utilities
+#----------------------------
 
 def listFormatPretty( summaries, headers = None, sortKeys = None ):
   headerWidths = {}
@@ -135,6 +143,11 @@ class ArrayFormatter:
 
     return self.listFormat( list_, headers, sort )
 
+
+# -------------------------------
+# DCommands configuration helpers
+# -------------------------------
+
 class DConfig( object ):
   def __init__( self, configDir = None, configFilename = "dcommands.conf" ):
     try:
@@ -167,9 +180,9 @@ class DConfig( object ):
       self.config.read( self.configPath )
 
   def write( self ):
-    file = open( self.configPath, "w" )
-    self.config.write( file )
-    file.close()
+    file_ = open( self.configPath, "w" )
+    self.config.write( file_ )
+    file_.close()
 
   def has( self, section, option ):
     return self.config.has_option( section, option )
@@ -294,6 +307,10 @@ def guessProfilesFromCS( DN ):
     profiles[g]["home_dir"] = "/%s/user/%s/%s" % ( result["Value"], userName[0], userName )
 
   return S_OK( profiles )
+
+# -------------------------
+# DCommands Session helpers
+# -------------------------
 
 class DSession( DConfig ):
   __ENV_SECTION = "session:environment"
@@ -585,6 +602,10 @@ def getDNFromProxy():
   pi = retVal[ "Value" ]
 
   return S_OK( pi["identity"] )
+
+# -------------------------
+# DCommands FC/LFN helpers
+# -------------------------
 
 def createCatalog( fctype = "FileCatalog" ):
   result = FileCatalogFactory().createCatalog( fctype )
