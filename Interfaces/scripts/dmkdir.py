@@ -41,10 +41,13 @@ if __name__ == "__main__":
 
   Script.enableCS( )
 
-  from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import FileCatalogClientCLI
+  catalog = createCatalog()
 
-  fccli = FileCatalogClientCLI( createCatalog( ) )
-
-  for p in pathFromArguments( session, args ):
-    fccli.do_mkdir( p )
+  result = catalog.createDirectory( pathFromArguments( session, args ) )
+  if result["OK"]:
+    if result["Value"]["Failed"]:
+      for p in result["Value"]["Failed"]:
+        print "ERROR - \"%s\": %s" % ( p, result["Value"]["Failed"][p] )
+  else:
+    print "ERROR: %s" % result["Message"]
 

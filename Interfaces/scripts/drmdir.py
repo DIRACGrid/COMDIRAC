@@ -31,18 +31,22 @@ if __name__ == "__main__":
   Script.parseCommandLine( ignoreErrors = True )
   args = Script.getPositionalArgs()
 
-  session = DSession( )
+  session = DSession()
 
   if len( args ) < 1:
     print "Error: No argument provided\n%s:" % Script.scriptName
-    Script.showHelp( )
+    Script.showHelp()
     DIRAC.exit( -1 )
 
-  Script.enableCS( )
+  Script.enableCS()
 
-  from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import FileCatalogClientCLI
-  fccli = FileCatalogClientCLI( createCatalog( ) )
+  catalog = createCatalog()
 
-  for p in pathFromArguments( session, args ):
-    fccli.do_rmdir( p )
+  result = catalog.removeDirectory( pathFromArguments( session, args ) )
+  if result["OK"]:
+    if result["Value"]["Failed"]:
+      for p in result["Value"]["Failed"]:
+        print "ERROR - \"%s\": %s" % ( p, result["Value"]["Failed"][p] )
+  else:
+    print "ERROR: %s" % result["Message"]
 
