@@ -1,3 +1,12 @@
+[v0r4]
+
+NEW: Job management related commands
+NEW: --guess option for dconfig (configures profiles based on user's groups)
+CHANGE: dinit - dcommands.conf [global] section now inserted in session
+        environment
+CHANGE: Helper classes and functions in Interfaces/Utilities/ are grouped in a
+        DCommands.py module
+
 [v0r3]
 
 DOC: add examples in usage messages
