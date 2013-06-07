@@ -93,3 +93,14 @@ File Catalog Metadata Management
 commands:
 * `dmeta` - manipulates File Catalog metadata
 * `dfind` - find files with File Catalog metadata
+
+Jobs Management
+===============
+
+commands:
+* `dinput` - retrieve input sandbox for a DIRAC job
+* `dkill` - kill or delete DIRAC job
+* `dlogging` - retrieve logging information for a DIRAC job
+* `doutput` - retrieve output sandbox for a DIRAC job
+* `dstat` - retrieve status of DIRAC jobs
+* `dsub` - submit jobs to DIRAC WMS
