@@ -65,7 +65,7 @@ if __name__ == "__main__":
     def addFileWithReplicas( self,name,fileDict,numericid, replicas ):
       """ Pretty print of the file ls output with replica info
       """
-      self.addFile( name, fileDict, numericid )
+      self.addFile( name, fileDict, replicas, numericid )
   
       self.entries[ -1 ] += tuple( replicas )
   
