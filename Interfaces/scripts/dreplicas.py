@@ -30,8 +30,6 @@ if __name__ == "__main__":
   session = DSession()
   catalog = DCatalog()
 
-  print Script.localCfg.cliAdditionalCFGFiles
-
   if len( args ) < 1:
     print "No argument provided\n%s:" % Script.scriptName
     Script.showHelp()
