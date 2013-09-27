@@ -27,12 +27,12 @@ if __name__ == "__main__":
 
     def setDestinationSE( self, arg ):
       self.destinationSE = arg
-      return S_OK( )
+      return S_OK()
 
     def getDestinationSE( self ):
       return self.destinationSE
 
-  params = Params( )
+  params = Params()
 
   Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                        'Usage:',
@@ -48,22 +48,22 @@ if __name__ == "__main__":
   Script.registerSwitch( "D:", "destination-se=", "Storage Element where to put replica", params.setDestinationSE )
 
 
-  Script.parseCommandLine( ignoreErrors = True )
+  Script.parseCommandLine( ignoreErrors = False )
   args = Script.getPositionalArgs()
 
-  session = DSession( )
-  catalog = DCatalog( )
+  session = DSession()
+  catalog = DCatalog()
 
   if len( args ) < 1:
     print "Error: No argument provided\n%s:" % Script.scriptName
-    Script.showHelp( )
+    Script.showHelp()
     DIRAC.exit( 0 )
 
   # local file
   local_path = args[ 0 ]
 
   # default lfn: same file name as local_path
-  lfn = pathFromArgument( session, os.path.basename( local_path ))
+  lfn = pathFromArgument( session, os.path.basename( local_path ) )
 
   pairs = [ ( local_path, lfn ) ]
 
@@ -76,25 +76,25 @@ if __name__ == "__main__":
     if catalog.isDir( lfn ):
       # we can accept one ore more local files
       for lp in local_paths:
-        pairs.append( (lp, os.path.join( lfn, os.path.basename( lp )) ))
+        pairs.append( ( lp, os.path.join( lfn, os.path.basename( lp ) ) ) )
     else:
       if len( local_paths ) > 1:
         print "Error: Destination LFN must be a directory when registering multiple local files"
-        Script.showHelp( )
+        Script.showHelp()
         DIRAC.exit( -1 )
 
       # lfn filename replace local filename
-      pairs.append( (local_path, lfn ))
+      pairs.append( ( local_path, lfn ) )
 
   # destination SE
-  se = params.destinationSE
+  se = params.getDestinationSE()
   if not se:
     retVal = session.getEnv( "default_se", "DIRAC-USER" )
     if not retVal[ "OK" ]:
       critical( retVal[ "Message" ] )
     se = retVal[ "Value" ]
 
-  Script.enableCS( )
+  Script.enableCS()
 
   from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import FileCatalogClientCLI
   fccli = FileCatalogClientCLI( catalog.catalog )
