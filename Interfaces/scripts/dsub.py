@@ -35,7 +35,7 @@ class Params:
   def __init__ ( self, session ):
     self.__session = session
     self.attribs = {}
-    self.jdl = self.getDefaultJDL()
+    self.setJDL( self.getDefaultJDL() )
     self.parametric = None
     self.forceExecUpload = False
     self.verbose = False
