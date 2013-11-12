@@ -15,6 +15,7 @@ class Params:
     self.outputDir = None
     self.outputData = False
     self.verbose = False
+    self.noJobDir = False
 
   def setOutputDir( self, arg = None ):
     self.outputDir = arg
@@ -33,6 +34,12 @@ class Params:
 
   def getVerbose( self ):
     return self.verbose
+  
+  def setNoJobDir( self, arg = None ):
+    self.noJobDir = True
+    
+  def getNoJobDir( self ):
+    return self.noJobDir  
 
 session = DSession()
 params = Params( session )
@@ -46,6 +53,7 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
 Script.registerSwitch( "D:", "OutputDir=", "destination directory", params.setOutputDir )
 Script.registerSwitch( "", "Data", "donwload also output data", params.setOutputData )
 Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
+Script.registerSwitch( "n", "NoJobDir", "do not create job directory", params.setNoJobDir )
 
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
@@ -72,9 +80,12 @@ if jobs:
   errors = []
   inputs = {}
   for job in jobs:
-    destinationDir = os.path.join( outputDir, job )
+    if not params.getNoJobDir():
+      destinationDir = os.path.join( outputDir, job )
+    else:
+      destinationDir = outputDir  
     inputs[job] = {"destinationDir" : destinationDir}
-    result = dirac.getOutputSandbox( job, outputDir = outputDir )
+    result = dirac.getOutputSandbox( job, outputDir = outputDir, noJobDir = True )
     if result['OK']:
       inputs[job]["osb"] = destinationDir
     else:
