@@ -1,3 +1,8 @@
+[v0r5]
+
+CHANGE: -n, --NoJobDir switch in doutput
+CHANGE: dls adapted for DIRAC v6r10
+
 [v0r4]
 
 NEW: Job management related commands
