@@ -217,7 +217,8 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Arguments:',
                                      '  executable: command to be run inside the job. ',
                                      '              If a relative path, local file will be included in InputSandbox',
-                                     '              If no executable is given, standard input will be read for executable contents',
+                                     '              If no executable is given and JDL (provided or default) doesn\'t contain one,',
+                                     '              standard input will be read for executable contents',
                                      '  arguments: arguments to pass to executable',
                                      '             if some arguments are to begin with a dash \'-\', prepend \'--\' before them', ] ) )
 
@@ -262,6 +263,11 @@ errorList = []
 classAdJob = ClassAd( params.getJDL() )
 
 params.modifyClassAd( classAdJob )
+
+# retrieve JDL provided Executable if present and user did not provide one
+jdlExecutable = classAdJob.getAttributeString( "Executable" )
+if jdlExecutable and not cmd:
+  cmd = jdlExecutable
 
 tempFiles = []
 if cmd is None:
