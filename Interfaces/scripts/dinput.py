@@ -17,6 +17,7 @@ class Params:
     self.verbose = False
     self.downloadJDL = False
     self.inputSandbox = False
+    self.jobGroup = []
 
   def setOutputDir( self, arg = None ):
     self.outputDir = arg
@@ -42,6 +43,13 @@ class Params:
   def getVerbose( self ):
     return self.verbose
 
+  def setJobGroup( self, arg = None ):
+    if arg:
+      self.jobGroup.append( arg )
+
+  def getJobGroup( self ):
+    return self.jobGroup
+
 session = DSession()
 params = Params( session )
 
@@ -55,14 +63,28 @@ Script.registerSwitch( "D:", "OutputDir=", "destination directory", params.setOu
 Script.registerSwitch( "j", "JDL", "download job JDL instead of input sandbox", params.setDownloadJDL )
 Script.registerSwitch( "", "Sandbox", "donwload input sandbox, even if JDL was required", params.setInputSandbox )
 Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
+Script.registerSwitch( "g:", "JobGroup=", "Get output for jobs in the given group", params.setJobGroup )
 
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
 
 from DIRAC.Interfaces.API.Dirac  import Dirac
+from DIRAC.Core.Utilities.Time import toString, date, day
 
 dirac = Dirac()
 exitCode = 0
+
+for jobGroup in params.getJobGroup():
+  jobDate = toString( date() - 30 * day )
+
+  # Choose jobs no more than 30 days old
+  result = dirac.selectJobs( jobGroup = jobGroup, date = jobDate )
+  if not result['OK']:
+    if not "No jobs selected" in result['Message']:
+      print "Error:", result['Message']
+      exitCode = 2
+  else:
+    args += result['Value']
 
 jobs = []
 
