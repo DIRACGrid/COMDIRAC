@@ -17,6 +17,7 @@ class Params:
     self.outputSandbox = False
     self.verbose = False
     self.noJobDir = False
+    self.jobGroup = []
 
   def setOutputDir( self, arg = None ):
     self.outputDir = arg
@@ -41,12 +42,19 @@ class Params:
 
   def getVerbose( self ):
     return self.verbose
-  
+
   def setNoJobDir( self, arg = None ):
     self.noJobDir = True
-    
+
   def getNoJobDir( self ):
-    return self.noJobDir  
+    return self.noJobDir
+
+  def setJobGroup( self, arg = None ):
+    if arg:
+      self.jobGroup.append( arg )
+
+  def getJobGroup( self ):
+    return self.jobGroup
 
 session = DSession()
 params = Params( session )
@@ -62,14 +70,29 @@ Script.registerSwitch( "", "Data", "donwload output data instead of output sandb
 Script.registerSwitch( "", "Sandbox", "donwload output sandbox, even if data was required", params.setOutputSandbox )
 Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
 Script.registerSwitch( "n", "NoJobDir", "do not create job directory", params.setNoJobDir )
+Script.registerSwitch( "g:", "JobGroup=", "Get output for jobs in the given group", params.setJobGroup )
 
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
 
 from DIRAC.Interfaces.API.Dirac  import Dirac
+from DIRAC.Core.Utilities.Time import toString, date, day
 
 dirac = Dirac()
 exitCode = 0
+
+for jobGroup in params.getJobGroup():
+  jobDate = toString( date() - 30 * day )
+
+  # Choose jobs in final state, no more than 30 days old
+  for s in ['Done', 'Failed']:
+    result = dirac.selectJobs( jobGroup = jobGroup, date = jobDate, status = s )
+    if not result['OK']:
+      if not "No jobs selected" in result['Message']:
+        print "Error:", result['Message']
+        exitCode = 2
+    else:
+      args += result['Value']
 
 jobs = []
 
@@ -81,6 +104,7 @@ for arg in args:
   else:
     jobs.append( arg )
 
+
 if jobs:
   if not os.path.isdir( outputDir ):
     os.makedirs( outputDir )
@@ -91,7 +115,7 @@ if jobs:
     if not params.getNoJobDir():
       destinationDir = os.path.join( outputDir, job )
     else:
-      destinationDir = outputDir  
+      destinationDir = outputDir
     inputs[job] = {"destinationDir" : destinationDir}
 
     if params.getOutputSandbox() or not params.getOutputData():
