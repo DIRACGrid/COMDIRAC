@@ -1,154 +1,111 @@
-#!/usr/bin/env python
-
 """
-Get output sandbox and/or data of executed jobs
+  Retrieve output sandbox for a DIRAC job
 """
 
+import DIRAC
 from DIRAC.Core.Base import Script
-from DIRAC import exit as DIRACexit
-from DIRAC import S_OK
 
-outputDir = None
-def setOutputDir( option ):
-  global outputDir
-  outputDir = option
-  return S_OK()
+import os
 
-jobFile = None
-def setJobFile( option ):
-  global jobFile
-  jobFile = option
-  return S_OK()
+from COMDIRAC.Interfaces import DSession
 
-jobGroup = None
-def setJobGroup( option ):
-  global jobGroup
-  jobGroup = option
-  return S_OK()
+class Params:
+  def __init__ ( self, session ):
+    self.__session = session
+    self.outputDir = None
+    self.outputData = False
+    self.verbose = False
+    self.noJobDir = False
 
-getData = False
-getSB = True
-def setGetData( option ):
-  global getData, getSB
-  getData = True
-  getSB = False
-  return S_OK()
+  def setOutputDir( self, arg = None ):
+    self.outputDir = arg
 
-def setGetSB( option ):
-  global getSB
-  getSB = True
-  return S_OK()
+  def getOutputDir( self ):
+    return self.outputDir
 
-noJobDir = False
-def setNoJobDir( option ):
-  global noJobDir
-  noJobDir = True
-  return S_OK()
+  def setOutputData( self, arg = None ):
+    self.outputData = True
 
-Script.registerSwitch( "D:", "dir=", "Store the output in this directory", setOutputDir )
-Script.registerSwitch( "f:", "job-file=", "Get output for jobs with IDs from the file", setJobFile )
-Script.registerSwitch( "g:", "job-group=", "Get output for jobs in the given group", setJobGroup )
-Script.registerSwitch( "t", "output-data", "Get output data for jobs", setGetData )
-Script.registerSwitch( "S", "sandbox", "Get output sandbox for jobs", setGetSB )
-Script.registerSwitch( "n", "no-job-directory", "Do not create per job output directory", setNoJobDir )
+  def getOutputData( self ):
+    return self.outputData
+
+  def setVerbose( self, arg = None ):
+    self.verbose = True
+
+  def getVerbose( self ):
+    return self.verbose
+  
+  def setNoJobDir( self, arg = None ):
+    self.noJobDir = True
+    
+  def getNoJobDir( self ):
+    return self.noJobDir  
+
+session = DSession()
+params = Params( session )
 
 Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Usage:',
-                                     '  %s [options] JobID' % Script.scriptName,
+                                     '  %s [option|cfgfile] ... JobID ...' % Script.scriptName,
                                      'Arguments:',
-                                     '  JobID:     DIRAC job ID',] )
-                        )
+                                     '  JobID:    DIRAC Job ID' ] ) )
+
+Script.registerSwitch( "D:", "OutputDir=", "destination directory", params.setOutputDir )
+Script.registerSwitch( "", "Data", "donwload also output data", params.setOutputData )
+Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
+Script.registerSwitch( "n", "NoJobDir", "do not create job directory", params.setNoJobDir )
 
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
 
-import os, shutil
-from DIRAC.Interfaces.API.Dirac import Dirac
-from DIRAC.Core.Utilities.Time import toString, date, day
+from DIRAC.Interfaces.API.Dirac  import Dirac
 
 dirac = Dirac()
 exitCode = 0
-errorList = []
 
 jobs = []
-if len(args) > 0:
-  jobs += args
 
-if jobGroup:
-  jobDate = toString( date() - 30*day )
-    
-  # Choose jobs in final state, no more than 30 days old
-  result = dirac.selectJobs( jobGroup=jobGroup, date=jobDate, status='Done' )
-  if not result['OK']:
-    if not "No jobs selected" in result['Message']:
-      print "Error:", result['Message']
-      DIRACexit( -1 )
-  else:    
-    jobs += result['Value']      
-  result = dirac.selectJobs( jobGroup=jobGroup, date=jobDate, status='Failed' )
-  if not result['OK']:
-    if not "No jobs selected" in result['Message']:
-      print "Error:", result['Message']
-      DIRACexit( -1 )
+outputDir = params.getOutputDir() or os.path.curdir
+
+for arg in args:
+  if os.path.isdir( os.path.join( outputDir, arg ) ) and not params.getNoJobDir():
+    print "Output for job %s already retrieved, remove the output directory to redownload" % arg
   else:
-    jobs += result['Value']     
-    
-if jobFile:
-  if os.path.exists( jobFile ):
-    jFile = open( jobFile )
-    jobs += jFile.read().split()
-    jFile.close()     
-    
-if jobGroup:
-  if outputDir:
-    outputDir = os.path.join( outputDir, jobGroup )
-  else:
-    outputDir = jobGroup  
+    jobs.append( arg )
 
-if outputDir: 
-  if not os.path.exists(outputDir):
-    os.makedirs( outputDir)
-else:
-  outputDir = os.getcwd()    
-  
-print "Output directory is", outputDir  
-  
-jobs = [ str(job) for job in jobs ]
-doneJobs = os.listdir( outputDir )
-todoJobs = [ job for job in jobs if not job in doneJobs ]
-  
-for job in todoJobs:
+if jobs:
+  if not os.path.isdir( outputDir ):
+    os.makedirs( outputDir )
 
-  if getSB:
-    result = dirac.getOutputSandbox( job, outputDir = outputDir, noJobDir = noJobDir )
-    
-    jobDir = str(job)
-    if outputDir:
-      jobDir = os.path.join( outputDir, job )
-    if result['OK']:
-      if os.path.exists( jobDir ):
-        print 'Job output sandbox retrieved in %s/' % ( jobDir )
+  errors = []
+  inputs = {}
+  for job in jobs:
+    if not params.getNoJobDir():
+      destinationDir = os.path.join( outputDir, job )
     else:
-      if os.path.exists( '%s' % jobDir ):
-        shutil.rmtree( jobDir )
-      errorList.append( ( job, result['Message'] ) )
+      destinationDir = outputDir  
+    inputs[job] = {"destinationDir" : destinationDir}
+    result = dirac.getOutputSandbox( job, outputDir = outputDir, noJobDir = params.getNoJobDir() )
+    if result['OK']:
+      inputs[job]["osb"] = destinationDir
+    else:
+      errors.append( result["Message"] )
       exitCode = 2
-      
-  if getData:
-    if not noJobDir:
-      outputDir = "%s/%s" % ( outputDir, str( job ) )
-    
-    if not os.path.exists( outputDir ):
-      os.makedirs( outputDir )
-      
-    result = dirac.getJobOutputData( job, destinationDir = outputDir )
-    if result['OK']:
-      print 'Job %s output data retrieved' % ( job )
-    else:
-      errorList.append( ( job, result['Message'] ) )
-      exitCode = 2    
+    if params.getOutputData():
+      result = dirac.getJobOutputData( job, destinationDir = destinationDir )
+      if result['OK']:
+        inputs[job]["data"] = result["Value"]
+      else:
+        errors.append( result["Message"] )
+        exitCode = 2
 
-for error in errorList:
-  print "ERROR %s: %s" % error
+  for error in errors:
+    print "ERROR: %s" % error
 
-DIRACexit( exitCode )      
+  if params.getVerbose():
+    for j, d in inputs.items():
+      if "osb" in d: print "%s: OutputSandbox" % j, d["osb"]
+      if "data" in d: print "%s: OutputData" % j, d["data"]
+
+DIRAC.exit( exitCode )
+
