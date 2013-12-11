@@ -14,6 +14,7 @@ class Params:
     self.__session = session
     self.outputDir = None
     self.outputData = False
+    self.outputSandbox = False
     self.verbose = False
     self.noJobDir = False
 
@@ -28,6 +29,12 @@ class Params:
 
   def getOutputData( self ):
     return self.outputData
+
+  def setOutputSandbox( self, arg = None ):
+    self.outputSandbox = True
+
+  def getOutputSandbox( self ):
+    return self.outputSandbox
 
   def setVerbose( self, arg = None ):
     self.verbose = True
@@ -51,7 +58,8 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      '  JobID:    DIRAC Job ID' ] ) )
 
 Script.registerSwitch( "D:", "OutputDir=", "destination directory", params.setOutputDir )
-Script.registerSwitch( "", "Data", "donwload also output data", params.setOutputData )
+Script.registerSwitch( "", "Data", "donwload output data instead of output sandbox", params.setOutputData )
+Script.registerSwitch( "", "Sandbox", "donwload output sandbox, even if data was required", params.setOutputSandbox )
 Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
 Script.registerSwitch( "n", "NoJobDir", "do not create job directory", params.setNoJobDir )
 
@@ -85,12 +93,15 @@ if jobs:
     else:
       destinationDir = outputDir  
     inputs[job] = {"destinationDir" : destinationDir}
-    result = dirac.getOutputSandbox( job, outputDir = outputDir, noJobDir = params.getNoJobDir() )
-    if result['OK']:
-      inputs[job]["osb"] = destinationDir
-    else:
-      errors.append( result["Message"] )
-      exitCode = 2
+
+    if params.getOutputSandbox() or not params.getOutputData():
+      result = dirac.getOutputSandbox( job, outputDir = outputDir, noJobDir = params.getNoJobDir() )
+      if result['OK']:
+        inputs[job]["osb"] = destinationDir
+      else:
+        errors.append( result["Message"] )
+        exitCode = 2
+
     if params.getOutputData():
       result = dirac.getJobOutputData( job, destinationDir = destinationDir )
       if result['OK']:
