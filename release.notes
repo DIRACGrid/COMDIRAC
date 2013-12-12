@@ -1,3 +1,14 @@
+[v0r7]
+
+CHANGE: remove alternate (v0r6) implementations
+CHANGE: dsub - classic JDL submission
+CHANGE: doutput & dinput - don't download sandbox by default when data is required
+CHANGE: doutput & dinput - select jobs by group name
+
+[v0r6]
+
+CHANGE: some alternate implementations
+
 [v0r5]
 
 CHANGE: -n, --NoJobDir switch in doutput
