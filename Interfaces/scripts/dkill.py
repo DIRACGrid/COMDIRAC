@@ -11,6 +11,7 @@ from COMDIRAC.Interfaces import DSession
 class Params:
   def __init__ ( self ):
     self.delete = False
+    self.selectAll = False
     self.verbose = False
 
   def setDelete( self, arg = None ):
