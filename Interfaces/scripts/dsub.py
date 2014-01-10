@@ -18,6 +18,23 @@ from DIRAC.Core.Utilities.ClassAd.ClassAdLight import ClassAd
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import pathFromArgument
 
+def parseScriptLinesJDLDirectives( lines ):
+  ret = {}
+
+  for l in lines:
+    if l.startswith( '#JDL ' ):
+      c = l[5:]
+      d, v = c.split( '=', 1 )
+      ret[d.strip()] = v.strip()
+  return ret
+
+def parseScriptJDLDirectives( fn ):
+  f = open( fn, 'r' )
+  lines = f.readlines()
+  f.close()
+
+  return parseScriptLinesJDLDirectives( lines )
+
 def classAdAppendToInputSandbox( classAd, f ):
   classAdAppendToSandbox( classAd, f, "InputSandbox" )
 
@@ -272,13 +289,21 @@ if jdlExecutable and not cmd:
 tempFiles = []
 if cmd is None:
   # get executable script from stdin
-  contents = sys.stdin.read()
+  lines = sys.stdin.readlines()
+
+  # Manage JDL directives inserted in cmd
+  jdlDirectives = parseScriptLinesJDLDirectives( lines )
+  classAdJob.contents.update( jdlDirectives )
+  # re-apply parameters options to take priority over script JDL directives
+  params.modifyClassAd( classAdJob )
+
 
   f = tempfile.NamedTemporaryFile( delete = False )
   fn = f.name
-  f.write( contents )
+  for l in lines: f.write( l )
   f.close()
   tempFiles.append( fn )
+
   classAdJob.insertAttributeString( "Executable", os.path.basename( fn ) )
 
   classAdAppendToInputSandbox( classAdJob, fn )
@@ -287,6 +312,12 @@ if cmd is None:
     classAdJob.insertAttributeString( "JobName", "STDIN" )
 
 else:
+  # Manage JDL directives inserted in cmd
+  jdlDirectives = parseScriptJDLDirectives( cmd )
+  classAdJob.contents.update( jdlDirectives )
+  # re-apply parameters options to take priority over script JDL directives
+  params.modifyClassAd( classAdJob )
+
   # Executable name provided
   if params.getForceExecUpload() and cmd.startswith( "/" ):
     # job will use uploaded executable (relative path)
