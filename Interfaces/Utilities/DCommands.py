@@ -10,7 +10,7 @@ import random
 from ConfigParser import SafeConfigParser, NoOptionError, NoSectionError
 
 import DIRAC
-from DIRAC  import S_OK, S_ERROR
+from DIRAC  import S_OK, S_ERROR, gConfig
 import DIRAC.Core.Security.ProxyInfo as ProxyInfo
 import DIRAC.FrameworkSystem.Client.ProxyGeneration as ProxyGeneration
 from DIRAC.ConfigurationSystem.Client.Helpers import Registry
@@ -256,17 +256,15 @@ def createMinimalConfig( configDir = os.path.expanduser( "~/.dirac" ),
   if modified: dconfig.write()
 
 def guessProfilesFromCS( DN ):
-  cfg = DIRAC.gConfig
-
   # determine user name
   usersPath = "/Registry/Users"
-  result = cfg.getSections( usersPath )
+  result = gConfig.getSections( usersPath )
   if not result["OK"]: return result
 
   userName = None
   users = result["Value"]
   for u in users:
-    result = cfg.getOption( "%s/%s/DN" % ( usersPath, u ) )
+    result = gConfig.getOption( "%s/%s/DN" % ( usersPath, u ) )
     if not result["OK"]:
       # silently skip misconfigured users
       continue
@@ -277,13 +275,13 @@ def guessProfilesFromCS( DN ):
 
   # build list of groups user belongs to
   groupsPath = "/Registry/Groups"
-  result = cfg.getSections( groupsPath )
+  result = gConfig.getSections( groupsPath )
   if not result["OK"]: return result
 
   userGroups = []
   groups = result["Value"]
   for g in groups:
-    result = cfg.getOption( "%s/%s/Users" % ( groupsPath, g ) )
+    result = gConfig.getOption( "%s/%s/Users" % ( groupsPath, g ) )
     if not result["OK"]:
       # silently skip misconfigured groups
       continue
@@ -299,7 +297,7 @@ def guessProfilesFromCS( DN ):
 
   for g in userGroups:
     profiles[g]["home_dir"] = "/"
-    result = cfg.getOption( "%s/%s/VOMSVO" % ( groupsPath, g ) )
+    result = gConfig.getOption( "%s/%s/VOMSVO" % ( groupsPath, g ) )
     if not result["OK"]:
       # silently skip misconfigured groups
       continue
