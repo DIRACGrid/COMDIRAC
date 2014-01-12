@@ -1,3 +1,9 @@
+[v0r8]
+
+FIX: dinit - gConfig not imported
+NEW: dsub - parse JDL formatted comments in job scripts
+FIX: dkill - parameter not initialized
+
 [v0r7]
 
 CHANGE: remove alternate (v0r6) implementations
