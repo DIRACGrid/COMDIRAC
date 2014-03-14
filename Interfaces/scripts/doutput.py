@@ -119,7 +119,11 @@ if jobs:
     inputs[job] = {"destinationDir" : destinationDir}
 
     if params.getOutputSandbox() or not params.getOutputData():
-      result = dirac.getOutputSandbox( job, outputDir = outputDir, noJobDir = params.getNoJobDir() )
+      try:
+        result = dirac.getOutputSandbox( job, outputDir = outputDir, noJobDir = params.getNoJobDir() )
+      except TypeError:
+        errors.append( "dirac.getOutputSandbox doesn't accept \"noJobDir\" argument. Will create per-job directories." )
+        result = dirac.getOutputSandbox( job, outputDir = outputDir )
       if result['OK']:
         inputs[job]["osb"] = destinationDir
       else:
