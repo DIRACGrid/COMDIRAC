@@ -44,6 +44,9 @@ def getJobSummary( jobs ):
     return S_ERROR( 'Problem while converting result from job monitoring' )
   return S_OK( jobSummary )
 
+def chunks( l, n ):
+    return [l[i:i + n] for i in range( 0, len( l ), n )]
+
 # to consider: "JobType", "ApplicationStatus", "StartExecTime", "EndExecTime",
 # "CPUTime"
 DEFAULT_DISPLAY_COLUMNS = [
@@ -161,25 +164,29 @@ except Exception, x:
   exitCode = 2
   DIRAC.exit( exitCode )
 
-result = getJobSummary( jobs )
-if not result['OK']:
-  print "ERROR: %s" % result['Message']
-  DIRAC.exit( 2 )
-
-af = ArrayFormatter( params.getFmt() )
-
-# filter on job statuses
 summaries = {}
 statuses = params.getStatus()
-if "all" in statuses:
-  summaries = result['Value']
-else:
-  for j, s in result['Value'].items():
-    if s["Status"].lower() in statuses:
-      summaries[j] = s
+
+# split summary requests in chunks of a reasonable size (saves memory)
+for chunk in chunks( jobs, 1000 ):
+  result = getJobSummary( chunk )
+  if not result['OK']:
+    print "ERROR: %s" % result['Message']
+    DIRAC.exit( 2 )
+
+  # filter on job statuses
+  if "all" in statuses:
+    summaries = result['Value']
+  else:
+    for j, s in result['Value'].items():
+      if s["Status"].lower() in statuses:
+        summaries[j] = s
 
 for s in summaries.values():
   s["JobID"] = int( s["JobID"] )
+
+af = ArrayFormatter( params.getFmt() )
+
 print af.dictFormat( summaries, ["JobID"] + params.getFields(), sort = "JobID" )
 
 DIRAC.exit( exitCode )
