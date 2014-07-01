@@ -7,7 +7,7 @@ list replicas for files in the FileCatalog
 import os
 
 import DIRAC
-from COMDIRAC.Interfaces import critical
+from COMDIRAC.Interfaces import critical, error
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import DCatalog
 from COMDIRAC.Interfaces import pathFromArgument
@@ -31,16 +31,27 @@ if __name__ == "__main__":
   catalog = DCatalog()
 
   if len( args ) < 1:
-    print "No argument provided\n%s:" % Script.scriptName
+    error("No argument provided\n%s:" % Script.scriptName)
     Script.showHelp()
     DIRAC.exit( -1 )
 
   Script.enableCS()
 
-  from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import FileCatalogClientCLI
-  fccli = FileCatalogClientCLI( catalog.catalog )
+  exitCode = 0
 
   for arg in args:
     # lfn
     lfn = pathFromArgument( session, args[ 0 ] )
-    fccli.do_replicas( lfn )
+    #fccli.do_replicas( lfn )
+    ret = catalog.catalog.getReplicas( lfn )
+
+    if ret['OK']:
+      replicas = ret['Value']['Successful'][lfn]
+      print lfn + ':'
+      for se, path in replicas.items():
+        print '  ', se, path
+    else:
+      error( lfn + ': ' + ret['Message'] )
+      exitCode = -2
+
+DIRAC.exit( exitCode )

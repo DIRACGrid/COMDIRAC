@@ -22,7 +22,7 @@ import os
 import DIRAC
 from DIRAC import S_OK, S_ERROR
 
-from COMDIRAC.Interfaces import critical
+from COMDIRAC.Interfaces import error, critical
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import DCatalog
 from COMDIRAC.Interfaces import pathFromArguments
@@ -72,8 +72,14 @@ if __name__ == "__main__":
   session = DSession()
   catalog = DCatalog()
 
+  Script.enableCS()
+
+  from DIRAC.Interfaces.API.Dirac  import Dirac
+
+  dirac = Dirac()
+
   if len( args ) < 1:
-    print "Error: No argument provided\n%s:" % Script.scriptName
+    error( "Error: No argument provided\n%s:" % Script.scriptName )
     Script.showHelp()
     DIRAC.exit( -1 )
 
@@ -92,16 +98,19 @@ if __name__ == "__main__":
 
   srcopt = ""
   if params.sourceSE:
-    srcopt = " " + params.sourceSE
+    srcopt = params.sourceSE
 
 
-  Script.enableCS()
-
-  from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import FileCatalogClientCLI
-  fccli = FileCatalogClientCLI( catalog.catalog )
+  exitCode = 0
 
   for lfn in lfns:
     for dst in dsts:
       # print "replicating", lfn, "to SE", dst
-      fccli.do_replicate( lfn + " " + dst + srcopt )
+#      fccli.do_replicate( lfn + " " + dst + srcopt )
+      ret = dirac.replicateFile( lfn, dst, srcopt )
 
+      if not ret['OK']:
+        error( lfn + ': ' + ret['Message'] )
+        exitCode = -2
+
+DIRAC.exit( exitCode )
