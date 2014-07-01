@@ -11,6 +11,7 @@ import os
 import DIRAC
 from DIRAC import S_OK, S_ERROR
 
+from COMDIRAC.Interfaces import error
 from COMDIRAC.Interfaces import critical
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import DCatalog
@@ -54,8 +55,12 @@ if __name__ == "__main__":
   session = DSession()
   catalog = DCatalog()
 
+  from DIRAC.Interfaces.API.Dirac  import Dirac
+
+  dirac = Dirac()
+
   if len( args ) < 1:
-    print "Error: No argument provided\n%s:" % Script.scriptName
+    error( "Error: No argument provided\n%s:" % Script.scriptName )
     Script.showHelp()
     DIRAC.exit( 0 )
 
@@ -79,9 +84,7 @@ if __name__ == "__main__":
         pairs.append( ( lp, os.path.join( lfn, os.path.basename( lp ) ) ) )
     else:
       if len( local_paths ) > 1:
-        print "Error: Destination LFN must be a directory when registering multiple local files"
-        Script.showHelp()
-        DIRAC.exit( -1 )
+        critical( "Error: Destination LFN must be a directory when registering multiple local files" )
 
       # lfn filename replace local filename
       pairs.append( ( local_path, lfn ) )
@@ -91,14 +94,19 @@ if __name__ == "__main__":
   if not se:
     retVal = session.getEnv( "default_se", "DIRAC-USER" )
     if not retVal[ "OK" ]:
-      critical( retVal[ "Message" ] )
+      error( retVal[ "Message" ] )
     se = retVal[ "Value" ]
 
   Script.enableCS()
 
-  from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import FileCatalogClientCLI
-  fccli = FileCatalogClientCLI( catalog.catalog )
+  exitCode = 0
 
   for local_path, lfn in pairs:
-    fccli.do_add( lfn + " " + local_path + " " + se )
+    ret = dirac.addFile( lfn, local_path, se, printOutput = False )
+
+  if not ret['OK']:
+    exitCode = -2
+    error( lfn + ': ' + ret['Message'] )
+
+DIRAC.exit( exitCode )
 
