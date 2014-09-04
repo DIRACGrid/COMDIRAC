@@ -105,12 +105,10 @@ if __name__ == "__main__":
 
   for lfn in lfns:
     for dst in dsts:
-      # print "replicating", lfn, "to SE", dst
-#      fccli.do_replicate( lfn + " " + dst + srcopt )
       ret = dirac.replicateFile( lfn, dst, srcopt )
 
       if not ret['OK']:
-        error( lfn + ': ' + ret['Message'] )
+        error( lfn + '->' + dst + ': ' + ret['Message'] )
         exitCode = -2
 
 DIRAC.exit( exitCode )
