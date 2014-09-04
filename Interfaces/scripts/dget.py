@@ -7,7 +7,9 @@ download files from storage element
 import os
 
 import DIRAC
+
 from COMDIRAC.Interfaces import critical
+from COMDIRAC.Interfaces import error
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import DCatalog
 from COMDIRAC.Interfaces import pathFromArgument
@@ -25,15 +27,21 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                        ] )
                         )
 
-
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
 
 session = DSession( )
 catalog = DCatalog( )
 
+
+Script.enableCS()
+
+from DIRAC.Interfaces.API.Dirac  import Dirac
+
+dirac = Dirac()
+
 if len( args ) < 1:
-  print "\nError: not enough arguments provided\n%s:" % Script.scriptName
+  error( "\nError: not enough arguments provided\n%s:" % Script.scriptName )
   Script.showHelp( )
   DIRAC.exit( -1 )
 
@@ -54,8 +62,7 @@ if len( args ) > 1:
 
   # STRANGE: dirac only accepts directories for download destination
   if not os.path.isdir( local_path ):
-    print "Error: Destination local path must be a directory"
-    DIRAC.exit( -1 )
+    critical( "Error: Destination local path must be a directory", -1 )
 
   if os.path.isdir( local_path ):
     # we can accept one ore more lfns
@@ -65,17 +72,19 @@ if len( args ) > 1:
       pairs.append( (pathFromArgument( session, lfn ), local_path ))
   else:
     if len( lfns ) > 1:
-      print "Error: Destination path must be a directory when downloading multiple local files"
-      DIRAC.exit( -1 )
+      critical( "Error: Destination path must be a directory when downloading multiple local files", -1 )
 
     # local filename replace lfn filename
     pairs.append( (pathFromArgument( session, lfn ), local_path ))
-
-Script.enableCS( )
-
-from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import FileCatalogClientCLI
-
-fccli = FileCatalogClientCLI( catalog.catalog )
+exitCode = 0
+errmsgs = []
 
 for lfn, local_path in pairs:
-  fccli.do_get( lfn + " " + local_path )
+  ret = dirac.getFile( lfn, local_path )
+  if not ret['OK']:
+    exitCode = -2
+    for failed, msg in ret['Message']['Failed']:
+      error( failed + ': ' + msg )
+
+
+DIRAC.exit( exitCode )

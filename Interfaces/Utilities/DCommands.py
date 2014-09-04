@@ -1,6 +1,7 @@
 
 import os
 import os.path
+import sys
 import re
 import uuid
 import stat
@@ -19,11 +20,11 @@ from DIRAC.Resources.Catalog.FileCatalogFactory import FileCatalogFactory
 
 # TODO: replace error() and critical() functions with DIRACish ones?
 def error( msg ):
-  print msg
+  sys.stderr.write( msg + "\n" )
 
-def critical( msg ):
+def critical( msg, exitCode = -1 ):
   error( msg )
-  DIRAC.exit( -1 )
+  DIRAC.exit( exitCode )
 
 #-----------------------------
 # Proxy manipulation functions
