@@ -1,3 +1,10 @@
+[v0r9]
+
+FIX: doutput - backward compatibility with dirac.getOutputSandbox
+FIX: dstat - memory footprint with many jobs
+CHANGE: dget drepl dput - return non-zero error codes
+CHANGE: dfind - suppress verbose output
+
 [v0r8]
 
 FIX: dinit - gConfig not imported
