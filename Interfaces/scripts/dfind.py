@@ -45,4 +45,4 @@ if __name__ == "__main__":
   from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import FileCatalogClientCLI
   fccli = FileCatalogClientCLI( catalog.catalog )
 
-  fccli.do_find( lfn + " " + " ".join( args[1:] ) )
+  fccli.do_find( "-q " + lfn + " " + " ".join( args[1:] ) )
