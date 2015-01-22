@@ -4,15 +4,9 @@
 change file mode bits
 """
 
-import DIRAC
-
-from COMDIRAC.Interfaces import critical
-from COMDIRAC.Interfaces import DSession
-from COMDIRAC.Interfaces import DCatalog
-from COMDIRAC.Interfaces import pathFromArgument
-
 from DIRAC.Core.Base import Script
 from DIRAC import S_OK
+
 class Params:
   def __init__ ( self ):
     self.recursive = False
@@ -39,10 +33,14 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                         )
 Script.registerSwitch( "R", "recursive", "recursive", params.setRecursive )
 
-Script.enableCS( )
-
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
+
+import DIRAC
+from DIRAC import gLogger
+from COMDIRAC.Interfaces import DSession
+from COMDIRAC.Interfaces import DCatalog
+from COMDIRAC.Interfaces import pathFromArgument
 
 session = DSession( )
 catalog = DCatalog( )
@@ -58,13 +56,18 @@ lfns = [ ]
 for path in args[ 1: ]:
   lfns.append( pathFromArgument( session, path ))
 
-optstr = ""
-if params.recursive:
-  optstr = "-R "
+from DIRAC.Resources.Catalog.FileCatalog import FileCatalog
 
-from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import FileCatalogClientCLI
-
-fccli = FileCatalogClientCLI( catalog.catalog )
+fc = FileCatalog()
 
 for lfn in lfns:
-  fccli.do_chmod( optstr + mode + " " + lfn )
+  try:
+    pathDict = { lfn: eval( '0' + mode ) }
+    result = fc.changePathMode( pathDict, params.recursive )
+    if not result['OK']:
+      gLogger.error( "Error:", result['Message'] )
+      break
+    if lfn in result['Value']['Failed']:
+      gLogger.error( "Error:", result['Value']['Failed'][lfn] )
+  except Exception, x:
+    print "Exception:", str(x)  
