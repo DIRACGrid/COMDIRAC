@@ -1,5 +1,4 @@
 
-import os
 import os.path
 import sys
 import re
@@ -17,6 +16,7 @@ import DIRAC.FrameworkSystem.Client.ProxyGeneration as ProxyGeneration
 from DIRAC.ConfigurationSystem.Client.Helpers import Registry
 from DIRAC.Core.Security import Locations, VOMS
 from DIRAC.Resources.Catalog.FileCatalogFactory import FileCatalogFactory
+from DIRAC.Core.Utilities.PrettyPrint import printTable
 
 # TODO: replace error() and critical() functions with DIRACish ones?
 def error( msg ):
@@ -46,34 +46,13 @@ def _getProxyInfo( proxyPath = False ):
 #----------------------------
 
 def listFormatPretty( summaries, headers = None, sortKeys = None ):
-  headerWidths = {}
-  for i, c in enumerate( headers ):
-    headerWidths[i] = len( c )
-
-  for s in summaries:
-    for i, v in enumerate( s ):
-      l = len ( str( v ) )
-      if l > headerWidths[i]:
-        headerWidths[i] = l
-
-  ret = ""
-  for i, header in enumerate( headers ):
-    ret += "{field:^{width}} ".format( field = header, width = headerWidths[i] )
-  ret += "\n"
-  for i, header in enumerate( headers ):
-    ret += "{field} ".format( field = "-" * headerWidths[i] )
-  ret += "\n"
-
-  if not sortKeys:
-    sortKeys = map( lambda e: ( None, e ), range( len( summaries ) ) )
-
+    
+  records = []
   for _k, i in sortKeys:
-    s = summaries[i]
-    for i, header in enumerate( headers ):
-      ret += "{field:^{width}} ".format( field = s[i], width = headerWidths[i] )
-    ret += "\n"
-
-  return ret
+    records.append( [ str(x) for x in summaries[i] ] )
+  
+  output = printTable( headers, records, numbering = False, printOut = False, columnSeparator = '  ' )
+  return output
 
 def listFormatCSV( summaries, headers = None, sortKeys = None ):
   ret = ""
@@ -239,11 +218,24 @@ class DConfig( object ):
     return True
 
   def fillMinimal( self ):
+    defaultGroup = ''
+    # Try to find the default user group
+    resultInfo = ProxyInfo.getProxyInfo()
+    if resultInfo['OK']:  
+      userName = resultInfo['Value'].get( 'username' )
+      if userName:
+        result = Registry.findDefaultGroupForUser( userName )
+        if result['OK']:
+          defaultGroup = result['Value']
+      if not defaultGroup:
+        defaultGroup = resultInfo['Value'].get( 'group' )
+    if not defaultGroup:    
+      defaultGroup = 'dirac_user'      
     modified = False
-    modified |= self.existsOrCreate( "global", "default_profile", "dirac_user" )
-    modified |= self.existsOrCreate( "dirac_user", "group_name", "dirac_user" )
-    modified |= self.existsOrCreate( "dirac_user", "home_dir", "/" )
-    modified |= self.existsOrCreate( "dirac_user", "default_se", "DIRAC-USER" )
+    modified |= self.existsOrCreate( "global", "default_profile", defaultGroup )
+    modified |= self.existsOrCreate( defaultGroup, "group_name", defaultGroup )
+    modified |= self.existsOrCreate( defaultGroup, "home_dir", "/" )
+    modified |= self.existsOrCreate( defaultGroup, "default_se", "DIRAC-USER" )
 
     return modified
 
@@ -298,7 +290,7 @@ def guessProfilesFromCS( DN ):
 
   for g in userGroups:
     profiles[g]["home_dir"] = "/"
-    result = gConfig.getOption( "%s/%s/VOMSVO" % ( groupsPath, g ) )
+    result = gConfig.getOption( "%s/%s/VO" % ( groupsPath, g ) )
     if not result["OK"]:
       # silently skip misconfigured groups
       continue
