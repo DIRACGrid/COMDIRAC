@@ -1,7 +1,10 @@
 #!/usr/bin/env python
+########################################################################
+# $HeadURL$
+########################################################################
 
 """
-change file mode bits
+Change file mode bits
 """
 
 from DIRAC.Core.Base import Script
