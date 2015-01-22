@@ -11,12 +11,9 @@ import re
 import tempfile
 from types import IntType
 
-import DIRAC
+from DIRAC import S_OK
+from DIRAC import exit as DIRACexit
 from DIRAC.Core.Base import Script
-from DIRAC.Core.Utilities.ClassAd.ClassAdLight import ClassAd
-
-from COMDIRAC.Interfaces import DSession
-from COMDIRAC.Interfaces import pathFromArgument
 
 def parseScriptLinesJDLDirectives( lines ):
   ret = {}
@@ -49,13 +46,19 @@ def classAdAppendToSandbox( classAd, f, sbName ):
   classAdJob.insertAttributeVectorString( sbName, sb )
 
 class Params:
-  def __init__ ( self, session ):
-    self.__session = session
+  def __init__ ( self ):
+    self.__session = None
     self.attribs = {}
-    self.setJDL( self.getDefaultJDL() )
+    self.jdl = None
     self.parametric = None
     self.forceExecUpload = False
     self.verbose = False
+    self.inputData = ''
+
+  def setSession( self, session ):
+    self.__session = session
+    if self.inputData:
+      self.attribs["InputData"] = self.pathListArg( self.inputData )
 
   def listArg( self, arg ):
     if arg and not arg.startswith( "{" ):
@@ -74,7 +77,10 @@ class Params:
     return "{" + ",".join( pathlist ) + "}"
 
   def getDefaultJDL( self ):
-    JDL = self.__session.getJDL()
+    if not self.__session:
+      JDL = ""
+    else:  
+      JDL = self.__session.getJDL()
 
     if JDL == "":
       # overall default JDL
@@ -89,98 +95,120 @@ class Params:
       f.close()
 
     self.jdl = arg
+    return S_OK()
 
   def getJDL( self ):
-    return self.jdl
+    if self.jdl:
+      return self.jdl
+    else:
+      return self.getDefaultJDL()
 
   def setVerbose( self, arg = None ):
     self.verbose = True
+    return S_OK()
 
   def getVerbose( self ):
     return self.verbose
 
   def setForceExecUpload( self, arg = None ):
     self.forceExecUpload = True
+    return S_OK()
   def getForceExecUpload( self, arg = None ):
     return self.forceExecUpload
 
   def setName( self, arg = None ):
     self.attribs["JobName"] = arg
+    return S_OK()
   def getName( self ):
     return self.attribs["JobName"]
 
   def setStdError( self, arg = None ):
     self.attribs["StdError"] = arg
+    return S_OK()
   def getStdError( self ):
     return self.attribs["StdError"]
 
   def setStdOutput( self, arg = None ):
     self.attribs["StdOutput"] = arg
+    return S_OK()
   def getStdOutput( self ):
     return self.attribs["StdOutput"]
 
   def setOutputSandbox( self, arg = None ):
     self.attribs["OutputSandbox"] = self.listArg( arg )
+    return S_OK()
   def getOutputSandbox( self ):
     return self.attribs["OutputSandbox"]
 
   def setInputSandbox( self, arg = None ):
     self.attribs["InputSandbox"] = self.listArg( arg )
+    return S_OK()
   def getInputSandbox( self ):
     return self.attribs["InputSandbox"]
 
   def setInputData( self, arg = None ):
-    self.attribs["InputData"] = self.pathListArg( arg )
+    self.inputData = arg
+    return S_OK()
   def getInputData( self ):
-    return self.attribs["InputData"]
+    return self.attribs.get( "InputData", [] )
 
   def setOutputData( self, arg = None ):
     self.attribs["OutputData"] = self.listArg( arg )
+    return S_OK()
   def getOutputData( self ):
     return self.attribs["OutputData"]
 
   def setOutputPath( self, arg = None ):
     self.attribs["OutputPath"] = arg
+    return S_OK()
   def getOutputPath( self ):
     return self.attribs["OutputPath"]
 
   def setOutputSE( self, arg = None ):
     self.attribs["OutputSE"] = arg
+    return S_OK()
   def getOutputSE( self ):
     return self.attribs["OutputSE"]
 
   def setCPUTime( self, arg = None ):
     self.attribs["CPUTime"] = arg
+    return S_OK()
   def getCPUTime( self ):
     return self.attribs["CPUTime"]
 
   def setSite( self, arg = None ):
     self.attribs["Site"] = self.listArg( arg )
+    return S_OK()
   def getSite( self ):
     return self.attribs["Site"]
 
   def setBannedSite( self, arg = None ):
     self.attribs["BannedSite"] = self.listArg( arg )
+    return S_OK()
   def getBannedSite( self ):
     return self.attribs["BannedSite"]
 
   def setPlatform( self, arg = None ):
     self.attribs["Platform"] = self.listArg( arg )
+    return S_OK()
   def getPlatform( self ):
     return self.attribs["Platform"]
 
   def setPriority( self, arg = None ):
     self.attribs["Priority"] = arg
+    return S_OK()
   def getPriority( self ):
     return self.attribs["Priority"]
 
   def setJobGroup( self, arg = None ):
     self.attribs["JobGroup"] = arg
+    return S_OK()
   def getJobGroup( self ):
     return self.attribs["JobGroup"]
 
   def setParametric( self, arg = None ):
     self.parametric = arg.split( ',' )
+    return S_OK()
   def getParametric( self ):
     return self.parametric
 
@@ -225,8 +253,7 @@ class Params:
 
     return ret
 
-session = DSession()
-params = Params( session )
+params = Params()
 
 Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Usage:',
@@ -270,9 +297,18 @@ cmd = None
 cmdArgs = []
 if len( args ) >= 1:
   cmd = args[0]
-  cmdArgs = args[1:]
+  cmdArgs = args[1:] 
+
+from DIRAC.Core.Utilities.ClassAd.ClassAdLight import ClassAd
+
+from COMDIRAC.Interfaces import DSession
+from COMDIRAC.Interfaces import pathFromArgument
 
 from DIRAC.Interfaces.API.Dirac import Dirac
+
+session = DSession()
+params.setSession( session )
+
 dirac = Dirac()
 exitCode = 0
 errorList = []
@@ -289,6 +325,9 @@ if jdlExecutable and not cmd:
 tempFiles = []
 if cmd is None:
   # get executable script from stdin
+  print "\nThe executable is not given"
+  print "Type in the executable script lines, finish with ^D"
+  print "or exit job submission with ^C\n"
   lines = sys.stdin.readlines()
 
   # Manage JDL directives inserted in cmd
@@ -329,7 +368,7 @@ else:
   if uploadExec:
     if not os.path.isfile( cmd ):
       print "ERROR: executable file \"%s\" not found" % cmd
-      DIRAC.exit( 2 )
+      DIRACexit( 2 )
 
     classAdAppendToInputSandbox( classAdJob, cmd )
 
@@ -339,7 +378,7 @@ else:
 
   if cmdArgs:
     classAdJob.insertAttributeString( "Arguments", " ".join( cmdArgs ) )
-
+    
 classAdJobs = params.parameterizeClassAd( classAdJob )
 
 if params.getVerbose():
@@ -348,8 +387,11 @@ if params.getVerbose():
     print p.asJDL()
 
 jobIDs = []
+
+
+
 for classAdJob in classAdJobs:
-  jdlString = classAdJob.asJDL()
+  jdlString = classAdJob.asJDL()  
   result = dirac.submit( jdlString )
   if result['OK']:
     if type( result['Value'] ) == IntType:
@@ -375,4 +417,4 @@ for f in tempFiles:
 for error in errorList:
   print "ERROR %s: %s" % error
 
-DIRAC.exit( exitCode )
+DIRACexit( exitCode )
