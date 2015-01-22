@@ -1,6 +1,5 @@
 
 import os.path
-import sys
 import re
 import uuid
 import stat
@@ -10,20 +9,19 @@ import random
 from ConfigParser import SafeConfigParser, NoOptionError, NoSectionError
 
 import DIRAC
-from DIRAC  import S_OK, S_ERROR, gConfig
+from DIRAC  import S_OK, S_ERROR, gConfig, gLogger
 import DIRAC.Core.Security.ProxyInfo as ProxyInfo
 import DIRAC.FrameworkSystem.Client.ProxyGeneration as ProxyGeneration
 from DIRAC.ConfigurationSystem.Client.Helpers import Registry
 from DIRAC.Core.Security import Locations, VOMS
-from DIRAC.Resources.Catalog.FileCatalogFactory import FileCatalogFactory
+from DIRAC.Resources.Catalog.FileCatalog import FileCatalog
 from DIRAC.Core.Utilities.PrettyPrint import printTable
 
-# TODO: replace error() and critical() functions with DIRACish ones?
 def error( msg ):
-  sys.stderr.write( msg + "\n" )
+  gLogger.error( msg )
 
 def critical( msg, exitCode = -1 ):
-  error( msg )
+  gLogger.fatal( msg )
   DIRAC.exit( exitCode )
 
 #-----------------------------
@@ -598,21 +596,15 @@ def getDNFromProxy():
 # DCommands FC/LFN helpers
 # -------------------------
 
-def createCatalog( fctype = "FileCatalog" ):
-  result = FileCatalogFactory().createCatalog( fctype )
-  if not result[ 'OK' ]:
-    print result[ 'Message' ]
-    return None
-
-  catalog = result[ 'Value' ]
-  return catalog
+def createCatalog():
+  return FileCatalog()
 
 class DCatalog( object ):
   """
   DIRAC File Catalog helper
   """
-  def __init__( self, fctype = "FileCatalog" ):
-    self.catalog = createCatalog( fctype )
+  def __init__( self ):
+    self.catalog = createCatalog()
 
   def isDir( self, path ):
     result = self.catalog.isDirectory( path )
