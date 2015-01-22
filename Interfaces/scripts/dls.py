@@ -84,7 +84,7 @@ if __name__ == "__main__":
           self.entries.sort( key=lambda x: x[ 6 ] ) 
       
       # Determine the field widths
-      wList = [ 0 for x in range( 7 ) ]
+      wList = [0] * 7
       for d in self.entries:
         for i in range( 7 ):
           if len( str( d[ i ] )) > wList[ i ]:
