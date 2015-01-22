@@ -4,7 +4,6 @@
 configure DCommands
 """
 
-import sys
 import types
 
 import DIRAC
@@ -45,7 +44,7 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      ' section.option=value:     set option value', ] )
                         )
 Script.registerSwitch( "m", "minimal", "verify and fill minimal configuration", params.setMinimal )
-Script.registerSwitch( "", "guess", "", params.setGuessProfiles )
+Script.registerSwitch( "g", "guess", "", params.setGuessProfiles )
 
 Script.disableCS()
 
