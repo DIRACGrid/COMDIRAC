@@ -4,8 +4,6 @@
 change file mode bits
 """
 
-import os
-
 import DIRAC
 
 from COMDIRAC.Interfaces import critical
