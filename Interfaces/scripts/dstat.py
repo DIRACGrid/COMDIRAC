@@ -9,12 +9,10 @@ import os
 
 import json
 
-import DIRAC
-from DIRAC import S_OK, S_ERROR
-from DIRAC import exit as DIRACExit
+
 from DIRAC.Core.Base import Script
 from DIRAC.Core.Utilities.Time import toString, date, day
-from DIRAC.Core.DISET.RPCClient import RPCClient
+
 
 from COMDIRAC.Interfaces.Utilities.DCommands import ArrayFormatter
 
@@ -53,21 +51,22 @@ DEFAULT_DISPLAY_COLUMNS = [
   "Owner", "JobName", "OwnerGroup", "JobGroup", "Site", "Status", "MinorStatus", "SubmissionTime",
 ]
 
-from COMDIRAC.Interfaces import DSession
-
 class Params:
-  def __init__ ( self, session ):
-    self.__session = session
+  def __init__ ( self ):
+    self.__session = None
     self.user = None
     self.status = map( lambda e: e.lower(), set( JOB_STATES ) - set( JOB_FINAL_STATES ) )
     self.fmt = "pretty"
     self.jobDate = 10
     self.fields = DEFAULT_DISPLAY_COLUMNS
+    self.jobGroup = None
+    self.jobName = None
+
+  def setSession( self, session ):
+    self.__session = session
     customFields = session.getEnv( "dstat_fields", "" )['Value']
     if customFields:
       self.fields = customFields.split( ',' )
-    self.jobGroup = None
-    self.jobName = None
 
   def setUser( self, arg = None ):
     self.user = arg
@@ -114,24 +113,32 @@ class Params:
   def getJobName( self ):
     return self.jobName
 
-session = DSession()
-params = Params( session )
+params = Params( )
 
 Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Usage:',
                                      '  %s [option|cfgfile] ' % Script.scriptName,
                                      'Arguments:', ] ) )
 Script.registerSwitch( "u:", "User=", "job owner", params.setUser )
-Script.registerSwitch( "", "Status=", "select job by status", params.setStatus )
+Script.registerSwitch( "S:", "Status=", "select job by status", params.setStatus )
 Script.registerSwitch( "a", "StatusAll", "display jobs of any status", params.setStatusAll )
-Script.registerSwitch( "", "JobGroup=", "select job by job group", params.setJobGroup )
-Script.registerSwitch( "", "JobName=", "select job by job name", params.setJobName )
-Script.registerSwitch( "", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
-Script.registerSwitch( "", "JobDate=", "age of jobs to display", params.setJobDate )
-Script.registerSwitch( "", "Fields=", "display list of job fields", params.setFields )
+Script.registerSwitch( "g:", "JobGroup=", "select job by job group", params.setJobGroup )
+Script.registerSwitch( "n:", "JobName=", "select job by job name", params.setJobName )
+Script.registerSwitch( "f:", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
+Script.registerSwitch( "D:", "JobDate=", "age of jobs to display", params.setJobDate )
+Script.registerSwitch( "F:", "Fields=", "display list of job fields", params.setFields )
 
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
+
+import DIRAC
+from DIRAC import S_OK, S_ERROR
+from DIRAC import exit as DIRACExit
+from DIRAC.Core.DISET.RPCClient import RPCClient
+from COMDIRAC.Interfaces import DSession
+
+session = DSession()
+params.setSession( session )
 
 exitCode = 0
 

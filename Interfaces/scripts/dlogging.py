@@ -4,16 +4,9 @@
 
 import DIRAC
 from DIRAC.Core.Base import Script
-from DIRAC.Core.DISET.RPCClient import RPCClient
-
-import os, shutil, datetime
-
-from COMDIRAC.Interfaces import DSession
-from COMDIRAC.Interfaces.Utilities.DCommands import ArrayFormatter
 
 class Params:
-  def __init__ ( self, session ):
-    self.__session = session
+  def __init__ ( self ):
     self.fmt = "pretty"
 
   def setFmt( self, arg = None ):
@@ -22,18 +15,20 @@ class Params:
   def getFmt( self ):
     return self.fmt
 
-session = DSession()
-params = Params( session )
+params = Params()
 
 Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Usage:',
                                      '  %s [option|cfgfile] ... JobID ...' % Script.scriptName,
                                      'Arguments:',
                                      '  JobID:    DIRAC Job ID' ] ) )
-Script.registerSwitch( "", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
+Script.registerSwitch( "f:", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
 
 Script.parseCommandLine( ignoreErrors = True )
 args = Script.getPositionalArgs()
+
+from DIRAC.Core.DISET.RPCClient import RPCClient
+from COMDIRAC.Interfaces.Utilities.DCommands import ArrayFormatter
 
 exitCode = 0
 

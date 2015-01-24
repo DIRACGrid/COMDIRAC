@@ -4,7 +4,7 @@
 ########################################################################
 
 """
-Change file mode bits
+Change file owner
 """
 
 from DIRAC.Core.Base import Script
@@ -25,13 +25,13 @@ params = Params( )
 
 Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Usage:',
-                                     '  %s [options] mode Path...' % Script.scriptName,
+                                     '  %s [options] owner Path...' % Script.scriptName,
                                      'Arguments:',
-                                     '  mode:     octal mode bits',
+                                     '  owner:    new owner name',
                                      '  Path:     path to file',
                                      '', 'Examples:',
-                                     '  $ dchmod 755 ././some_lfn_file',
-                                     '  $ dchmod -R 700 ./',
+                                     '  $ dchown atsareg ././some_lfn_file',
+                                     '  $ dchown -R pgay ./',
                                      ] )
                         )
 Script.registerSwitch( "R", "recursive", "recursive", params.setRecursive )
@@ -53,7 +53,7 @@ if len( args ) < 2:
   Script.showHelp( )
   DIRAC.exit( -1 )
 
-mode = args[ 0 ]
+owner = args[ 0 ]
 
 lfns = [ ]
 for path in args[ 1: ]:
@@ -65,8 +65,8 @@ fc = FileCatalog()
 
 for lfn in lfns:
   try:
-    pathDict = { lfn: eval( '0' + mode ) }
-    result = fc.changePathMode( pathDict, params.recursive )
+    pathDict = { lfn: owner }
+    result = fc.changePathOwner( pathDict, params.recursive )
     if not result['OK']:
       gLogger.error( "Error:", result['Message'] )
       break
