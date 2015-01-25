@@ -83,8 +83,6 @@ for lfn, local_path in pairs:
   ret = dirac.getFile( lfn, local_path )
   if not ret['OK']:
     exitCode = -2
-    for failed, msg in ret['Message']['Failed']:
-      error( failed + ': ' + msg )
-
+    error( 'ERROR: %s' % ret['Message'] )
 
 DIRAC.exit( exitCode )
