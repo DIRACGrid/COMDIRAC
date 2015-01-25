@@ -4,8 +4,6 @@
 find files in the FileCatalog
 """
 
-import os
-
 import DIRAC
 
 from COMDIRAC.Interfaces import critical
@@ -14,7 +12,6 @@ from COMDIRAC.Interfaces import DCatalog
 from COMDIRAC.Interfaces import pathFromArgument
 
 if __name__ == "__main__":
-  import sys
 
   from DIRAC.Core.Base import Script
 
@@ -35,7 +32,7 @@ if __name__ == "__main__":
   session = DSession( )
   catalog = DCatalog( )
 
-  if len( args ) < 2:
+  if len( args ) < 1:
     print "Error: No argument provided\n%s:" % Script.scriptName
     Script.showHelp( )
     DIRAC.exit( -1 )
