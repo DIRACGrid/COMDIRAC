@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
 """
-manipulate meteadata in the FileCatalog
+manipulate metadata in the FileCatalog
 """
-
-import os
 
 import DIRAC
 from DIRAC import S_OK, S_ERROR
@@ -27,17 +25,18 @@ class DMetaAdd( DMetaCommand ):
     for meta in metas:
       name, value = meta.split( "=" )
       metadict[name] = value
-    result = self.fcClient.fc.setMetadata( lfn, metadict )
+    result = self.fcClient.setMetadataBulk( {lfn: metadict} )
     if not result[ "OK" ]:
-      print "Error:", result
+      print "Error:", result['Message']
 
 class DMetaRm( DMetaCommand ):
   def __init__( self, fcClient ):
     self.fcClient = fcClient
 
   def run( self, lfn, metas ):
-    for meta in metas:
-      self.fcClient.do_meta( "remove %s %s" % ( lfn, meta ))
+    result = self.fcClient.removeMetadata( { lfn: metas} )
+    if not result[ "OK" ]:
+      print "Error:", result['Message']
 
 class DMetaList( DMetaCommand ):
   def __init__( self, catalog ):
@@ -110,7 +109,6 @@ if __name__ == "__main__":
                                        '  $ dmeta add ./some_lfn_file some_meta="some_value"',
                                        '  $ dmeta ls ./some_lfn_file',
                                        '  $ dmeta rm ./some_lfn_file some_meta',
-                                       '  $ dmeta ls ./some_lfn_file',
                                        ] )
                           )
   Script.registerSwitch( "i:", "index=", "set or remove metadata indices", params.setIndex )
@@ -122,22 +120,40 @@ if __name__ == "__main__":
   session = DSession( )
   catalog = DCatalog( )
 
+  from DIRAC.Resources.Catalog.FileCatalog import FileCatalog
   from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import FileCatalogClientCLI
 
-  fccli = FileCatalogClientCLI( catalog.catalog )
+  fc = FileCatalog()
+  fccli = FileCatalogClientCLI( fc )
 
   if params.getIndex( ):
     if params.getIndex( ) == "r":
       for meta in args:
         cmdline = "index -r %s" % meta
         #print cmdline
-        fccli.do_meta( cmdline )
+        result = fc.deleteMetadataField( meta )
     else:
+      fdType = params.getIndex( )
       for arg in args:
-        meta, type = arg.split( "=" )
-        cmdline = "index -%s %s %s" % ( params.getIndex( ), meta, type )
+        meta, mtype = arg.split( "=" )
+        if mtype.lower()[:3] == 'int':
+          rtype = 'INT'
+        elif mtype.lower()[:7] == 'varchar':
+          rtype = mtype
+        elif mtype.lower() == 'string':
+          rtype = 'VARCHAR(128)'
+        elif mtype.lower() == 'float':
+          rtype = 'FLOAT'
+        elif mtype.lower() == 'date':
+          rtype = 'DATETIME'
+        elif mtype.lower() == 'metaset':
+          rtype = 'MetaSet'
+        else:
+          print "Error: illegal metadata type %s" % mtype
+          DIRAC.exit( -1 )
+        cmdline = "index -%s %s %s" % ( params.getIndex( ), meta, rtype )
         #print cmdline
-        fccli.do_meta( cmdline )
+        fc.addMetadataField( meta, rtype, fdType )
     DIRAC.exit( 0 )
 
   if params.getListIndex( ):
@@ -145,8 +161,8 @@ if __name__ == "__main__":
     DIRAC.exit( 0 )
 
   meta_commands = {
-    "add" : DMetaAdd( fccli ),
-    "rm" : DMetaRm( fccli ),
+    "add" : DMetaAdd( catalog.catalog ),
+    "rm" : DMetaRm( catalog.catalog ),
     "ls" : DMetaList( catalog )
     }
 
