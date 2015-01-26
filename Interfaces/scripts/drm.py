@@ -94,9 +94,6 @@ if __name__ == "__main__":
         exitCode = 3
     else:
       result = returnSingleResult( dirac.removeFile( lfn, printOutput = False ) )
-
-      print result
-
       if not result[ 'OK' ]:
         if "No such file or directory" == result['Message']:
           gLogger.notice( "%s: no such file" % lfn )
