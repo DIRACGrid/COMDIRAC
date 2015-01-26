@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
   Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                        'Usage:',
-                                       '  %s [lfn]...' % Script.scriptName,
+                                       '  %s [options] [lfn]...' % Script.scriptName,
                                        'Arguments:',
                                        '  lfn:     logical file name',
                                        '', 'Examples:',
