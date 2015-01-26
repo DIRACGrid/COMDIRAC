@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
 """
-remove FileCatalog directories
+remove FileCatalog directories. Attention ! This command does not remove
+directories and files on the physical storage.
 """
-
-import os
 
 import DIRAC
 
@@ -14,7 +13,6 @@ from COMDIRAC.Interfaces import createCatalog
 from COMDIRAC.Interfaces import pathFromArguments
 
 if __name__ == "__main__":
-  import sys
 
   from DIRAC.Core.Base import Script
 
