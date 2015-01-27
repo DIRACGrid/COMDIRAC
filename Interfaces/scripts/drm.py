@@ -64,7 +64,7 @@ if __name__ == "__main__":
       DIRAC.exit( -1 )
     lfnFile = open( lfnFileName, 'r' )
     lfnList = lfnFile.readlines()
-    lfnSet = set( [ pathFromArgument( session, lfn ) for lfn in lfnList if lfn ] )
+    lfnSet = set( [ pathFromArgument( session, lfn.strip() ) for lfn in lfnList if lfn ] )
     lfns.update( lfnSet )
 
   from DIRAC.Interfaces.API.Dirac import Dirac
