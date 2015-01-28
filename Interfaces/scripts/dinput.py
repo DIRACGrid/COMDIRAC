@@ -8,11 +8,8 @@ from DIRAC.Core.Base import Script
 import os
 import pprint
 
-from COMDIRAC.Interfaces import DSession
-
 class Params:
-  def __init__ ( self, session ):
-    self.__session = session
+  def __init__ ( self ):
     self.outputDir = None
     self.verbose = False
     self.downloadJDL = False
@@ -57,8 +54,7 @@ class Params:
   def getJobGroup( self ):
     return self.jobGroup
 
-session = DSession()
-params = Params( session )
+params = Params()
 
 Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Usage:',
