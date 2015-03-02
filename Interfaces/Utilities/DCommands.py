@@ -622,7 +622,7 @@ class DCatalog( object ):
 
   def getMeta( self, path ):
     if self.isDir( path ):
-      return self.catalog.getDirectoryMetadata( path )
+      return self.catalog.getDirectoryUserMetadata( path )
     return self.catalog.getFileUserMetadata( path )
 
 def pathFromArgument( session, arg ):
