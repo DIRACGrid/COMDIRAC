@@ -6,13 +6,11 @@ list FileCatalog file or directory
 
 import os
 
-from COMDIRAC.Interfaces import critical
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import createCatalog
 from COMDIRAC.Interfaces import pathFromArguments
 
 if __name__ == "__main__":
-  import sys
   from DIRAC.Core.Base import Script
 
   class Params:
@@ -59,7 +57,8 @@ if __name__ == "__main__":
   Script.parseCommandLine( ignoreErrors = True )
   args = Script.getPositionalArgs()
 
-  from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import DirectoryListing, FileCatalogClientCLI
+  from DIRAC.DataManagementSystem.Client import DirectoryListing
+  from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import FileCatalogClientCLI
 
   class ReplicaDirectoryListing( DirectoryListing ):
     def addFileWithReplicas( self,name,fileDict,numericid, replicas ):
