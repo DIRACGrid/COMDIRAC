@@ -57,7 +57,7 @@ if __name__ == "__main__":
   Script.parseCommandLine( ignoreErrors = True )
   args = Script.getPositionalArgs()
 
-  from DIRAC.DataManagementSystem.Client import DirectoryListing
+  from DIRAC.DataManagementSystem.Client.DirectoryListing import DirectoryListing
   from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import FileCatalogClientCLI
 
   class ReplicaDirectoryListing( DirectoryListing ):
