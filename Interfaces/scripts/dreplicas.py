@@ -11,6 +11,7 @@ from COMDIRAC.Interfaces import critical, error
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import DCatalog
 from COMDIRAC.Interfaces import pathFromArgument
+from DIRAC.Core.Utilities.ReturnValues import returnSingleResult
 
 if __name__ == "__main__":
   import sys
@@ -43,10 +44,9 @@ if __name__ == "__main__":
     # lfn
     lfn = pathFromArgument( session, args[ 0 ] )
     #fccli.do_replicas( lfn )
-    ret = catalog.catalog.getReplicas( lfn )
-
+    ret = returnSingleResult( catalog.catalog.getReplicas( lfn ) )
     if ret['OK']:
-      replicas = ret['Value']['Successful'][lfn]
+      replicas = ret['Value']
       print lfn + ':'
       for se, path in replicas.items():
         print '  ', se, path
