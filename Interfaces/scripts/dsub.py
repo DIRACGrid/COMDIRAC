@@ -325,9 +325,11 @@ if jdlExecutable and not cmd:
 tempFiles = []
 if cmd is None:
   # get executable script from stdin
-  print "\nThe executable is not given"
-  print "Type in the executable script lines, finish with ^D"
-  print "or exit job submission with ^C\n"
+  if sys.stdin.isatty():
+    print "\nThe executable is not given"
+    print "Type in the executable script lines, finish with ^D"
+    print "or exit job submission with ^C\n"
+
   lines = sys.stdin.readlines()
 
   # Manage JDL directives inserted in cmd
