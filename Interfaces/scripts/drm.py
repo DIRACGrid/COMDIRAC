@@ -25,6 +25,12 @@ if __name__ == "__main__":
     lfnFileName = arg
     return S_OK()
 
+  targetSE = ''
+  def setSE( arg ):
+    global targetSE
+    targetSE = arg
+    return S_OK()
+
   rmDirFlag = False
   def setDirFlag( arg ):
     global rmDirFlag
@@ -42,6 +48,7 @@ if __name__ == "__main__":
                           )
 
   Script.registerSwitch( "F:", "lfnFile=", "file containing a list of LFNs", setLfnFileName )
+  Script.registerSwitch( "D:", "destination-se=", "Storage Element from where to remove replica", setSE )
   Script.registerSwitch( "r", "", "remove directory recursively", setDirFlag )
   Script.parseCommandLine( ignoreErrors = True )
   args = Script.getPositionalArgs()
@@ -93,7 +100,10 @@ if __name__ == "__main__":
         badCounter += 1
         exitCode = 3
     else:
-      result = returnSingleResult( dirac.removeFile( lfn, printOutput = False ) )
+      if targetSE:
+        result = returnSingleResult( dirac.removeReplica( lfn, targetSE, printOutput = False ) )
+      else:
+        result = returnSingleResult( dirac.removeFile( lfn, printOutput = False ) )
       if not result[ 'OK' ]:
         if "No such file or directory" == result['Message']:
           gLogger.notice( "%s: no such file" % lfn )
