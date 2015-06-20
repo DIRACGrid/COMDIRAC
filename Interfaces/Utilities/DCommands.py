@@ -1,4 +1,6 @@
 
+import os
+import errno
 import os.path
 import re
 import uuid
@@ -352,11 +354,25 @@ class DSession( DConfig ):
       self.setCwd( self.homeDir() )
 
   def __cleanSessionDirectory( self ):
-    sessionPat = "^" + self.sessionFilePrefix() + "\.[0-9]+$"
+    def pid_exists( pid ):
+      try:
+        os.kill( pid, 0 )
+      except OSError, _err:
+        # errno.EPERM would denote a process belonging to someone else
+        # so we consider it inexistent
+        # return _err.errno == errno.EPERM
+        return False
+      return True
+
+    sessionPat = "^" + self.sessionFilePrefix() + "\.(?P<pid>[0-9]+)$"
     sessionRe = re.compile( sessionPat )
     for f in os.listdir( self.configDir ):
-      if sessionRe.match( f ):
-        if f != self.configFilename:
+      m = sessionRe.match( f )
+      if m is not None:
+        pid = int( m.group( 'pid' ) )
+
+        # delete session files for non running processes
+        if not pid_exists( pid ):
           os.unlink( os.path.join( self.configDir, f ) )
 
   def getEnv( self, option, defaultValue = None ):
