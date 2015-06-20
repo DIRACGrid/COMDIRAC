@@ -14,3 +14,4 @@ from Utilities.DCommands import DSession, getDNFromProxy
 
 from Utilities.DCommands import DCatalog, createCatalog, pathFromArgument, pathFromArguments
 
+from Utilities.DConfigCache import ConfigCache
