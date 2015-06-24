@@ -84,7 +84,7 @@ if __name__ == "__main__":
 
   nLfns = len( lfns )
   if nLfns > 1:
-    gLogger.notice( 'Removing %d files' % nLfns )
+    gLogger.notice( 'Removing %d objects' % nLfns )
 
   exitCode = 0
   goodCounter = 0
@@ -92,7 +92,7 @@ if __name__ == "__main__":
   failed = {}
   for lfn in lfns:
     if rmDirFlag and not catalog.isFile( lfn ):
-      result = dm.cleanLogicalDirectory( lfn )
+      result = returnSingleResult( dm.cleanLogicalDirectory( lfn ) )
       if result['OK']:
         goodCounter += 1
       else:
