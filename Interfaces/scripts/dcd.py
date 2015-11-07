@@ -31,6 +31,8 @@ configCache.cacheConfig()
 
 args = Script.getPositionalArgs()
 
+import DIRAC
+
 session = DSession( )
 
 if len( args ) > 1:
