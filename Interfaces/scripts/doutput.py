@@ -150,6 +150,8 @@ if jobs:
         exitCode = 2
 
     if params.getOutputData():
+      if not os.path.isdir( destinationDir ):
+        os.makedirs( destinationDir )
       result = dirac.getJobOutputData( job, destinationDir = destinationDir )
       if result['OK']:
         inputs[job]["data"] = result["Value"]
