@@ -216,7 +216,7 @@ if __name__ == "__main__":
         options = [ opt for (opt, arg) in optlist]
         for opt in options:
           if opt in ['-l', '--long']:
-            _long = True
+            long = True
           elif opt in ['-r', '--reverse']:
             reverse = True
           elif opt in ['-t', '--timeorder']:
