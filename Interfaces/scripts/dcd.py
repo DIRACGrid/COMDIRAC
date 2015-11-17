@@ -9,6 +9,7 @@ import os
 from COMDIRAC.Interfaces import critical
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import DCatalog
+from COMDIRAC.Interfaces import pathFromArgument
 
 from DIRAC.Core.Base import Script
 
@@ -34,9 +35,7 @@ if len( args ) > 1:
   DIRAC.exit( -1 )
 
 if len( args ):
-  arg = args[ 0 ]
-  if not os.path.isabs( arg ):
-    arg = os.path.normpath( os.path.join( session.getCwd( ), arg ))
+  arg = pathFromArgument( session, args[ 0 ] )
 else:
   arg = session.homeDir( )
 
