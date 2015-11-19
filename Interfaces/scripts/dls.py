@@ -102,7 +102,7 @@ if __name__ == "__main__":
   
       self.entries[ -1 ] += tuple( replicas )
   
-    def human_readable_size(self,num,suffix='B'):
+    def humanReadableSize(self,num,suffix='B'):
       """ Translate file size in bytes to human readable
 
           Powers of 2 are used (1Mi = 2^20 = 1048576 bytes).
@@ -138,7 +138,7 @@ if __name__ == "__main__":
       for d in self.entries:
         for i in range( 7 ):
           if humanread and i == 4:
-            humanread_len = len( str( self.human_readable_size( d[ 4 ] )) )
+            humanread_len = len( str( self.humanReadableSize( d[ 4 ] )) )
             if humanread_len > wList[ 4 ]:
               wList[ 4 ] = humanread_len
           else:
@@ -148,7 +148,7 @@ if __name__ == "__main__":
       for e in self.entries:
         size = e[ 4 ]
         if humanread:
-          size = self.human_readable_size(e[ 4 ])
+          size = self.humanReadableSize(e[ 4 ])
 
         print str( e[ 0 ] ),
         print str( e[ 1 ] ).rjust( wList[ 1 ] ),
