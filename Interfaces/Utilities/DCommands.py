@@ -642,10 +642,10 @@ class DCatalog( object ):
     return self.catalog.getFileUserMetadata( path )
 
 def pathFromArgument( session, arg ):
-  if not os.path.isabs( arg ):
-    arg = os.path.normpath( os.path.join( session.getCwd(), arg ) )
-
-  return arg
+  path = os.path.normpath( arg )
+  if not os.path.isabs( path ):
+    path = os.path.normpath( os.path.join( session.getCwd(), path ) )
+  return path
 
 def pathFromArguments( session, args ):
   ret = [ ]
