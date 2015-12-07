@@ -23,6 +23,7 @@ if __name__ == "__main__":
                                        '  $ dls /'] ) )
   Script.registerSwitch( "l", "long", "detailed listing")
   Script.registerSwitch( "L", "list-replicas", "detailed listing with replicas")
+  Script.registerSwitch( "f", "full-path", "Show full path")
   Script.registerSwitch( "t", "time", "time based order")
   Script.registerSwitch( "r", "reverse", "reverse sort order")
   Script.registerSwitch( "n", "numericid", "numeric UID and GID")
@@ -31,8 +32,8 @@ if __name__ == "__main__":
 
   Script.parseCommandLine( ignoreErrors = True )
   opts = [ ntup[0] for ntup in Script.getUnprocessedSwitches() ]
-  short_opts = ['l','L','t','r','n','S','H']
-  long_opts = ['long','list-replicas','time','reverse',
+  short_opts = ['l','L','f','t','r','n','S','H']
+  long_opts = ['long','list-replicas','full-path','time','reverse',
                'numericid','size','human-readable']
   optsDict = dict( zip( long_opts, short_opts ) )
 
