@@ -4,7 +4,6 @@
 list FileCatalog file or directory
 """
 
-import os
 import getopt
 
 from COMDIRAC.Interfaces import DSession
@@ -91,172 +90,7 @@ if __name__ == "__main__":
   Script.parseCommandLine( ignoreErrors = True )
   args = Script.getPositionalArgs()
 
-  from DIRAC.DataManagementSystem.Utilities.CLIUtilities import DirectoryListing
   from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import FileCatalogClientCLI
-
-  class ReplicaDirectoryListing( DirectoryListing ):
-    def addFileWithReplicas( self,name,fileDict,numericid, replicas ):
-      """ Pretty print of the file ls output with replica info
-      """
-      self.addFile( name, fileDict, replicas, numericid )
-  
-      self.entries[ -1 ] += tuple( replicas )
-  
-  class ReplicaFileCatalogClientCLI( FileCatalogClientCLI ):
-    def getReplicas( self, path ):
-      replicas = [ ]
-      try:
-        result = self.fc.getReplicas( path )    
-        if result[ 'OK' ]:
-          if result[ 'Value' ][ 'Successful' ]:
-            for se,entry in result[ 'Value' ][ 'Successful' ][ path ].items( ):
-              replicas.append( se.ljust( 15 ) + " " + entry )
-          else:
-            print "Replicas: ", result#[ 'Message' ]
-      except Exception, x:
-        replicas.append( "replicas failed:" + str( x ))
-      return tuple( replicas )
-  
-    def do_ls( self, args ):
-      """ Lists directory entries at <path> 
-
-          usage: ls [-ltrnSH] <path>
-
-       -l  --long                : Long listing.
-       -t  --timeorder           : List ordering by time.
-       -r  --reverse             : Reverse list order.
-       -n  --numericid           : List with numeric value of UID and GID.
-       -S  --sizeorder           : List ordering by file size.
-       -H  --human-readable      : Print sizes in human readable format (e.g., 1Ki, 20Mi);
-                                   powers of 2 are used (1Mi = 2^20 B).
-      """
-
-      argss = args.split( )
-      # Get switches
-      long = False
-      reverse = False
-      timeorder = False
-      numericid = False
-      sizeorder = False
-      humanread = False
-      short_opts = 'ltrnSH'
-      long_opts = ['long','timeorder','reverse','numericid','sizeorder','human-readable']
-      path = self.cwd
-      if len(argss) > 0:
-        try:
-          optlist, arguments = getopt.getopt(argss,short_opts,long_opts)
-        except getopt.GetoptError, e:
-          print str(e)
-          print self.do_ls.__doc__
-          return
-        # Duplicated options are allowed: later options have precedence, e.g.,
-        # '-ltSt' will be order by time
-        # '-ltStS' will be order by size
-        options = [ opt for (opt, arg) in optlist]
-        for opt in options:
-          if opt in ['-l', '--long']:
-            long = True
-          elif opt in ['-r', '--reverse']:
-            reverse = True
-          elif opt in ['-t', '--timeorder']:
-            timeorder = True
-          elif opt in ['-n', '--numericid']:
-            numericid = True  
-          elif opt in ['-S', '--sizeorder']:
-            sizeorder = True
-          elif opt in ['-H', '--human-readable']:
-            humanread = True
-
-        if timeorder and sizeorder:
-          options = [w.replace('--sizeorder','-S') for w in options]
-          options = [w.replace('--human-readable','-H') for w in options]
-          options.reverse()
-          # The last ['-S','-t'] provided is the one we use: reverse order
-          # means that the last provided has the smallest index.
-          if options.index('-S') < options.index('-t'):
-            timeorder = False
-          else:
-            sizeorder = False
-
-        # Get path    
-        if arguments:
-          input_path = False
-          while arguments or not input_path:
-            tmparg = arguments.pop()
-            # look for a non recognized option not starting with '-'
-            if tmparg[0] != '-':
-              path = tmparg
-              input_path = True
-              if path[0] != '/':
-                path = self.cwd+'/'+path
-      path = path.replace( r'//','/' )
-  
-      # remove last character if it is "/"    
-      if path[ -1 ] == '/' and path != '/':
-        path = path[ :-1 ]
-
-      # Check if the target path is a file
-      result =  self.fc.isFile( path )          
-      if not result[ 'OK' ]:
-        print "Error: can not verify path"
-        return
-      elif path in result[ 'Value' ][ 'Successful' ] and result[ 'Value' ][ 'Successful' ][ path ]:
-        result = self.fc.getFileMetadata( path )      
-        dList = ReplicaDirectoryListing( )
-        fileDict = result[ 'Value' ][ 'Successful' ][ path ]
-  
-        replicas = self.getReplicas( path )
-  
-        dList.addFileWithReplicas( os.path.basename( path ),fileDict,numericid, replicas )
-        dList.printListing( reverse,timeorder,sizeorder,humanread)
-        return         
-      
-      result = self.fc.isDirectory( path )
-      if not result[ "OK" ]:
-        print "Error: can not verify path"
-        return
-      elif path not in result[ 'Value' ][ 'Successful' ] or not result[ 'Value' ][ 'Successful' ][ path ]:
-        print "Error: \"%s\" doesn't exist" % path
-        return
-
-      # Get directory contents now
-      try:
-        result =  self.fc.listDirectory( path,long )                     
-        dList = ReplicaDirectoryListing( )
-        if result[ 'OK' ]:
-          if result[ 'Value' ][ 'Successful' ]:
-            for entry in result[ 'Value' ][ 'Successful' ][ path ][ 'Files' ]:
-              fname = entry.split( '/' )[ -1 ]
-              # print entry, fname
-              # fname = entry.replace( self.cwd,'' ).replace( '/','' )
-              if long:
-                fileDict = result[ 'Value' ][ 'Successful' ][ path ][ 'Files' ][ entry ][ 'MetaData' ]
-                if fileDict:
-                  replicas = self.getReplicas( os.path.join( path, fname ))
-                  dList.addFileWithReplicas( fname,fileDict,numericid, replicas )
-              else:  
-                dList.addSimpleFile( fname )
-            for entry in result[ 'Value' ][ 'Successful' ][ path ][ 'SubDirs' ]:
-              dname = entry.split( '/' )[ -1 ]
-              # print entry, dname
-              # dname = entry.replace( self.cwd,'' ).replace( '/','' )  
-              if long:
-                dirDict = result[ 'Value' ][ 'Successful' ][ path ][ 'SubDirs' ][ entry ]
-                if dirDict:
-                  dList.addDirectory( dname,dirDict,numericid )
-              else:    
-                dList.addSimpleFile( dname )
-            for entry in result[ 'Value' ][ 'Successful' ][ path ][ 'Links' ]:
-              pass
-                
-            if long:
-              dList.printListing( reverse,timeorder,sizeorder,humanread)      
-            else:
-              dList.printOrdered( )
-        else:
-          print "Error:",result[ 'Message' ]
-      except Exception, x:
-        print "Error:", str( x )
 
   session = DSession( )
 
@@ -265,7 +99,7 @@ if __name__ == "__main__":
   fccli = None
 
   if params.getReplicas( ):
-    fccli = ReplicaFileCatalogClientCLI( createCatalog( ) )
+    fccli = FileCatalogClientCLI( createCatalog( ) )
     params.setLong( None )
   else:
     fccli = FileCatalogClientCLI( createCatalog( ) )
@@ -273,6 +107,7 @@ if __name__ == "__main__":
   optstr = ""
   if params.long:       optstr += "l"
   if params.time:       optstr += "t"
+  if params.repliacs:   optstr += "L"
   if params.reverse:    optstr += "r"
   if params.numericid:  optstr += "n"
   if params.size:       optstr += "S"
@@ -282,13 +117,13 @@ if __name__ == "__main__":
   # Need to check which was given the last 't' or 'S'
   # This would introduce some duplication of code :-(
   if params.long and params.time and params.size:
-    short_opts = 'ltrnSH'
+    short_opts = 'lLtrnSH'
     long_opts = ['long','timeorder','reverse','numericid','sizeorder','human-readable']
     try:
       optlist, arguments = getopt.getopt( sys.argv[1:],short_opts,long_opts )
       options = [ opt for (opt, arg) in optlist ]
-      options = [ w.replace('--size','-S') for w in options ]
-      options = [ w.replace('--human-readable','-H') for w in options ]
+      options = [ w.replace('--sizeorder','-S') for w in options ]
+      options = [ w.replace('--timeorder','-t') for w in options ]
       options.reverse()
       # The last ['-S','-t'] provided is the one we use: reverse order
       # means that the last provided has the smallest index.
