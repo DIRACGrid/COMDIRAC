@@ -3,10 +3,11 @@
 """
 list FileCatalog file or directory
 """
-
+import sys
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import createCatalog
 from DIRAC.Core.Utilities.List import uniqueElements
+from DIRAC  import gLogger
 
 if __name__ == "__main__":
   from DIRAC.Core.Base import Script
@@ -32,6 +33,19 @@ if __name__ == "__main__":
 
   Script.parseCommandLine( ignoreErrors = True )
   opts = [ ntup[0] for ntup in Script.getUnprocessedSwitches() ]
+  ###########################################################################
+  from DIRAC import version as diracVersion
+  if diracVersion < 'v6r14':
+    # dirac version < v6r14 ignore long options consisting of
+    # two words (e.g. --foo-bar)
+    missing_opts = ['list-replicas','full-path','human-readable']
+    for parsed_opt in missing_opts:
+      opt = '--' + parsed_opt
+      if opt in sys.argv[1:] and parsed_opt not in opts:
+        gLogger.warn("Found valid option '%s' not parsed by Script" %opt)
+        opts.append( parsed_opt )
+  ###########################################################################
+    
   short_opts = ['l','L','f','t','r','n','S','H']
   long_opts = ['long','list-replicas','full-path','time','reverse',
                'numericid','size','human-readable']
