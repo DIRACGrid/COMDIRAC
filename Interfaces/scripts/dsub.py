@@ -221,18 +221,26 @@ class Params:
 
     if not self.parametric: return [classAd]
 
-    loop_re = re.compile( "^(?P<start>\d+):(?P<stop>\d+)(:(?P<step>\d+))?$" )
+    float_pat = '[-+]?(((\d*\.)?\d+)|(\d+\.))([eE][-+]\d+)?'
+    loop_re = re.compile( "^(?P<start>%(fp)s):(?P<stop>%(fp)s)(:(?P<step>%(fp)s))?$" % {'fp' : float_pat} )
     parameters = []
     loops = []
     for param in self.parametric:
       m = loop_re.match( param )
       if m:
         loop = m.groupdict()
-        start = int( loop["start"] )
-        stop = int( loop["stop"] )
+        try:
+          start = int( loop["start"] )
+          stop = int( loop["stop"] )
+        except ValueError:
+          start = float( loop["start"] )
+          stop = float( loop["stop"] )
         step = 1
         if "step" in loop and loop["step"]:
-          step = int( loop["step"] )
+          try:
+            step = int( loop["step"] )
+          except ValueError:
+            step = float( loop["step"] )
         loops.append( ( start, stop, step ) )
       else:
         parameters.append( param )
@@ -245,10 +253,10 @@ class Params:
 
     for start, stop, step in loops:
       new = classAdClone( classAd )
-      number = ( stop - start ) / step + 1
-      new.insertAttributeInt( "ParameterStart", start )
+      number = int( ( stop - start ) / step ) + 1
+      new.insertAttributeString( "ParameterStart", str( start ) )
       new.insertAttributeInt( "Parameters", number )
-      new.insertAttributeInt( "ParameterStep", step )
+      new.insertAttributeString( "ParameterStep", str( step ) )
       ret.append( new )
 
     return ret
