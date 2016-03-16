@@ -14,7 +14,6 @@ class Params:
     self.verbose = False
     self.downloadJDL = False
     self.inputSandbox = False
-    self.noJobDir = False
     self.jobGroup = []
 
   def setOutputDir( self, arg = None ):
@@ -41,12 +40,6 @@ class Params:
   def getVerbose( self ):
     return self.verbose
 
-  def setNoJobDir( self, arg = None ):
-    self.noJobDir = True
-
-  def getNoJobDir( self ):
-    return self.noJobDir
-
   def setJobGroup( self, arg = None ):
     if arg:
       self.jobGroup.append( arg )
@@ -66,7 +59,6 @@ Script.registerSwitch( "D:", "OutputDir=", "destination directory", params.setOu
 Script.registerSwitch( "j", "JDL", "download job JDL instead of input sandbox", params.setDownloadJDL )
 Script.registerSwitch( "", "Sandbox", "donwload input sandbox, even if JDL was required", params.setInputSandbox )
 Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
-Script.registerSwitch( "n", "NoJobDir", "do not create job directory", params.setNoJobDir )
 Script.registerSwitch( "g:", "JobGroup=", "Get output for jobs in the given group", params.setJobGroup )
 
 Script.parseCommandLine( ignoreErrors = True )
@@ -95,7 +87,7 @@ jobs = []
 outputDir = params.getOutputDir() or os.path.curdir
 
 for arg in args:
-  if os.path.isdir( os.path.join( outputDir, "InputSandbox%s" % arg ) ) and not params.getNoJobDir():
+  if os.path.isdir( os.path.join( outputDir, "InputSandbox%s" % arg ) ):
     print "Input for job %s already retrieved, remove the output directory to redownload" % arg
   else:
     jobs.append( arg )
@@ -107,16 +99,13 @@ if jobs:
   errors = []
   inputs = {}
   for job in jobs:
-    if not params.getNoJobDir():
-      destinationDir = os.path.join( outputDir, "InputSandbox%s" % job )
-    else:
-      destinationDir = outputDir
+    destinationDir = os.path.join( outputDir, "InputSandbox%s" % job )
     if not os.path.exists( destinationDir ): os.makedirs( destinationDir )
 
     inputs[job] = {"destinationDir" : destinationDir}
 
     if params.getInputSandbox() or not params.getDownloadJDL():
-      result = dirac.getInputSandbox( job, outputDir = outputDir, noJobDir = params.getNoJobDir() )
+      result = dirac.getInputSandbox( job, outputDir = outputDir )
       if result['OK']:
         inputs[job]["isb"] = destinationDir
       else:
