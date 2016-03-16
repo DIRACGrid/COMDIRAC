@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 initialize DCommands session
@@ -9,6 +9,7 @@ import os
 import DIRAC
 from COMDIRAC.Interfaces import DConfig, DSession, critical
 from COMDIRAC.Interfaces.Utilities.DCommands import sessionFromProxy
+from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
 import DIRAC.Core.Security.ProxyInfo as ProxyInfo
 
@@ -56,6 +57,8 @@ if params.destroy:
 session = None
 if params.fromProxy:
   retVal = Script.enableCS()
+  ConfigCache( forceRefresh = True ).cacheConfig()
+
   if not retVal[ 'OK' ]:
     critical( retVal[ "Message" ] )
 

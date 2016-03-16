@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 Change current DIRAC File Catalog working directory
@@ -10,6 +10,7 @@ from COMDIRAC.Interfaces import critical
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import DCatalog
 from COMDIRAC.Interfaces import pathFromArgument
+from COMDIRAC.Interfaces import ConfigCache
 
 from DIRAC.Core.Base import Script
 
@@ -24,7 +25,10 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      ] )
                         )
 
+configCache = ConfigCache()
 Script.parseCommandLine( ignoreErrors = True )
+configCache.cacheConfig()
+
 args = Script.getPositionalArgs()
 
 session = DSession( )
@@ -39,7 +43,6 @@ if len( args ):
 else:
   arg = session.homeDir( )
 
-Script.enableCS( )
 
 catalog = DCatalog( )
 

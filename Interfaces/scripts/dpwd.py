@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 print DCommands working directory
@@ -26,8 +26,3 @@ if __name__ == "__main__":
   ret = session.getCwd( )
 
   print ret
-
-  from DIRAC.ConfigurationSystem.Client.ConfigurationData import gConfigurationData
-
-  print len( str( gConfigurationData.remoteCFG ) )
-

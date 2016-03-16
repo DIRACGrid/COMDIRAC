@@ -1,18 +1,14 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
   Retrieve status of DIRAC jobs
 """
 __RCSID__ = "$Id$"
 
-import os
 
-import json
-
-
+from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
 from DIRAC.Core.Utilities.Time import toString, date, day
-
 
 from COMDIRAC.Interfaces.Utilities.DCommands import ArrayFormatter
 
@@ -128,7 +124,10 @@ Script.registerSwitch( "f:", "Fmt=", "display format (pretty, csv, json)", param
 Script.registerSwitch( "D:", "JobDate=", "age of jobs to display", params.setJobDate )
 Script.registerSwitch( "F:", "Fields=", "display list of job fields", params.setFields )
 
+configCache = ConfigCache()
 Script.parseCommandLine( ignoreErrors = True )
+configCache.cacheConfig()
+
 args = Script.getPositionalArgs()
 
 import DIRAC
@@ -148,7 +147,6 @@ jobDate = toString( date() - params.getJobDate() * day )
 # job owner
 userName = params.getUser()
 if userName is None:
-  Script.enableCS()
   result = session.getUserName()
   if result["OK"]:
     userName = result["Value"]

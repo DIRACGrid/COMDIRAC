@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 find files in the FileCatalog
@@ -13,6 +13,7 @@ from COMDIRAC.Interfaces import pathFromArgument
 
 if __name__ == "__main__":
 
+  from COMDIRAC.Interfaces import ConfigCache
   from DIRAC.Core.Base import Script
 
   Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
@@ -26,7 +27,10 @@ if __name__ == "__main__":
                                        ] )
                           )
 
+  configCache = ConfigCache()
   Script.parseCommandLine( ignoreErrors = True )
+  configCache.cacheConfig()
+
   args = Script.getPositionalArgs()
 
   session = DSession( )

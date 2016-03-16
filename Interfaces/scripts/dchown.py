@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 ########################################################################
 # $HeadURL$
 ########################################################################
@@ -7,6 +7,7 @@
 Change file owner
 """
 
+from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
 from DIRAC import S_OK
 
@@ -36,7 +37,10 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                         )
 Script.registerSwitch( "R", "recursive", "recursive", params.setRecursive )
 
+configCache = ConfigCache()
 Script.parseCommandLine( ignoreErrors = True )
+configCache.cacheConfig()
+
 args = Script.getPositionalArgs()
 
 import DIRAC

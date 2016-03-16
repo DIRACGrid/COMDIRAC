@@ -7,9 +7,10 @@ from DIRAC.Core.Base import Script
 from DIRAC.ConfigurationSystem.Client.ConfigurationData import gConfigurationData
 
 class ConfigCache:
-  def __init__( self ):
+  def __init__( self, forceRefresh = False ):
     self.newConfig = True
-    self.configCacheLifetime = 60.
+    self.configCacheLifetime = 600. # ten minutes
+
     if "DCOMMANDS_PPID" in os.environ:
       self.pid = int( os.environ[ "DCOMMANDS_PPID" ] )
     else:
@@ -17,11 +18,11 @@ class ConfigCache:
 
     self.configCacheName = os.path.join( '/tmp', "DSession.configCache.%d.%d" % ( os.getuid(), self.pid ) )
 
-    self.loadConfig()
+    if not forceRefresh:
+      self.loadConfig()
 
   def loadConfig( self ):
     self.newConfig = True
-
 
     if os.path.isfile( self.configCacheName ):
       cacheStamp = os.stat( self.configCacheName ).st_mtime
@@ -30,9 +31,9 @@ class ConfigCache:
         gConfigurationData.remoteCFG = cPickle.load( open( self.configCacheName, "r" ) )
         Script.disableCS()
         self.newConfig = False
+        # print 'use cached config'
 
   def cacheConfig( self ):
-
     if self.newConfig:
       with open( self.configCacheName, "w" ) as f:
         os.chmod( self.configCacheName, stat.S_IRUSR | stat.S_IWUSR )

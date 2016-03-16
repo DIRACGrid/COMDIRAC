@@ -3,6 +3,7 @@
 """
 
 import DIRAC
+from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
 
 import os
@@ -69,7 +70,10 @@ Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
 Script.registerSwitch( "n", "NoJobDir", "do not create job directory", params.setNoJobDir )
 Script.registerSwitch( "g:", "JobGroup=", "Get output for jobs in the given group", params.setJobGroup )
 
+configCache = ConfigCache()
 Script.parseCommandLine( ignoreErrors = True )
+configCache.cacheConfig()
+
 args = Script.getPositionalArgs()
 
 from DIRAC.Interfaces.API.Dirac  import Dirac

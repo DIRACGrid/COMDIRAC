@@ -1,10 +1,11 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 """
   Kill or delete DIRAC job
 """
 __RCSID__ = "$Id$"
 
 import DIRAC
+from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
 from COMDIRAC.Interfaces import DSession
 
@@ -43,7 +44,10 @@ Script.registerSwitch( "D", "delete", "delete job", params.setDelete )
 Script.registerSwitch( "a", "all", "select all jobs", params.setSelectAll )
 Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
 
+configCache = ConfigCache()
 Script.parseCommandLine( ignoreErrors = True )
+configCache.cacheConfig()
+
 args = Script.getPositionalArgs()
 
 exitCode = 0
@@ -57,7 +61,6 @@ jobs = args
 
 if params.getSelectAll():
   session = DSession()
-  Script.enableCS()
   result = session.getUserName()
   if result["OK"]:
     userName = result["Value"]

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 manipulate metadata in the FileCatalog
@@ -61,6 +61,7 @@ class DMetaList( DMetaCommand ):
 if __name__ == "__main__":
   import sys
 
+  from COMDIRAC.Interfaces import ConfigCache
   from DIRAC.Core.Base import Script
 
   class Params:
@@ -114,7 +115,10 @@ if __name__ == "__main__":
   Script.registerSwitch( "i:", "index=", "set or remove metadata indices", params.setIndex )
   Script.registerSwitch( "I", "list-index", "list defined metadata indices", params.setListIndex )
 
+  configCache = ConfigCache()
   Script.parseCommandLine( ignoreErrors = True )
+  configCache.cacheConfig()
+
   args = Script.getPositionalArgs()
 
   session = DSession( )

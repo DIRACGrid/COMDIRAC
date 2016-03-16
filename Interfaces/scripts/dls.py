@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 list FileCatalog file or directory
@@ -13,6 +13,7 @@ from COMDIRAC.Interfaces import pathFromArguments
 
 if __name__ == "__main__":
   import sys
+  from COMDIRAC.Interfaces import ConfigCache
   from DIRAC.Core.Base import Script
 
   class Params:
@@ -88,7 +89,10 @@ if __name__ == "__main__":
   Script.registerSwitch( "S", "size", "size based order", params.setSize )
   Script.registerSwitch( "H", "human-readable","size human readable", params.setHuman )
 
+  configCache = ConfigCache()
   Script.parseCommandLine( ignoreErrors = True )
+  configCache.cacheConfig()
+
   args = Script.getPositionalArgs()
 
   from DIRAC.DataManagementSystem.Client.DirectoryListing import DirectoryListing
@@ -320,8 +324,6 @@ if __name__ == "__main__":
         print "Error:", str( x )
 
   session = DSession( )
-
-  Script.enableCS( )
 
   fccli = None
 
