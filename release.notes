@@ -1,3 +1,26 @@
+[v0r13]
+
+CHANGE: dls - -r, -n, -S, -H switches
+FIX: dsub - handle floating point parametric loops
+FIX: dinput - remove non working noJobDir option
+
+[v0r12]
+
+FIX: don't delete session files for running processes
+FIX: drm - return proper result for the drm -r
+
+[v0r11]
+
+CHANGE: drm - -D switch
+
+[v0r10]
+
+NEW: dchgrp
+NEW: dchown
+FIX: dget - error return structure interpretation
+CHANGE: dfind - allow to specify path only
+CHANGE: drm - -F and -r switches
+
 [v0r9]
 
 FIX: doutput - backward compatibility with dirac.getOutputSandbox
