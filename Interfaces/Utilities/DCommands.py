@@ -1,6 +1,4 @@
 
-import os
-import errno
 import os.path
 import re
 import uuid

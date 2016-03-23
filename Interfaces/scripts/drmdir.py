@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 remove FileCatalog directories. Attention ! This command does not remove
@@ -14,6 +14,7 @@ from COMDIRAC.Interfaces import pathFromArguments
 
 if __name__ == "__main__":
 
+  from COMDIRAC.Interfaces import ConfigCache
   from DIRAC.Core.Base import Script
 
   Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
@@ -26,7 +27,10 @@ if __name__ == "__main__":
                                        ] )
                           )
 
+  configCache = ConfigCache()
   Script.parseCommandLine( ignoreErrors = True )
+  configCache.cacheConfig()
+
   args = Script.getPositionalArgs()
 
   session = DSession()
@@ -35,8 +39,6 @@ if __name__ == "__main__":
     print "Error: No argument provided\n%s:" % Script.scriptName
     Script.showHelp()
     DIRAC.exit( -1 )
-
-  Script.enableCS()
 
   catalog = createCatalog()
 

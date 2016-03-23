@@ -3,6 +3,7 @@
 """
 
 import DIRAC
+from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
 
 import os
@@ -61,7 +62,10 @@ Script.registerSwitch( "", "Sandbox", "donwload input sandbox, even if JDL was r
 Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
 Script.registerSwitch( "g:", "JobGroup=", "Get output for jobs in the given group", params.setJobGroup )
 
+configCache = ConfigCache()
 Script.parseCommandLine( ignoreErrors = True )
+configCache.cacheConfig()
+
 args = Script.getPositionalArgs()
 
 from DIRAC.Interfaces.API.Dirac  import Dirac

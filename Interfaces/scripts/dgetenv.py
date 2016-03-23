@@ -1,10 +1,8 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 print DCommands session environment variables
 """
-
-import os
 
 import DIRAC
 
@@ -13,7 +11,7 @@ from COMDIRAC.Interfaces import critical
 from COMDIRAC.Interfaces import DSession
 
 if __name__ == "__main__":
-  import sys
+  from COMDIRAC.Interfaces import ConfigCache
   from DIRAC.Core.Base import Script
 
   Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
@@ -25,7 +23,10 @@ if __name__ == "__main__":
                                        ' section.option:     display section specific option',] )
                           )
 
+  configCache = ConfigCache()
   Script.parseCommandLine( ignoreErrors = True )
+  configCache.cacheConfig()
+
   args = Script.getPositionalArgs()
 
   session = DSession( )

@@ -3,6 +3,7 @@
 """
 
 import DIRAC
+from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
 
 class Params:
@@ -24,7 +25,10 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      '  JobID:    DIRAC Job ID' ] ) )
 Script.registerSwitch( "f:", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
 
+configCache = ConfigCache()
 Script.parseCommandLine( ignoreErrors = True )
+configCache.cacheConfig()
+
 args = Script.getPositionalArgs()
 
 from DIRAC.Core.DISET.RPCClient import RPCClient

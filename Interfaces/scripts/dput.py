@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 put files in the FileCatalog (and Storage Element)
@@ -18,8 +18,8 @@ from COMDIRAC.Interfaces import DCatalog
 from COMDIRAC.Interfaces import pathFromArgument
 
 if __name__ == "__main__":
-  import sys
 
+  from COMDIRAC.Interfaces import ConfigCache
   from DIRAC.Core.Base import Script
 
   class Params:
@@ -49,7 +49,10 @@ if __name__ == "__main__":
   Script.registerSwitch( "D:", "destination-se=", "Storage Element where to put replica", params.setDestinationSE )
 
 
-  Script.parseCommandLine( ignoreErrors = False )
+  configCache = ConfigCache()
+  Script.parseCommandLine( ignoreErrors = True )
+  configCache.cacheConfig()
+
   args = Script.getPositionalArgs()
 
   session = DSession()
@@ -96,8 +99,6 @@ if __name__ == "__main__":
     if not retVal[ "OK" ]:
       error( retVal[ "Message" ] )
     se = retVal[ "Value" ]
-
-  Script.enableCS()
 
   exitCode = 0
 

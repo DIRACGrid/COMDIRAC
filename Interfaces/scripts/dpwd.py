@@ -1,18 +1,13 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 print DCommands working directory
 """
 
-import os
-
-from COMDIRAC.Interfaces import critical
-
-from COMDIRAC.Interfaces import DSession
-
 if __name__ == "__main__":
-  import sys
   from DIRAC.Core.Base import Script
+  from COMDIRAC.Interfaces import DSession
+  from COMDIRAC.Interfaces import ConfigCache
 
   Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                        'Usage:',
@@ -20,10 +15,13 @@ if __name__ == "__main__":
                                        ] )
                           )
 
+  configCache = ConfigCache()
   Script.parseCommandLine( ignoreErrors = True )
-  args = Script.getPositionalArgs()
+  configCache.cacheConfig()
 
-  session = DSession( )
+  session = DSession()
+
+  args = Script.getPositionalArgs()
 
   ret = session.getCwd( )
 

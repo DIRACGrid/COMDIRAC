@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 replicate file in the FileCatalog
@@ -28,8 +28,7 @@ from COMDIRAC.Interfaces import DCatalog
 from COMDIRAC.Interfaces import pathFromArguments
 
 if __name__ == "__main__":
-  import sys
-
+  from COMDIRAC.Interfaces import ConfigCache
   from DIRAC.Core.Base import Script
 
   class Params:
@@ -66,7 +65,10 @@ if __name__ == "__main__":
   Script.registerSwitch( "D:", "destination-se=", "Storage Element where to put replica (or a comma separated list)", params.setDestinationSE )
   Script.registerSwitch( "S:", "source-se=", "source Storage Element for replication", params.setSourceSE )
 
+  configCache = ConfigCache()
   Script.parseCommandLine( ignoreErrors = True )
+  configCache.cacheConfig()
+
   args = Script.getPositionalArgs()
 
   session = DSession()

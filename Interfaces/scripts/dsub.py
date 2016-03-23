@@ -13,6 +13,7 @@ from types import IntType
 
 from DIRAC import S_OK
 from DIRAC import exit as DIRACexit
+from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
 
 def parseScriptLinesJDLDirectives( lines ):
@@ -298,7 +299,10 @@ Script.registerSwitch( "", "ForceExecUpload", "Force upload of executable with I
 Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
 
 
+configCache = ConfigCache()
 Script.parseCommandLine( ignoreErrors = True )
+configCache.cacheConfig()
+
 args = Script.getPositionalArgs()
 
 cmd = None

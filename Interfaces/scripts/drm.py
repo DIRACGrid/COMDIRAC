@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 remove files from the FileCatalog (and all replicas from Storage Elements)
@@ -16,7 +16,7 @@ from COMDIRAC.Interfaces import DCatalog
 from COMDIRAC.Interfaces import pathFromArgument
 
 if __name__ == "__main__":
-
+  from COMDIRAC.Interfaces import ConfigCache
   from DIRAC.Core.Base import Script
 
   lfnFileName = ''
@@ -50,7 +50,11 @@ if __name__ == "__main__":
   Script.registerSwitch( "F:", "lfnFile=", "file containing a list of LFNs", setLfnFileName )
   Script.registerSwitch( "D:", "destination-se=", "Storage Element from where to remove replica", setSE )
   Script.registerSwitch( "r", "", "remove directory recursively", setDirFlag )
+
+  configCache = ConfigCache()
   Script.parseCommandLine( ignoreErrors = True )
+  configCache.cacheConfig()
+
   args = Script.getPositionalArgs()
 
   session = DSession( )

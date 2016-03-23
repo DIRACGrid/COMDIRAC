@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 download files from storage element
@@ -14,6 +14,7 @@ from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import DCatalog
 from COMDIRAC.Interfaces import pathFromArgument
 
+from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
 
 Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
@@ -27,14 +28,14 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                        ] )
                         )
 
+configCache = ConfigCache()
 Script.parseCommandLine( ignoreErrors = True )
+configCache.cacheConfig()
+
 args = Script.getPositionalArgs()
 
 session = DSession( )
 catalog = DCatalog( )
-
-
-Script.enableCS()
 
 from DIRAC.Interfaces.API.Dirac  import Dirac
 

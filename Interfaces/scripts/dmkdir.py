@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 create a directory in the FileCatalog
@@ -7,6 +7,7 @@ create a directory in the FileCatalog
 import os
 
 import DIRAC
+from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
 
 from COMDIRAC.Interfaces import critical
@@ -15,7 +16,6 @@ from COMDIRAC.Interfaces import createCatalog
 from COMDIRAC.Interfaces import pathFromArguments
 
 if __name__ == "__main__":
-  import sys
 
   from DIRAC.Core.Base import Script
 
@@ -29,7 +29,10 @@ if __name__ == "__main__":
                                        ] )
                           )
 
+  configCache = ConfigCache()
   Script.parseCommandLine( ignoreErrors = True )
+  configCache.cacheConfig()
+
   args = Script.getPositionalArgs()
 
   session = DSession( )
@@ -38,8 +41,6 @@ if __name__ == "__main__":
     print "Error: No argument provided\n%s:" % Script.scriptName
     Script.showHelp( )
     DIRAC.exit( -1 )
-
-  Script.enableCS( )
 
   catalog = createCatalog()
 

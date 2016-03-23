@@ -1,10 +1,8 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 """
 list replicas for files in the FileCatalog
 """
-
-import os
 
 import DIRAC
 from COMDIRAC.Interfaces import critical, error
@@ -14,8 +12,7 @@ from COMDIRAC.Interfaces import pathFromArgument
 from DIRAC.Core.Utilities.ReturnValues import returnSingleResult
 
 if __name__ == "__main__":
-  import sys
-
+  from COMDIRAC.Interfaces import ConfigCache
   from DIRAC.Core.Base import Script
 
   Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
@@ -25,7 +22,10 @@ if __name__ == "__main__":
                                        '  lfn:     logical file name', ] )
                           )
 
+  configCache = ConfigCache()
   Script.parseCommandLine( ignoreErrors = True )
+  configCache.cacheConfig()
+
   args = Script.getPositionalArgs()
 
   session = DSession()
@@ -35,8 +35,6 @@ if __name__ == "__main__":
     error("No argument provided\n%s:" % Script.scriptName)
     Script.showHelp()
     DIRAC.exit( -1 )
-
-  Script.enableCS()
 
   exitCode = 0
 
