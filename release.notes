@@ -1,3 +1,6 @@
+[v0r14]
+CHANGE: all commands use a CS configration cache if present and sufficiently new
+
 [v0r13]
 
 CHANGE: dls - -r, -n, -S, -H switches
