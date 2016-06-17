@@ -141,26 +141,37 @@ params.setSession( session )
 
 exitCode = 0
 
-# time interval
-jobDate = toString( date() - params.getJobDate() * day )
+if args:
+  # handle comma separated list of JobIDs
+  newargs = []
+  for arg in args:
+    newargs += arg.split( ',' )
+  args = newargs
 
-# job owner
-userName = params.getUser()
-if userName is None:
-  result = session.getUserName()
-  if result["OK"]:
-    userName = result["Value"]
-elif userName == "*" or userName.lower() == "__all__":
-  # jobs from all users
-  userName = None
+jobs = args
 
-result = selectJobs( owner = userName, date = jobDate, jobGroup = params.getJobGroup(),
-                     jobName = params.getJobName() )
-if not result['OK']:
-  print "Error:", result['Message']
-  DIRACExit( -1 )
+if not jobs:
+  # time interval
+  jobDate = toString( date() - params.getJobDate() * day )
 
-jobs = result['Value']
+  # job owner
+  userName = params.getUser()
+  if userName is None:
+    result = session.getUserName()
+    if result["OK"]:
+      userName = result["Value"]
+  elif userName == "*" or userName.lower() == "__all__":
+    # jobs from all users
+    userName = None
+
+  result = selectJobs( owner = userName, date = jobDate, jobGroup = params.getJobGroup(),
+                       jobName = params.getJobName() )
+
+  if not result['OK']:
+    print "Error:", result['Message']
+    DIRACExit( -1 )
+
+  jobs = result['Value']
 
 try:
   jobs = [ int( job ) for job in jobs ]

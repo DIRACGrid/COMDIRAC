@@ -80,6 +80,13 @@ from DIRAC.Core.Utilities.Time import toString, date, day
 dirac = Dirac()
 exitCode = 0
 
+if args:
+  # handle comma separated list of JobIDs
+  newargs = []
+  for arg in args:
+    newargs += arg.split( ',' )
+  args = newargs
+
 for jobGroup in params.getJobGroup():
   jobDate = toString( date() - 30 * day )
 

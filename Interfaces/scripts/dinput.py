@@ -74,6 +74,13 @@ from DIRAC.Core.Utilities.Time import toString, date, day
 dirac = Dirac()
 exitCode = 0
 
+if args:
+  # handle comma separated list of JobIDs
+  newargs = []
+  for arg in args:
+    newargs += arg.split( ',' )
+  args = newargs
+
 for jobGroup in params.getJobGroup():
   jobDate = toString( date() - 30 * day )
 
@@ -104,11 +111,11 @@ if jobs:
   inputs = {}
   for job in jobs:
     destinationDir = os.path.join( outputDir, "InputSandbox%s" % job )
-    if not os.path.exists( destinationDir ): os.makedirs( destinationDir )
 
     inputs[job] = {"destinationDir" : destinationDir}
 
     if params.getInputSandbox() or not params.getDownloadJDL():
+
       result = dirac.getInputSandbox( job, outputDir = outputDir )
       if result['OK']:
         inputs[job]["isb"] = destinationDir
@@ -119,10 +126,12 @@ if jobs:
     if params.getDownloadJDL():
       result = dirac.getJobJDL( job, printOutput = False )
       if result['OK']:
+        if not os.path.exists( destinationDir ): os.makedirs( destinationDir )
         jdl = pprint.pformat( result["Value"] )
-        f = open ( os.path.join( destinationDir, "%s.jdl" % job ), 'w' )
-        f.write( jdl )
-        f.close()
+        with open ( os.path.join( destinationDir, "%s.jdl" % job ), 'w' ) as f:
+          f.write( jdl )
+          f.close()
+
         inputs[job]["jdl"] = jdl
       else:
         errors.append( result["Message"] )
