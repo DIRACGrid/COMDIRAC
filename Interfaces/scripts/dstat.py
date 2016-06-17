@@ -57,6 +57,7 @@ class Params:
     self.fields = DEFAULT_DISPLAY_COLUMNS
     self.jobGroup = None
     self.jobName = None
+    self.inputFile = None
 
   def setSession( self, session ):
     self.__session = session
@@ -109,6 +110,12 @@ class Params:
   def getJobName( self ):
     return self.jobName
 
+  def setInputFile( self, arg = None ):
+    self.inputFile = arg
+
+  def getInputFile( self ):
+    return self.inputFile
+
 params = Params( )
 
 Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
@@ -123,6 +130,7 @@ Script.registerSwitch( "n:", "JobName=", "select job by job name", params.setJob
 Script.registerSwitch( "f:", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
 Script.registerSwitch( "D:", "JobDate=", "age of jobs to display", params.setJobDate )
 Script.registerSwitch( "F:", "Fields=", "display list of job fields", params.setFields )
+Script.registerSwitch( "i:", "input-file=", "read JobIDs from file", params.setInputFile )
 
 configCache = ConfigCache()
 Script.parseCommandLine( ignoreErrors = True )
@@ -149,6 +157,11 @@ if args:
   args = newargs
 
 jobs = args
+
+if params.getInputFile() != None:
+  with open( params.getInputFile(), 'r' ) as f:
+    for l in f.readlines():
+      jobs += l.split( ',' )
 
 if not jobs:
   # time interval
