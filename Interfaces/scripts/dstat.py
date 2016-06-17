@@ -57,6 +57,7 @@ class Params:
     self.fields = DEFAULT_DISPLAY_COLUMNS
     self.jobGroup = None
     self.jobName = None
+    self.inputFile = None
 
   def setSession( self, session ):
     self.__session = session
@@ -109,6 +110,12 @@ class Params:
   def getJobName( self ):
     return self.jobName
 
+  def setInputFile( self, arg = None ):
+    self.inputFile = arg
+
+  def getInputFile( self ):
+    return self.inputFile
+
 params = Params( )
 
 Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
@@ -123,6 +130,7 @@ Script.registerSwitch( "n:", "JobName=", "select job by job name", params.setJob
 Script.registerSwitch( "f:", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
 Script.registerSwitch( "D:", "JobDate=", "age of jobs to display", params.setJobDate )
 Script.registerSwitch( "F:", "Fields=", "display list of job fields", params.setFields )
+Script.registerSwitch( "i:", "input-file=", "read JobIDs from file", params.setInputFile )
 
 configCache = ConfigCache()
 Script.parseCommandLine( ignoreErrors = True )
@@ -141,26 +149,42 @@ params.setSession( session )
 
 exitCode = 0
 
-# time interval
-jobDate = toString( date() - params.getJobDate() * day )
+if args:
+  # handle comma separated list of JobIDs
+  newargs = []
+  for arg in args:
+    newargs += arg.split( ',' )
+  args = newargs
 
-# job owner
-userName = params.getUser()
-if userName is None:
-  result = session.getUserName()
-  if result["OK"]:
-    userName = result["Value"]
-elif userName == "*" or userName.lower() == "__all__":
-  # jobs from all users
-  userName = None
+jobs = args
 
-result = selectJobs( owner = userName, date = jobDate, jobGroup = params.getJobGroup(),
-                     jobName = params.getJobName() )
-if not result['OK']:
-  print "Error:", result['Message']
-  DIRACExit( -1 )
+if params.getInputFile() != None:
+  with open( params.getInputFile(), 'r' ) as f:
+    for l in f.readlines():
+      jobs += l.split( ',' )
 
-jobs = result['Value']
+if not jobs:
+  # time interval
+  jobDate = toString( date() - params.getJobDate() * day )
+
+  # job owner
+  userName = params.getUser()
+  if userName is None:
+    result = session.getUserName()
+    if result["OK"]:
+      userName = result["Value"]
+  elif userName == "*" or userName.lower() == "__all__":
+    # jobs from all users
+    userName = None
+
+  result = selectJobs( owner = userName, date = jobDate, jobGroup = params.getJobGroup(),
+                       jobName = params.getJobName() )
+
+  if not result['OK']:
+    print "Error:", result['Message']
+    DIRACExit( -1 )
+
+  jobs = result['Value']
 
 try:
   jobs = [ int( job ) for job in jobs ]

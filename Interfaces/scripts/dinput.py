@@ -16,6 +16,7 @@ class Params:
     self.downloadJDL = False
     self.inputSandbox = False
     self.jobGroup = []
+    self.inputFile = None
 
   def setOutputDir( self, arg = None ):
     self.outputDir = arg
@@ -48,6 +49,12 @@ class Params:
   def getJobGroup( self ):
     return self.jobGroup
 
+  def setInputFile( self, arg = None ):
+    self.inputFile = arg
+
+  def getInputFile( self ):
+    return self.inputFile
+
 params = Params()
 
 Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
@@ -61,6 +68,7 @@ Script.registerSwitch( "j", "JDL", "download job JDL instead of input sandbox", 
 Script.registerSwitch( "", "Sandbox", "donwload input sandbox, even if JDL was required", params.setInputSandbox )
 Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
 Script.registerSwitch( "g:", "JobGroup=", "Get output for jobs in the given group", params.setJobGroup )
+Script.registerSwitch( "i:", "input-file=", "read JobIDs from file", params.setInputFile )
 
 configCache = ConfigCache()
 Script.parseCommandLine( ignoreErrors = True )
@@ -73,6 +81,18 @@ from DIRAC.Core.Utilities.Time import toString, date, day
 
 dirac = Dirac()
 exitCode = 0
+
+if args:
+  # handle comma separated list of JobIDs
+  newargs = []
+  for arg in args:
+    newargs += arg.split( ',' )
+  args = newargs
+
+if params.getInputFile() != None:
+  with open( params.getInputFile(), 'r' ) as f:
+    for l in f.readlines():
+      args += l.split( ',' )
 
 for jobGroup in params.getJobGroup():
   jobDate = toString( date() - 30 * day )
@@ -104,11 +124,11 @@ if jobs:
   inputs = {}
   for job in jobs:
     destinationDir = os.path.join( outputDir, "InputSandbox%s" % job )
-    if not os.path.exists( destinationDir ): os.makedirs( destinationDir )
 
     inputs[job] = {"destinationDir" : destinationDir}
 
     if params.getInputSandbox() or not params.getDownloadJDL():
+
       result = dirac.getInputSandbox( job, outputDir = outputDir )
       if result['OK']:
         inputs[job]["isb"] = destinationDir
@@ -119,10 +139,12 @@ if jobs:
     if params.getDownloadJDL():
       result = dirac.getJobJDL( job, printOutput = False )
       if result['OK']:
+        if not os.path.exists( destinationDir ): os.makedirs( destinationDir )
         jdl = pprint.pformat( result["Value"] )
-        f = open ( os.path.join( destinationDir, "%s.jdl" % job ), 'w' )
-        f.write( jdl )
-        f.close()
+        with open ( os.path.join( destinationDir, "%s.jdl" % job ), 'w' ) as f:
+          f.write( jdl )
+          f.close()
+
         inputs[job]["jdl"] = jdl
       else:
         errors.append( result["Message"] )
