@@ -1,3 +1,6 @@
+[v0r15]
+CHANGE : dstat, dinput, doutput - can understand comma separated lists of JobIDs in command line arguments or inside input files
+
 [v0r14]
 CHANGE: all commands use a CS configration cache if present and sufficiently new
 
