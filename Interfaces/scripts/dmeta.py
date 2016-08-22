@@ -79,6 +79,7 @@ if __name__ == "__main__":
 
     def setListIndex( self, arg ):
       self.listIndex = True
+      return S_OK()
 
     def getListIndex( self ):
       return self.listIndex

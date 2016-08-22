@@ -8,6 +8,7 @@ __RCSID__ = "$Id$"
 
 from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
+from DIRAC import S_OK
 from DIRAC.Core.Utilities.Time import toString, date, day
 
 from COMDIRAC.Interfaces.Utilities.DCommands import ArrayFormatter
@@ -64,54 +65,64 @@ class Params:
     customFields = session.getEnv( "dstat_fields", "" )['Value']
     if customFields:
       self.fields = customFields.split( ',' )
+    return S_OK()
 
   def setUser( self, arg = None ):
     self.user = arg
+    return S_OK()
 
   def getUser( self ):
     return self.user
 
   def setStatus( self, arg = None ):
     self.status = arg.lower().split( "," )
+    return S_OK()
 
   def setStatusAll( self, arg = None ):
     self.status = map( lambda e: e.lower(), JOB_STATES )
+    return S_OK()
 
   def getStatus( self ):
     return self.status
 
   def setFmt( self, arg = None ):
     self.fmt = arg.lower()
+    return S_OK()
 
   def getFmt( self ):
     return self.fmt
 
   def setJobDate( self, arg = None ):
     self.jobDate = int( arg )
+    return S_OK()
 
   def getJobDate( self ):
     return self.jobDate
 
   def setFields( self, arg = None ):
     self.fields = arg.split( "," )
+    return S_OK()
 
   def getFields( self ):
     return self.fields
 
   def setJobGroup( self, arg = None ):
     self.jobGroup = arg
+    return S_OK()
 
   def getJobGroup( self ):
     return self.jobGroup
 
   def setJobName( self, arg = None ):
     self.jobName = arg
+    return S_OK()
 
   def getJobName( self ):
     return self.jobName
 
   def setInputFile( self, arg = None ):
     self.inputFile = arg
+    return S_OK()
 
   def getInputFile( self ):
     return self.inputFile

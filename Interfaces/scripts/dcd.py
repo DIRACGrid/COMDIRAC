@@ -25,8 +25,9 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      ] )
                         )
 
-configCache = ConfigCache()
 Script.parseCommandLine( ignoreErrors = True )
+
+configCache = ConfigCache()
 configCache.cacheConfig()
 
 args = Script.getPositionalArgs()

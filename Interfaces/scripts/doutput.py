@@ -3,6 +3,7 @@
 """
 
 import DIRAC
+from DIRAC import S_OK
 from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
 
@@ -20,30 +21,35 @@ class Params:
 
   def setOutputDir( self, arg = None ):
     self.outputDir = arg
+    return S_OK()
 
   def getOutputDir( self ):
     return self.outputDir
 
   def setOutputData( self, arg = None ):
     self.outputData = True
+    return S_OK()
 
   def getOutputData( self ):
     return self.outputData
 
   def setOutputSandbox( self, arg = None ):
     self.outputSandbox = True
+    return S_OK()
 
   def getOutputSandbox( self ):
     return self.outputSandbox
 
   def setVerbose( self, arg = None ):
     self.verbose = True
+    return S_OK()
 
   def getVerbose( self ):
     return self.verbose
 
   def setNoJobDir( self, arg = None ):
     self.noJobDir = True
+    return S_OK()
 
   def getNoJobDir( self ):
     return self.noJobDir
@@ -51,12 +57,14 @@ class Params:
   def setJobGroup( self, arg = None ):
     if arg:
       self.jobGroup.append( arg )
+    return S_OK()
 
   def getJobGroup( self ):
     return self.jobGroup
 
   def setInputFile( self, arg = None ):
     self.inputFile = arg
+    return S_OK()
 
   def getInputFile( self ):
     return self.inputFile

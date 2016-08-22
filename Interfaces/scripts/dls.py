@@ -7,6 +7,7 @@ list FileCatalog file or directory
 import os
 import getopt
 
+from DIRAC import S_OK
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import createCatalog
 from COMDIRAC.Interfaces import pathFromArguments
@@ -28,30 +29,37 @@ if __name__ == "__main__":
 
     def setLong( self, arg = None ):
       self.long = True
+      return S_OK()
 
     def getLong( self ):
       return self.long
 
     def setReplicas( self, arg = None ):
       self.replicas = True
+      return S_OK()
 
     def getReplicas( self ):
       return self.replicas
 
     def setTime( self, arg = None ):
       self.time = True
+      return S_OK()
 
     def setReverse( self, arg = None ):
       self.reverse = True
+      return S_OK()
 
     def setNumericID( self, arg = None ):
       self.numericid = True
+      return S_OK()
 
     def setSize( self, arg = None ):
       self.size = True
+      return S_OK()
 
     def setHuman( self, arg = None ):
       self.human = True
+      return S_OK()
 
     def getTime( self ):
       return self.time
@@ -89,8 +97,8 @@ if __name__ == "__main__":
   Script.registerSwitch( "S", "size", "size based order", params.setSize )
   Script.registerSwitch( "H", "human-readable","size human readable", params.setHuman )
 
-  configCache = ConfigCache()
   Script.parseCommandLine( ignoreErrors = True )
+  configCache = ConfigCache()
   configCache.cacheConfig()
 
   args = Script.getPositionalArgs()

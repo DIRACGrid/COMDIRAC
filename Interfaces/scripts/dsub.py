@@ -60,6 +60,7 @@ class Params:
     self.__session = session
     if self.inputData:
       self.attribs["InputData"] = self.pathListArg( self.inputData )
+    return S_OK()
 
   def listArg( self, arg ):
     if arg and not arg.startswith( "{" ):
