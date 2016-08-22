@@ -97,8 +97,8 @@ if __name__ == "__main__":
   Script.registerSwitch( "S", "size", "size based order", params.setSize )
   Script.registerSwitch( "H", "human-readable","size human readable", params.setHuman )
 
-  Script.parseCommandLine( ignoreErrors = True )
   configCache = ConfigCache()
+  Script.parseCommandLine( ignoreErrors = True )
   configCache.cacheConfig()
 
   args = Script.getPositionalArgs()
