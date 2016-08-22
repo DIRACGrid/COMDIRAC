@@ -79,7 +79,6 @@ if __name__ == "__main__":
 
     def setListIndex( self, arg ):
       self.listIndex = True
-      return S_OK()
 
     def getListIndex( self ):
       return self.listIndex
@@ -138,7 +137,7 @@ if __name__ == "__main__":
         #print cmdline
         result = fc.deleteMetadataField( meta )
     else:
-      fdType = params.getIndex( )
+      fdType = '-' + params.getIndex( )
       for arg in args:
         meta, mtype = arg.split( "=" )
         if mtype.lower()[:3] == 'int':
