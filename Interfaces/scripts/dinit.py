@@ -72,7 +72,12 @@ if not session:
 
 session.write()
 
-session.checkProxyOrInit()
+try:
+  session.checkProxyOrInit()
+except Exception as e:
+  print "Error: %s", e
+  DIRAC.exit( -1 )
+
 retVal = session.proxyInfo()
 if not retVal[ "OK" ]:
   print retVal[ "Message" ]

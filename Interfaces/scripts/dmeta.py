@@ -137,7 +137,7 @@ if __name__ == "__main__":
         #print cmdline
         result = fc.deleteMetadataField( meta )
     else:
-      fdType = params.getIndex( )
+      fdType = '-' + params.getIndex( )
       for arg in args:
         meta, mtype = arg.split( "=" )
         if mtype.lower()[:3] == 'int':

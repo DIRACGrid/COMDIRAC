@@ -60,6 +60,8 @@ class ConfigCache:
       # print time.time() - cacheStamp, self.configCacheLifetime, time.time() - cacheStamp <= self.configCacheLifetime
       if time.time() - cacheStamp <= self.configCacheLifetime:
         gConfigurationData.remoteCFG = cPickle.load( open( self.configCacheName, "r" ) )
+        # This merges the so obtained remote configuration with the local stuff
+        gConfigurationData.sync()
         Script.disableCS()
         self.newConfig = False
         # print 'use cached config'

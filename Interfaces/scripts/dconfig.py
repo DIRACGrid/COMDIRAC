@@ -7,6 +7,7 @@ configure DCommands
 import types
 
 import DIRAC
+from DIRAC import S_OK
 from DIRAC.Core.Base import Script
 
 from COMDIRAC.Interfaces import DConfig, createMinimalConfig, critical, guessProfilesFromCS
@@ -19,12 +20,14 @@ class Params:
 
   def setMinimal( self, arg ):
     self.minimal = True
+    return S_OK()
 
   def getMinimal( self ):
     return self.minimal
 
   def setGuessProfiles( self, arg ):
     self.guessProfile = True
+    return S_OK()
 
   def getGuessProfiles( self ):
     return self.guessProfile
