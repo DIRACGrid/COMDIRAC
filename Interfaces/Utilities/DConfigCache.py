@@ -59,9 +59,6 @@ class ConfigCache:
       cacheStamp = os.stat( self.configCacheName ).st_mtime
       # print time.time() - cacheStamp, self.configCacheLifetime, time.time() - cacheStamp <= self.configCacheLifetime
       if time.time() - cacheStamp <= self.configCacheLifetime:
-        gConfigurationData.remoteCFG = cPickle.load( open( self.configCacheName, "r" ) )
-        # This merges the so obtained remote configuration with the local stuff
-        gConfigurationData.sync()
         Script.disableCS()
         self.newConfig = False
         # print 'use cached config'
@@ -72,4 +69,6 @@ class ConfigCache:
 
       with open( self.configCacheName, "w" ) as f:
         os.chmod( self.configCacheName, stat.S_IRUSR | stat.S_IWUSR )
-        cPickle.dump( gConfigurationData.remoteCFG, f )
+        cPickle.dump( gConfigurationData.mergedCFG, f )
+    else:
+      gConfigurationData.mergedCFG = cPickle.load( open( self.configCacheName, "r" ) )
