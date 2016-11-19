@@ -19,10 +19,10 @@ from DIRAC.Core.Base import Script
 
 Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Usage:',
-                                     '  %s lfn... [local_path]' % Script.scriptName,
+                                     '  %s lfn... [local_dir]' % Script.scriptName,
                                      'Arguments:',
                                      ' lfn:          file to download',
-                                     ' local_path:   destination directory',
+                                     ' local_dir:   destination directory',
                                        '', 'Examples:',
                                        '  $ dget ./some_lfn_file /tmp',
                                        ] )
@@ -34,8 +34,8 @@ configCache.cacheConfig()
 
 args = Script.getPositionalArgs()
 
-session = DSession( )
-catalog = DCatalog( )
+session = DSession()
+catalog = DCatalog()
 
 from DIRAC.Interfaces.API.Dirac  import Dirac
 
@@ -43,45 +43,28 @@ dirac = Dirac()
 
 if len( args ) < 1:
   error( "\nError: not enough arguments provided\n%s:" % Script.scriptName )
-  Script.showHelp( )
+  Script.showHelp()
   DIRAC.exit( -1 )
 
 # lfn
-lfn = pathFromArgument( session, args[ 0 ] )
+lfn = pathFromArgument( session, args[0] )
 
-# default local_path: same file name as lfn.
-local_path = os.path.basename( lfn )
-# STRANGE: dirac only accepts directories for download destination
-#pairs = [ ( lfn, local_path ) ]
-pairs = [ ( lfn, os.getcwd( ) ) ]
+localDir = os.getcwd()
+lfns = [( lfn, localDir )]
 
 if len( args ) > 1:
-  # local_path provided must be last argument
-  local_path = args[ -1 ]
-  lfns = args[ :-1 ]
-  pairs = [ ]
+  # localDir provided must be last argument
+  localDir = args[-1]
+  lfns = [( pathFromArgument( session, lfn ), localDir ) for lfn in args[:-1]]
 
-  # STRANGE: dirac only accepts directories for download destination
-  if not os.path.isdir( local_path ):
+  if not os.path.isdir( localDir ):
     critical( "Error: Destination local path must be a directory", -1 )
 
-  if os.path.isdir( local_path ):
-    # we can accept one ore more lfns
-    for lfn in lfns:
-      # STRANGE: dirac only accepts directories for download destination
-      #pairs.append( (pathFromArgument( session, lfn ), os.path.join( local_path, os.path.basename( lfn )) ))
-      pairs.append( (pathFromArgument( session, lfn ), local_path ))
-  else:
-    if len( lfns ) > 1:
-      critical( "Error: Destination path must be a directory when downloading multiple local files", -1 )
-
-    # local filename replace lfn filename
-    pairs.append( (pathFromArgument( session, lfn ), local_path ))
 exitCode = 0
 errmsgs = []
 
-for lfn, local_path in pairs:
-  ret = dirac.getFile( lfn, local_path )
+for lfn, localDir in lfns:
+  ret = dirac.getFile( lfn, localDir )
   if not ret['OK']:
     exitCode = -2
     error( 'ERROR: %s' % ret['Message'] )
