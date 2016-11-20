@@ -47,7 +47,7 @@ def listFormatPretty( summaries, headers = None, sortKeys = None ):
     
   records = []
   for _k, i in sortKeys:
-    records.append( [ str(x) for x in summaries[i] ] )
+    records.append( [ str( x ) for x in summaries[i] ] )
   
   output = printTable( headers, records, numbering = False, printOut = False, columnSeparator = '  ' )
   return output
@@ -90,7 +90,7 @@ class ArrayFormatter:
 
   def listFormat( self, list_, headers, sort = None ):
     if self.outputFormat not in self.fmts:
-      return S_ERROR( "ArrayFormatter: Output format not supported: %s not in %s" %
+      return S_ERROR( "ArrayFormatter: Output format not supported: %s not in %s" % 
                       ( self.outputFormat, self.fmts.keys() ) )
 
     if headers is None:
@@ -534,7 +534,7 @@ def guessConfigFromCS( config, section, userName, groupName ):
         host = gConfig.getValue( "/Resources/StorageElements/%s/AccessProtocol.1/Host" % seSite )
         if host and host == voDefaultSEHost:
           # check if SE has rw access
-          retVal = gConfig.getOptionsDict( "/Resources/StorageElements/%s" %
+          retVal = gConfig.getOptionsDict( "/Resources/StorageElements/%s" % 
                                           seSite )
           if retVal[ "OK" ]:
             od = retVal[ "Value" ]
@@ -550,7 +550,7 @@ def guessConfigFromCS( config, section, userName, groupName ):
           break
 
       if defaultSESite:
-        #write to config
+        # write to config
         config.set( section, "default_se", defaultSESite )
 
 def sessionFromProxy( config = DConfig(), sessionDir = None ):
@@ -638,6 +638,9 @@ class DCatalog( object ):
     if self.isDir( path ):
       return self.catalog.getDirectoryUserMetadata( path )
     return self.catalog.getFileUserMetadata( path )
+  
+  def findFilesByMetadata( self, metaDict, path ):
+    return self.catalog.findFilesByMetadata( metaDict, path )
 
 def pathFromArgument( session, arg ):
   path = os.path.normpath( arg )

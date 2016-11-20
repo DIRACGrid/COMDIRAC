@@ -17,6 +17,20 @@ from COMDIRAC.Interfaces import pathFromArgument
 from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
 
+class Params:
+  def __init__ ( self ):
+    self.recursive = False
+
+  def setRecursive( self, arg = None ):
+    self.recursive = True
+
+  def getRecursive( self ):
+    return self.recursive
+
+
+params = Params()
+
+
 Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Usage:',
                                      '  %s lfn... [local_dir]' % Script.scriptName,
@@ -27,6 +41,8 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                        '  $ dget ./some_lfn_file /tmp',
                                        ] )
                         )
+
+Script.registerSwitch( "r", "recursive", "recursively get contents of lfn", params.setRecursive )
 
 configCache = ConfigCache()
 Script.parseCommandLine( ignoreErrors = True )
@@ -61,12 +77,42 @@ if len( args ) > 1:
     critical( "Error: Destination local path must be a directory", -1 )
 
 exitCode = 0
-errmsgs = []
 
+if params.getRecursive():
+  newLFNs = []
+  for lfn, localDir in lfns:
+    # make sure lfn is an existing directory
+    if not catalog.isDir( lfn ):
+      if catalog.isFile( lfn ):
+        # lfn is a file: simply add it to the list
+        newLFNs.append( ( lfn, localDir ) )
+        continue
+      exitCode = -1
+      error( 'Invalid path: \'%s\'' % lfn )
+      continue
+
+    retVal = catalog.findFilesByMetadata( {}, lfn )
+    
+    if not retVal['OK']:
+      exitCode = -2
+      error( retVal['Message'] )
+      continue
+
+    # compute new local destination for subtree files 
+    lfnDirname = os.path.dirname( lfn )
+    for newLFN in retVal['Value']:
+      newLocalDir = os.path.dirname( os.path.join( localDir, os.path.relpath( newLFN, lfnDirname ) ) )
+      newLFNs.append( ( newLFN, newLocalDir ) )
+
+  lfns = newLFNs
 for lfn, localDir in lfns:
+  if params.getRecursive():
+    if not os.path.exists( localDir ):
+      os.makedirs( localDir )
+
   ret = dirac.getFile( lfn, localDir )
   if not ret['OK']:
-    exitCode = -2
+    exitCode = -3
     error( 'ERROR: %s' % ret['Message'] )
 
 DIRAC.exit( exitCode )
