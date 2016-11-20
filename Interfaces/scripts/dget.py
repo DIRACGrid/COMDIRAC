@@ -17,16 +17,32 @@ from COMDIRAC.Interfaces import pathFromArgument
 from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
 
+class Params:
+  def __init__ ( self ):
+    self.recursive = False
+
+  def setRecursive( self, arg = None ):
+    self.recursive = True
+
+  def getRecursive( self ):
+    return self.recursive
+
+
+params = Params()
+
+
 Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Usage:',
-                                     '  %s lfn... [local_path]' % Script.scriptName,
+                                     '  %s lfn... [local_dir]' % Script.scriptName,
                                      'Arguments:',
                                      ' lfn:          file to download',
-                                     ' local_path:   destination directory',
+                                     ' local_dir:   destination directory',
                                        '', 'Examples:',
                                        '  $ dget ./some_lfn_file /tmp',
                                        ] )
                         )
+
+Script.registerSwitch( "r", "recursive", "recursively get contents of lfn", params.setRecursive )
 
 configCache = ConfigCache()
 Script.parseCommandLine( ignoreErrors = True )
@@ -34,8 +50,8 @@ configCache.cacheConfig()
 
 args = Script.getPositionalArgs()
 
-session = DSession( )
-catalog = DCatalog( )
+session = DSession()
+catalog = DCatalog()
 
 from DIRAC.Interfaces.API.Dirac  import Dirac
 
@@ -43,47 +59,60 @@ dirac = Dirac()
 
 if len( args ) < 1:
   error( "\nError: not enough arguments provided\n%s:" % Script.scriptName )
-  Script.showHelp( )
+  Script.showHelp()
   DIRAC.exit( -1 )
 
 # lfn
-lfn = pathFromArgument( session, args[ 0 ] )
+lfn = pathFromArgument( session, args[0] )
 
-# default local_path: same file name as lfn.
-local_path = os.path.basename( lfn )
-# STRANGE: dirac only accepts directories for download destination
-#pairs = [ ( lfn, local_path ) ]
-pairs = [ ( lfn, os.getcwd( ) ) ]
+localDir = os.getcwd()
+lfns = [( lfn, localDir )]
 
 if len( args ) > 1:
-  # local_path provided must be last argument
-  local_path = args[ -1 ]
-  lfns = args[ :-1 ]
-  pairs = [ ]
+  # localDir provided must be last argument
+  localDir = args[-1]
+  lfns = [( pathFromArgument( session, lfn ), localDir ) for lfn in args[:-1]]
 
-  # STRANGE: dirac only accepts directories for download destination
-  if not os.path.isdir( local_path ):
+  if not os.path.isdir( localDir ):
     critical( "Error: Destination local path must be a directory", -1 )
 
-  if os.path.isdir( local_path ):
-    # we can accept one ore more lfns
-    for lfn in lfns:
-      # STRANGE: dirac only accepts directories for download destination
-      #pairs.append( (pathFromArgument( session, lfn ), os.path.join( local_path, os.path.basename( lfn )) ))
-      pairs.append( (pathFromArgument( session, lfn ), local_path ))
-  else:
-    if len( lfns ) > 1:
-      critical( "Error: Destination path must be a directory when downloading multiple local files", -1 )
-
-    # local filename replace lfn filename
-    pairs.append( (pathFromArgument( session, lfn ), local_path ))
 exitCode = 0
-errmsgs = []
 
-for lfn, local_path in pairs:
-  ret = dirac.getFile( lfn, local_path )
+if params.getRecursive():
+  newLFNs = []
+  for lfn, localDir in lfns:
+    # make sure lfn is an existing directory
+    if not catalog.isDir( lfn ):
+      if catalog.isFile( lfn ):
+        # lfn is a file: simply add it to the list
+        newLFNs.append( ( lfn, localDir ) )
+        continue
+      exitCode = -1
+      error( 'Invalid path: \'%s\'' % lfn )
+      continue
+
+    retVal = catalog.findFilesByMetadata( {}, lfn )
+    
+    if not retVal['OK']:
+      exitCode = -2
+      error( retVal['Message'] )
+      continue
+
+    # compute new local destination for subtree files 
+    lfnDirname = os.path.dirname( lfn )
+    for newLFN in retVal['Value']:
+      newLocalDir = os.path.dirname( os.path.join( localDir, os.path.relpath( newLFN, lfnDirname ) ) )
+      newLFNs.append( ( newLFN, newLocalDir ) )
+
+  lfns = newLFNs
+for lfn, localDir in lfns:
+  if params.getRecursive():
+    if not os.path.exists( localDir ):
+      os.makedirs( localDir )
+
+  ret = dirac.getFile( lfn, localDir )
   if not ret['OK']:
-    exitCode = -2
+    exitCode = -3
     error( 'ERROR: %s' % ret['Message'] )
 
 DIRAC.exit( exitCode )
