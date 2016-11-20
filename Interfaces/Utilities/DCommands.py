@@ -144,6 +144,7 @@ class DConfig( object ):
     self.configFilename = configFilename
     self.configPath = os.path.join( self.configDir, self.configFilename )
     self.bootstrapFile()
+    self.__buildSectionsAliases()
 
   def bootstrapFile( self ):
     if not os.path.exists( self.configDir ):
@@ -156,6 +157,23 @@ class DConfig( object ):
 
     if os.path.isfile( self.configPath ):
       self.config.read( self.configPath )
+
+  def __buildSectionsAliases(self):
+    self.sectionsAliases = {}
+    for section in self.config.sections():
+      if self.config.has_option(section, 'aliases'):
+        aliases = self.config.get(section, 'aliases')
+        for alias in aliases.split(','):
+          self.sectionsAliases[alias.strip()] = section
+
+    for section in self.config.sections():
+      self.sectionsAliases[section] = section
+
+  def sectionAliasName(self, alias):
+    if alias not in self.sectionsAliases:
+      return S_ERROR('DConfig section alias unknown: %s' % alias)
+
+    return S_OK(self.sectionsAliases[alias])
 
   def write( self ):
     file_ = open( self.configPath, "w" )
@@ -338,7 +356,11 @@ class DSession( DConfig ):
 
     oldProfileName = self.getEnv( "profile_name", "" )[ "Value" ]
     profileName = profileName or oldProfileName or self.origin.defaultProfile()
-    self.profileName = profileName
+    retVal = self.origin.sectionAliasName(profileName)
+    if not retVal['OK']:
+      critical('ERROR: ' + retVal['Message'])
+
+    self.profileName = retVal['Value']
 
     if not os.path.isfile( self.configPath ) or self.profileName != oldProfileName:
       self.__clearEnv()
