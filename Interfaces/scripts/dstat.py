@@ -42,8 +42,10 @@ def getJobSummary( jobs ):
 def chunks( l, n ):
     return [l[i:i + n] for i in range( 0, len( l ), n )]
 
-# to consider: "JobType", "ApplicationStatus", "StartExecTime", "EndExecTime",
-# "CPUTime"
+EXTRA_DISPLAY_COLUMNS = [
+  "JobType", "ApplicationStatus", "StartExecTime", "EndExecTime", "CPUTime",
+]
+
 DEFAULT_DISPLAY_COLUMNS = [
   "Owner", "JobName", "OwnerGroup", "JobGroup", "Site", "Status", "MinorStatus", "SubmissionTime",
 ]
@@ -134,13 +136,13 @@ Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      '  %s [option|cfgfile] ' % Script.scriptName,
                                      'Arguments:', ] ) )
 Script.registerSwitch( "u:", "User=", "job owner", params.setUser )
-Script.registerSwitch( "S:", "Status=", "select job by status", params.setStatus )
+Script.registerSwitch( "S:", "Status=","select job by status (comma separated list of statuses in: %s)" % ','.join(JOB_STATES), params.setStatus )
 Script.registerSwitch( "a", "StatusAll", "display jobs of any status", params.setStatusAll )
 Script.registerSwitch( "g:", "JobGroup=", "select job by job group", params.setJobGroup )
 Script.registerSwitch( "n:", "JobName=", "select job by job name", params.setJobName )
 Script.registerSwitch( "f:", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
-Script.registerSwitch( "D:", "JobDate=", "age of jobs to display", params.setJobDate )
-Script.registerSwitch( "F:", "Fields=", "display list of job fields", params.setFields )
+Script.registerSwitch( "D:", "JobDate=", "age of jobs to display (in days)", params.setJobDate )
+Script.registerSwitch( "F:", "Fields=", "display list of job fields (comma separated list of fields. e.g. %s)" % ','.join(DEFAULT_DISPLAY_COLUMNS + EXTRA_DISPLAY_COLUMNS), params.setFields )
 Script.registerSwitch( "i:", "input-file=", "read JobIDs from file", params.setInputFile )
 
 configCache = ConfigCache()
