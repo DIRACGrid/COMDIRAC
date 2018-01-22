@@ -221,13 +221,18 @@ class Params:
     def classAdClone( classAd ):
       return ClassAd( classAd.asJDL() )
 
-    if not self.parametric: return [classAd]
+    if not ( self.parametric or classAd.lookupAttribute( 'Parametric' ) ):
+      return [classAd]
+
+    parametric = self.parametric
+    if not parametric:
+      parametric = classAd.getAttributeString( 'Parametric' ).split( ',' )
 
     float_pat = '[-+]?(((\d*\.)?\d+)|(\d+\.))([eE][-+]\d+)?'
     loop_re = re.compile( "^(?P<start>%(fp)s):(?P<stop>%(fp)s)(:(?P<step>%(fp)s))?$" % {'fp' : float_pat} )
     parameters = []
     loops = []
-    for param in self.parametric:
+    for param in parametric:
       m = loop_re.match( param )
       if m:
         loop = m.groupdict()
