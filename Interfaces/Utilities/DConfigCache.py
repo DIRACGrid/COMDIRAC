@@ -7,6 +7,16 @@ import re
 from DIRAC.Core.Base import Script
 from DIRAC.ConfigurationSystem.Client.ConfigurationData import gConfigurationData
 
+
+def proxy_lcg_protocols_if_missing():
+  # try to import lcg_util
+  try:
+    import lcg_util
+  except ImportError:
+    # if not available, mark LCG protocols to be proxied
+    gConfigurationData.setOptionInCFG( '/LocalSite/StorageElements/ProxyProtocols', 'srm' )
+
+
 class ConfigCache:
   @classmethod
   def cacheFilePrefix( cls ):
@@ -16,7 +26,7 @@ class ConfigCache:
 
   def __init__( self, forceRefresh = False ):
     self.newConfig = True
-    self.configCacheLifetime = 600. # ten minutes
+    self.configCacheLifetime = 600.  # ten minutes
 
     if "DCOMMANDS_PPID" in os.environ:
       self.pid = int( os.environ[ "DCOMMANDS_PPID" ] )
@@ -66,6 +76,8 @@ class ConfigCache:
   def cacheConfig( self ):
     if self.newConfig:
       self.__cleanCacheDirectory()
+
+      proxy_lcg_protocols_if_missing()
 
       with open( self.configCacheName, "w" ) as f:
         os.chmod( self.configCacheName, stat.S_IRUSR | stat.S_IWUSR )
