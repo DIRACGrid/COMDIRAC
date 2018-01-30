@@ -229,7 +229,7 @@ class Params:
       parametric = classAd.getAttributeString( 'Parametric' ).split( ',' )
 
     float_pat = '[-+]?(((\d*\.)?\d+)|(\d+\.))([eE][-+]\d+)?'
-    loop_re = re.compile( "^(?P<start>%(fp)s):(?P<stop>%(fp)s)(:(?P<step>%(fp)s))?$" % {'fp' : float_pat} )
+    loop_re = re.compile( "^(?P<start>%(fp)s):(?P<stop>%(fp)s)(:(?P<step>%(fp)s)(:(?P<factor>%(fp)s))?)?$" % {'fp' : float_pat} )
     parameters = []
     loops = []
     for param in parametric:
@@ -243,12 +243,18 @@ class Params:
           start = float( loop["start"] )
           stop = float( loop["stop"] )
         step = 1
+        factor = 1
         if "step" in loop and loop["step"]:
           try:
             step = int( loop["step"] )
           except ValueError:
             step = float( loop["step"] )
-        loops.append( ( start, stop, step ) )
+          if "factor" in loop and loop["factor"]:
+            try:
+              factor = int( loop["factor"] )
+            except ValueError:
+              factor = float( loop["factor"] )
+        loops.append( ( start, stop, step, factor ) )
       else:
         parameters.append( param )
 
@@ -258,12 +264,29 @@ class Params:
       new.insertAttributeVectorString( "Parameters", parameters )
       ret.append( new )
 
-    for start, stop, step in loops:
+    def pnumber( start, stop, step, factor ):
+      sign = 1. if start < stop else -1.
+      i = start
+      n = 0
+      while ( i - stop ) * sign < 0:
+        n += 1
+        ip1 = i * factor + step
+
+        # check that parameter evolves in the good direction
+        if ( ip1 - i ) * sign < 0:
+          raise Exception( "Error in parametric specification: %s:%s:%s:%s" % ( start, stop, step, factor ) )
+
+        i = ip1
+
+      return n
+
+    for start, stop, step, factor in loops:
       new = classAdClone( classAd )
-      number = int( ( stop - start ) / step ) + 1
+      number = pnumber( start, stop, step, factor )
       new.insertAttributeString( "ParameterStart", str( start ) )
       new.insertAttributeInt( "Parameters", number )
       new.insertAttributeString( "ParameterStep", str( step ) )
+      new.insertAttributeString( "ParameterFactor", str( factor ) )
       ret.append( new )
 
     return ret
@@ -297,7 +320,7 @@ Script.registerSwitch( "", "BannedSite=", "job Site exclusion list", params.setB
 Script.registerSwitch( "", "Platform=", "job Platform list", params.setPlatform )
 Script.registerSwitch( "", "Priority=", "job priority", params.setPriority )
 Script.registerSwitch( "", "JobGroup=", "job JobGroup", params.setJobGroup )
-Script.registerSwitch( "", "Parametric=", "comma separated list or named parameters or integer loops (in the form<start>:<stop>[:<step>])",
+Script.registerSwitch( "", "Parametric=", "comma separated list or named parameters or number loops (in the form<start>:<stop>[:<step>[:<factor>]])",
                        params.setParametric )
 Script.registerSwitch( "", "ForceExecUpload", "Force upload of executable with InputSandbox",
                        params.setForceExecUpload )
