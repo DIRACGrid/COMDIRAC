@@ -7,15 +7,18 @@ import re
 from DIRAC.Core.Base import Script
 from DIRAC.ConfigurationSystem.Client.ConfigurationData import gConfigurationData
 
-
-def proxy_lcg_protocols_if_missing():
-  # try to import lcg_util
+def check_lcg_import():
   try:
     import lcg_util
   except ImportError:
+    return False
+  
+  return True
+
+def proxy_lcg_protocols_if_missing():
+  if not check_lcg_import():
     # if not available, mark LCG protocols to be proxied
     gConfigurationData.setOptionInCFG( '/LocalSite/StorageElements/ProxyProtocols', 'srm' )
-
 
 class ConfigCache:
   @classmethod
