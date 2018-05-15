@@ -10,6 +10,7 @@ import DIRAC
 from COMDIRAC.Interfaces import DConfig, DSession, critical
 from COMDIRAC.Interfaces.Utilities.DCommands import sessionFromProxy
 from COMDIRAC.Interfaces import ConfigCache
+from COMDIRAC.Interfaces.Utilities.DConfigCache import check_lcg_import
 from DIRAC.Core.Base import Script
 import DIRAC.Core.Security.ProxyInfo as ProxyInfo
 
@@ -85,3 +86,6 @@ if not retVal[ "OK" ]:
 
 print ProxyInfo.formatProxyInfoAsString( retVal[ "Value" ] )
 
+if not check_lcg_import():
+  print
+  print 'Warning: Couldn\'t import module lcg_utils. SRM file transfers will be proxied if possible.'
