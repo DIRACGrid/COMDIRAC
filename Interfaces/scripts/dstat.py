@@ -5,6 +5,7 @@
 """
 __RCSID__ = "$Id$"
 
+from signal import signal, SIGPIPE, SIG_DFL
 
 from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
@@ -18,6 +19,10 @@ from COMDIRAC.Interfaces.Utilities.DCommands import ArrayFormatter
 JOB_STATES = ['Received', 'Checking', 'Staging', 'Waiting', 'Matched',
               'Running', 'Stalled', 'Done', 'Completed', 'Failed']
 JOB_FINAL_STATES = ['Done', 'Completed', 'Failed']
+
+# broken pipe default behaviour
+signal( SIGPIPE, SIG_DFL ) 
+
 
 def selectJobs( owner, date, jobGroup, jobName ):
   conditions = {'Owner' : owner}
@@ -129,20 +134,20 @@ class Params:
   def getInputFile( self ):
     return self.inputFile
 
-params = Params( )
+params = Params()
 
 Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                      'Usage:',
                                      '  %s [option|cfgfile] ' % Script.scriptName,
                                      'Arguments:', ] ) )
 Script.registerSwitch( "u:", "User=", "job owner", params.setUser )
-Script.registerSwitch( "S:", "Status=","select job by status (comma separated list of statuses in: %s)" % ','.join(JOB_STATES), params.setStatus )
+Script.registerSwitch( "S:", "Status=", "select job by status (comma separated list of statuses in: %s)" % ','.join( JOB_STATES ), params.setStatus )
 Script.registerSwitch( "a", "StatusAll", "display jobs of any status", params.setStatusAll )
 Script.registerSwitch( "g:", "JobGroup=", "select job by job group", params.setJobGroup )
 Script.registerSwitch( "n:", "JobName=", "select job by job name", params.setJobName )
 Script.registerSwitch( "f:", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
 Script.registerSwitch( "D:", "JobDate=", "age of jobs to display (in days)", params.setJobDate )
-Script.registerSwitch( "F:", "Fields=", "display list of job fields (comma separated list of fields. e.g. %s)" % ','.join(DEFAULT_DISPLAY_COLUMNS + EXTRA_DISPLAY_COLUMNS), params.setFields )
+Script.registerSwitch( "F:", "Fields=", "display list of job fields (comma separated list of fields. e.g. %s)" % ','.join( DEFAULT_DISPLAY_COLUMNS + EXTRA_DISPLAY_COLUMNS ), params.setFields )
 Script.registerSwitch( "i:", "input-file=", "read JobIDs from file", params.setInputFile )
 
 configCache = ConfigCache()
