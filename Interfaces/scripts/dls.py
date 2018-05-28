@@ -6,6 +6,7 @@ list FileCatalog file or directory
 
 import os
 import getopt
+from signal import signal, SIGPIPE, SIG_DFL
 
 from DIRAC import S_OK
 from COMDIRAC.Interfaces import DSession
@@ -16,6 +17,9 @@ if __name__ == "__main__":
   import sys
   from COMDIRAC.Interfaces import ConfigCache
   from DIRAC.Core.Base import Script
+
+  # broken pipe default behaviour
+  signal( SIGPIPE, SIG_DFL ) 
 
   class Params:
     def __init__ ( self ):
@@ -76,7 +80,7 @@ if __name__ == "__main__":
     def getHuman( self ):
       return self.human
 
-  params = Params( )
+  params = Params()
 
   Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                        'Usage:',
@@ -95,7 +99,7 @@ if __name__ == "__main__":
   Script.registerSwitch( "r", "reverse", "reverse sort order", params.setReverse )
   Script.registerSwitch( "n", "numericid", "numeric UID and GID", params.setNumericID )
   Script.registerSwitch( "S", "size", "size based order", params.setSize )
-  Script.registerSwitch( "H", "human-readable","size human readable", params.setHuman )
+  Script.registerSwitch( "H", "human-readable", "size human readable", params.setHuman )
 
   configCache = ConfigCache()
   Script.parseCommandLine( ignoreErrors = True )
@@ -107,66 +111,66 @@ if __name__ == "__main__":
   from DIRAC.DataManagementSystem.Client.FileCatalogClientCLI import FileCatalogClientCLI
 
   class ReplicaDirectoryListing( DirectoryListing ):
-    def addFileWithReplicas( self,name,fileDict,numericid, replicas ):
+    def addFileWithReplicas( self, name, fileDict, numericid, replicas ):
       """ Pretty print of the file ls output with replica info
       """
       self.addFile( name, fileDict, replicas, numericid )
   
       self.entries[ -1 ] += tuple( replicas )
   
-    def humanReadableSize(self,num,suffix='B'):
+    def humanReadableSize( self, num, suffix = 'B' ):
       """ Translate file size in bytes to human readable
 
           Powers of 2 are used (1Mi = 2^20 = 1048576 bytes).
       """
-      num = int(num)
-      for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
-        if abs(num) < 1024.0:
-          return "%3.1f%s%s" % (num, unit, suffix)
+      num = int( num )
+      for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
+        if abs( num ) < 1024.0:
+          return "%3.1f%s%s" % ( num, unit, suffix )
         num /= 1024.0
-      return "%.1f%s%s" % (num, 'Yi', suffix)
+      return "%.1f%s%s" % ( num, 'Yi', suffix )
 
-    def printListing( self,reverse,timeorder,sizeorder,humanread):
+    def printListing( self, reverse, timeorder, sizeorder, humanread ):
       """
       """
       if timeorder:
         if reverse:
-          self.entries.sort( key=lambda x: x[ 5 ] ) 
+          self.entries.sort( key = lambda x: x[ 5 ] ) 
         else:  
-          self.entries.sort( key=lambda x: x[ 5 ],reverse=True ) 
+          self.entries.sort( key = lambda x: x[ 5 ], reverse = True ) 
       elif sizeorder:  
         if reverse:
-          self.entries.sort(key=lambda x: x[4])
+          self.entries.sort( key = lambda x: x[4] )
         else:  
-          self.entries.sort(key=lambda x: x[4],reverse=True)
+          self.entries.sort( key = lambda x: x[4], reverse = True )
       else:  
         if reverse:
-          self.entries.sort( key=lambda x: x[ 6 ],reverse=True ) 
+          self.entries.sort( key = lambda x: x[ 6 ], reverse = True ) 
         else:  
-          self.entries.sort( key=lambda x: x[ 6 ] ) 
+          self.entries.sort( key = lambda x: x[ 6 ] ) 
       
       # Determine the field widths
       wList = [0] * 7
       for d in self.entries:
         for i in range( 7 ):
           if humanread and i == 4:
-            humanread_len = len( str( self.humanReadableSize( d[ 4 ] )) )
+            humanread_len = len( str( self.humanReadableSize( d[ 4 ] ) ) )
             if humanread_len > wList[ 4 ]:
               wList[ 4 ] = humanread_len
           else:
-            if len( str( d[ i ] )) > wList[ i ]:
-              wList[ i ] = len( str( d[ i ] ))
+            if len( str( d[ i ] ) ) > wList[ i ]:
+              wList[ i ] = len( str( d[ i ] ) )
       
       for e in self.entries:
         size = e[ 4 ]
         if humanread:
-          size = self.humanReadableSize(e[ 4 ])
+          size = self.humanReadableSize( e[ 4 ] )
 
         print str( e[ 0 ] ),
         print str( e[ 1 ] ).rjust( wList[ 1 ] ),
         print str( e[ 2 ] ).ljust( wList[ 2 ] ),
         print str( e[ 3 ] ).ljust( wList[ 3 ] ),
-        print str(  size  ).rjust( wList[ 4 ] ),
+        print str( size ).rjust( wList[ 4 ] ),
         print str( e[ 5 ] ).rjust( wList[ 5 ] ),
         print str( e[ 6 ] )
   
@@ -182,12 +186,12 @@ if __name__ == "__main__":
         result = self.fc.getReplicas( path )    
         if result[ 'OK' ]:
           if result[ 'Value' ][ 'Successful' ]:
-            for se,entry in result[ 'Value' ][ 'Successful' ][ path ].items( ):
+            for se, entry in result[ 'Value' ][ 'Successful' ][ path ].items():
               replicas.append( se.ljust( 15 ) + " " + entry )
           else:
-            print "Replicas: ", result#[ 'Message' ]
+            print "Replicas: ", result  # [ 'Message' ]
       except Exception, x:
-        replicas.append( "replicas failed:" + str( x ))
+        replicas.append( "replicas failed:" + str( x ) )
       return tuple( replicas )
   
     def do_ls( self, args ):
@@ -204,7 +208,7 @@ if __name__ == "__main__":
                                    powers of 2 are used (1Mi = 2^20 B).
       """
 
-      argss = args.split( )
+      argss = args.split()
       # Get switches
       long = False
       reverse = False
@@ -213,19 +217,19 @@ if __name__ == "__main__":
       sizeorder = False
       humanread = False
       short_opts = 'ltrnSH'
-      long_opts = ['long','timeorder','reverse','numericid','sizeorder','human-readable']
+      long_opts = ['long', 'timeorder', 'reverse', 'numericid', 'sizeorder', 'human-readable']
       path = self.cwd
-      if len(argss) > 0:
+      if len( argss ) > 0:
         try:
-          optlist, arguments = getopt.getopt(argss,short_opts,long_opts)
+          optlist, arguments = getopt.getopt( argss, short_opts, long_opts )
         except getopt.GetoptError, e:
-          print str(e)
+          print str( e )
           print self.do_ls.__doc__
           return
         # Duplicated options are allowed: later options have precedence, e.g.,
         # '-ltSt' will be order by time
         # '-ltStS' will be order by size
-        options = [ opt for (opt, arg) in optlist]
+        options = [ opt for ( opt, arg ) in optlist]
         for opt in options:
           if opt in ['-l', '--long']:
             long = True
@@ -241,12 +245,12 @@ if __name__ == "__main__":
             humanread = True
 
         if timeorder and sizeorder:
-          options = [w.replace('--sizeorder','-S') for w in options]
-          options = [w.replace('--human-readable','-H') for w in options]
+          options = [w.replace( '--sizeorder', '-S' ) for w in options]
+          options = [w.replace( '--human-readable', '-H' ) for w in options]
           options.reverse()
           # The last ['-S','-t'] provided is the one we use: reverse order
           # means that the last provided has the smallest index.
-          if options.index('-S') < options.index('-t'):
+          if options.index( '-S' ) < options.index( '-t' ):
             timeorder = False
           else:
             sizeorder = False
@@ -261,27 +265,27 @@ if __name__ == "__main__":
               path = tmparg
               input_path = True
               if path[0] != '/':
-                path = self.cwd+'/'+path
-      path = path.replace( r'//','/' )
+                path = self.cwd + '/' + path
+      path = path.replace( r'//', '/' )
   
       # remove last character if it is "/"    
       if path[ -1 ] == '/' and path != '/':
         path = path[ :-1 ]
 
       # Check if the target path is a file
-      result =  self.fc.isFile( path )          
+      result = self.fc.isFile( path )          
       if not result[ 'OK' ]:
         print "Error: can not verify path"
         return
       elif path in result[ 'Value' ][ 'Successful' ] and result[ 'Value' ][ 'Successful' ][ path ]:
         result = self.fc.getFileMetadata( path )      
-        dList = ReplicaDirectoryListing( )
+        dList = ReplicaDirectoryListing()
         fileDict = result[ 'Value' ][ 'Successful' ][ path ]
   
         replicas = self.getReplicas( path )
   
-        dList.addFileWithReplicas( os.path.basename( path ),fileDict,numericid, replicas )
-        dList.printListing( reverse,timeorder,sizeorder,humanread)
+        dList.addFileWithReplicas( os.path.basename( path ), fileDict, numericid, replicas )
+        dList.printListing( reverse, timeorder, sizeorder, humanread )
         return         
       
       result = self.fc.isDirectory( path )
@@ -294,8 +298,8 @@ if __name__ == "__main__":
 
       # Get directory contents now
       try:
-        result =  self.fc.listDirectory( path,long )                     
-        dList = ReplicaDirectoryListing( )
+        result = self.fc.listDirectory( path, long )                     
+        dList = ReplicaDirectoryListing()
         if result[ 'OK' ]:
           if result[ 'Value' ][ 'Successful' ]:
             for entry in result[ 'Value' ][ 'Successful' ][ path ][ 'Files' ]:
@@ -305,8 +309,8 @@ if __name__ == "__main__":
               if long:
                 fileDict = result[ 'Value' ][ 'Successful' ][ path ][ 'Files' ][ entry ][ 'MetaData' ]
                 if fileDict:
-                  replicas = self.getReplicas( os.path.join( path, fname ))
-                  dList.addFileWithReplicas( fname,fileDict,numericid, replicas )
+                  replicas = self.getReplicas( os.path.join( path, fname ) )
+                  dList.addFileWithReplicas( fname, fileDict, numericid, replicas )
               else:  
                 dList.addSimpleFile( fname )
             for entry in result[ 'Value' ][ 'Successful' ][ path ][ 'SubDirs' ]:
@@ -316,30 +320,30 @@ if __name__ == "__main__":
               if long:
                 dirDict = result[ 'Value' ][ 'Successful' ][ path ][ 'SubDirs' ][ entry ]
                 if dirDict:
-                  dList.addDirectory( dname,dirDict,numericid )
+                  dList.addDirectory( dname, dirDict, numericid )
               else:    
                 dList.addSimpleFile( dname )
             for entry in result[ 'Value' ][ 'Successful' ][ path ][ 'Links' ]:
               pass
                 
             if long:
-              dList.printListing( reverse,timeorder,sizeorder,humanread)      
+              dList.printListing( reverse, timeorder, sizeorder, humanread )      
             else:
-              dList.printOrdered( )
+              dList.printOrdered()
         else:
-          print "Error:",result[ 'Message' ]
+          print "Error:", result[ 'Message' ]
       except Exception, x:
         print "Error:", str( x )
 
-  session = DSession( )
+  session = DSession()
 
   fccli = None
 
-  if params.getReplicas( ):
-    fccli = ReplicaFileCatalogClientCLI( createCatalog( ) )
+  if params.getReplicas():
+    fccli = ReplicaFileCatalogClientCLI( createCatalog() )
     params.setLong( None )
   else:
-    fccli = FileCatalogClientCLI( createCatalog( ) )
+    fccli = FileCatalogClientCLI( createCatalog() )
 
   optstr = ""
   if params.long:       optstr += "l"
@@ -354,18 +358,18 @@ if __name__ == "__main__":
   # This would introduce some duplication of code :-(
   if params.long and params.time and params.size:
     short_opts = 'ltrnSH'
-    long_opts = ['long','timeorder','reverse','numericid','sizeorder','human-readable']
+    long_opts = ['long', 'timeorder', 'reverse', 'numericid', 'sizeorder', 'human-readable']
     try:
-      optlist, arguments = getopt.getopt( sys.argv[1:],short_opts,long_opts )
-      options = [ opt for (opt, arg) in optlist ]
-      options = [ w.replace('--size','-S') for w in options ]
-      options = [ w.replace('--human-readable','-H') for w in options ]
+      optlist, arguments = getopt.getopt( sys.argv[1:], short_opts, long_opts )
+      options = [ opt for ( opt, arg ) in optlist ]
+      options = [ w.replace( '--size', '-S' ) for w in options ]
+      options = [ w.replace( '--human-readable', '-H' ) for w in options ]
       options.reverse()
       # The last ['-S','-t'] provided is the one we use: reverse order
       # means that the last provided has the smallest index.
       # Indeed, setTime/setSize dont has impact: the important thing is
       # to add '-S'/'-t' at the end, then do_ls takes care of the rest.
-      if options.index('-S') < options.index('-t'):
+      if options.index( '-S' ) < options.index( '-t' ):
         params.setTime( False )
         optstr = optstr + '-S '
       else:
@@ -373,9 +377,9 @@ if __name__ == "__main__":
         optstr = optstr + '-t '
 
     except getopt.GetoptError, e:
-      print str(e)
+      print str( e )
       print fccli.do_ls.__doc__
-      exit(1)
+      exit( 1 )
 
   for p in pathFromArguments( session, args ):
     print "%s:" % p
