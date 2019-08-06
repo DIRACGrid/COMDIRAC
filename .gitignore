@@ -4,4 +4,4 @@
 *.pyc
 *~
 
-/.idea
+.idea/
