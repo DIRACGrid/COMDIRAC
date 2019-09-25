@@ -435,7 +435,7 @@ jobIDs = []
 
 for classAdJob in classAdJobs:
   jdlString = classAdJob.asJDL()  
-  result = dirac.submit( jdlString )
+  result = dirac.submitJob(jdlString)
   if result['OK']:
     if type( result['Value'] ) == IntType:
       jobIDs.append( result['Value'] )
