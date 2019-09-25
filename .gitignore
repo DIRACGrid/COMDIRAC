@@ -4,4 +4,6 @@
 *.pyc
 *~
 
+# Intellij
 .idea/
+COMDIRAC.iml
