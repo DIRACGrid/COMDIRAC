@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 """
-list FileCatalog file or directory
+print FileCatalog file or directory disk usage
 """
 
 import os
@@ -47,10 +47,6 @@ if __name__ == "__main__":
                                        '  %s [options] [path]' % Script.scriptName,
                                        'Arguments:',
                                        ' path:     file/directory path',
-                                       '', 'Examples:',
-                                       '  $ dls',
-                                       '  $ dls ..',
-                                       '  $ dls /',
                                        ] )
                           )
   Script.registerSwitch( "l", "long", "detailled listing", params.setLong )
