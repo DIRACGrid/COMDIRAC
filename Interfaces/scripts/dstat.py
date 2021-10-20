@@ -6,6 +6,7 @@
 __RCSID__ = "$Id$"
 
 from signal import signal, SIGPIPE, SIG_DFL
+import six
 
 from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Base import Script
@@ -38,10 +39,16 @@ def getJobSummary( jobs ):
   if not jobs: return S_OK( {} )
   monitoring = RPCClient( 'WorkloadManagement/JobMonitoring' )
   result = monitoring.getJobsSummary( jobs )
-  try:
-    jobSummary = eval( result['Value'] )
-  except:
-    return S_ERROR( 'Problem while converting result from job monitoring' )
+  if not result['OK']:
+    return result
+
+  if isinstance(result['Value'], six.string_types):
+    try:
+      jobSummary = eval( result['Value'] )
+    except:
+      return S_ERROR( 'Problem while converting result from job monitoring' )
+  else:
+    jobSummary = result['Value']
   return S_OK( jobSummary )
 
 def chunks( l, n ):
