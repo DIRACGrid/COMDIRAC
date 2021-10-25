@@ -45,7 +45,7 @@ class ConfigCache:
     def pid_exists( pid ):
       try:
         os.kill( pid, 0 )
-      except OSError, _err:
+      except OSError as _err:
         return False
       return True
 

@@ -457,7 +457,7 @@ def main():
   for f in tempFiles:
     try:
       os.unlink( f )
-    except Exception, e:
+    except Exception as e:
       errorList.append( str( e ) )
 
   for error in errorList:

@@ -377,7 +377,7 @@ class DSession( DConfig ):
     def pid_exists( pid ):
       try:
         os.kill( pid, 0 )
-      except OSError, _err:
+      except OSError as _err:
         # errno.EPERM would denote a process belonging to someone else
         # so we consider it inexistent
         # return _err.errno == errno.EPERM

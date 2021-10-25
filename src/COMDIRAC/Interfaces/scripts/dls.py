@@ -193,7 +193,7 @@ def main():
               replicas.append( se.ljust( 15 ) + " " + entry )
           else:
             print "Replicas: ", result  # [ 'Message' ]
-      except Exception, x:
+      except Exception as x:
         replicas.append( "replicas failed:" + str( x ) )
       return tuple( replicas )
   
@@ -225,7 +225,7 @@ def main():
       if len( argss ) > 0:
         try:
           optlist, arguments = getopt.getopt( argss, short_opts, long_opts )
-        except getopt.GetoptError, e:
+        except getopt.GetoptError as e:
           print str( e )
           print self.do_ls.__doc__
           return
@@ -335,7 +335,7 @@ def main():
               dList.printOrdered()
         else:
           print "Error:", result[ 'Message' ]
-      except Exception, x:
+      except Exception as x:
         print "Error:", str( x )
 
   session = DSession()
@@ -379,7 +379,7 @@ def main():
         params.setSize( False )
         optstr = optstr + '-t '
 
-    except getopt.GetoptError, e:
+    except getopt.GetoptError as e:
       print str( e )
       print fccli.do_ls.__doc__
       exit( 1 )

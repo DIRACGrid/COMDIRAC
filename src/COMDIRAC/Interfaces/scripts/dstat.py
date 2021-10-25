@@ -216,7 +216,7 @@ def main():
 
   try:
     jobs = [ int( job ) for job in jobs ]
-  except Exception, x:
+  except Exception as x:
     print 'Expected integer for jobID'
     exitCode = 2
     DIRAC.exit( exitCode )
