@@ -8,10 +8,10 @@
 
 __RCSID__ = "$Id$"
 
-from Utilities.DCommands import DConfig, createMinimalConfig, guessProfilesFromCS, critical, error
+from COMDIRAC.Interfaces.Utilities.DCommands import DConfig, createMinimalConfig, guessProfilesFromCS, critical, error
 
-from Utilities.DCommands import DSession, getDNFromProxy
+from COMDIRAC.Interfaces.Utilities.DCommands import DSession, getDNFromProxy
 
-from Utilities.DCommands import DCatalog, createCatalog, pathFromArgument, pathFromArguments
+from COMDIRAC.Interfaces.Utilities.DCommands import DCatalog, createCatalog, pathFromArgument, pathFromArguments
 
-from Utilities.DConfigCache import ConfigCache
+from COMDIRAC.Interfaces.Utilities.DConfigCache import ConfigCache
