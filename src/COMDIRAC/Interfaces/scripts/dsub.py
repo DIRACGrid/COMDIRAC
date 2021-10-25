@@ -370,9 +370,9 @@ def main():
   if cmd is None:
     # get executable script from stdin
     if sys.stdin.isatty():
-      print "\nThe executable is not given"
-      print "Type in the executable script lines, finish with ^D"
-      print "or exit job submission with ^C\n"
+      print("\nThe executable is not given")
+      print("Type in the executable script lines, finish with ^D")
+      print("or exit job submission with ^C\n")
 
     lines = sys.stdin.readlines()
 
@@ -413,7 +413,7 @@ def main():
     uploadExec = params.getForceExecUpload() or not cmd.startswith( "/" )
     if uploadExec:
       if not os.path.isfile( cmd ):
-        print "ERROR: executable file \"%s\" not found" % cmd
+        print("ERROR: executable file \"%s\" not found" % cmd)
         DIRACexit( 2 )
 
       classAdAppendToInputSandbox( classAdJob, cmd )
@@ -428,9 +428,9 @@ def main():
   classAdJobs = params.parameterizeClassAd( classAdJob )
 
   if params.getVerbose():
-    print "JDL:"
+    print("JDL:")
     for p in params.parameterizeClassAd( classAdJob ):
-      print p.asJDL()
+      print(p.asJDL())
 
   jobIDs = []
 
@@ -450,8 +450,8 @@ def main():
 
   if jobIDs:
     if params.getVerbose():
-      print "JobID:",
-    print ','.join( map ( str, jobIDs ) )
+      print("JobID:",)
+    print(','.join( map ( str, jobIDs ) ))
 
   # remove temporary generated files, if any
   for f in tempFiles:
@@ -461,7 +461,7 @@ def main():
       errorList.append( str( e ) )
 
   for error in errorList:
-    print "ERROR %s: %s" % error
+    print("ERROR %s: %s" % error)
 
   DIRACexit( exitCode )
 

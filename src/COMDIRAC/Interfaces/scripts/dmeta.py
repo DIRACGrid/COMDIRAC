@@ -27,7 +27,7 @@ class DMetaAdd( DMetaCommand ):
       metadict[name] = value
     result = self.fcClient.setMetadataBulk( {lfn: metadict} )
     if not result[ "OK" ]:
-      print "Error:", result['Message']
+      print("Error:", result['Message'])
 
 class DMetaRm( DMetaCommand ):
   def __init__( self, fcClient ):
@@ -36,7 +36,7 @@ class DMetaRm( DMetaCommand ):
   def run( self, lfn, metas ):
     result = self.fcClient.removeMetadata( { lfn: metas} )
     if not result[ "OK" ]:
-      print "Error:", result['Message']
+      print("Error:", result['Message'])
 
 class DMetaList( DMetaCommand ):
   def __init__( self, catalog ):
@@ -46,17 +46,17 @@ class DMetaList( DMetaCommand ):
     retVal = self.catalog.getMeta( lfn )
 
     if not retVal[ "OK" ]:
-      print "Error:", retVal[ "Message" ]
+      print("Error:", retVal[ "Message" ])
       DIRAC.exit( -1 )
     metadict = retVal[ "Value" ]
 
     if not metas:
       for k, v in metadict.items( ):
-        print k+"="+str( v )
+        print(k+"="+str( v ))
     else:
       for meta in metas:
         if meta in metadict.keys( ):
-          print meta+"="+metadict[ meta ]
+          print(meta+"="+metadict[ meta ])
 
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
@@ -72,7 +72,7 @@ def main():
       self.listIndex = False
 
     def setIndex( self, arg ):
-      print "index", arg
+      print("index", arg)
       self.index = arg
       return S_OK( )
 
@@ -136,7 +136,7 @@ def main():
     if params.getIndex( ) == "r":
       for meta in args:
         cmdline = "index -r %s" % meta
-        #print cmdline
+        #print(cmdline)
         result = fc.deleteMetadataField( meta )
     else:
       fdType = '-' + params.getIndex( )
@@ -155,10 +155,10 @@ def main():
         elif mtype.lower() == 'metaset':
           rtype = 'MetaSet'
         else:
-          print "Error: illegal metadata type %s" % mtype
+          print("Error: illegal metadata type %s" % mtype)
           DIRAC.exit( -1 )
         cmdline = "index -%s %s %s" % ( params.getIndex( ), meta, rtype )
-        #print cmdline
+        #print(cmdline)
         fc.addMetadataField( meta, rtype, fdType )
     DIRAC.exit( 0 )
 
@@ -173,15 +173,15 @@ def main():
     }
 
   if len( args ) < 2:
-    print "Error: Not enough arguments provided\n%s:" % Script.scriptName
+    print("Error: Not enough arguments provided\n%s:" % Script.scriptName)
     Script.showHelp( )
     DIRAC.exit( -1 )
 
   command = args[ 0 ]
 
   if command not in meta_commands.keys( ):
-    print "Error: Unknown dmeta command \"%s\"" % command
-    print "%s:" % Script.scriptName
+    print("Error: Unknown dmeta command \"%s\"" % command)
+    print("%s:" % Script.scriptName)
     Script.showHelp( )
     DIRAC.exit( -1 )
 

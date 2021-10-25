@@ -71,11 +71,11 @@ def main():
       monitoring = RPCClient( 'WorkloadManagement/JobMonitoring' )
       result = monitoring.getJobs( {"Owner" : userName} )
       if not result['OK']:
-        print "ERROR:", result['Message']
+        print("ERROR:", result['Message'])
       else:
         jobs += map ( int, result['Value'] )
     else:
-      print "ERROR:", result["Message"]
+      print("ERROR:", result["Message"])
 
   errors = []
   for job in jobs:
@@ -90,10 +90,10 @@ def main():
     elif params.getVerbose():
       action = "killed"
       if params.getDelete(): action = "deleted"
-      print "%s job %s" % ( action, job )
+      print("%s job %s" % ( action, job ))
 
   for error in errors:
-    print "ERROR: %s" % error
+    print("ERROR: %s" % error)
 
   DIRAC.exit( exitCode )
 

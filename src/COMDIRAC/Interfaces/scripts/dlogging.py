@@ -48,13 +48,13 @@ def main():
   for job in jobs:
     result = monitoring.getJobLoggingInfo( job )
     if result['OK']:
-      print af.listFormat( result['Value'], headers, sort = headers.index( "Time" ) )
+      print(af.listFormat( result['Value'], headers, sort = headers.index( "Time" ) ))
     else:
       errors.append( result["Message"] )
       exitCode = 2
 
   for error in errors:
-    print "ERROR: %s" % error
+    print("ERROR: %s" % error)
 
   DIRAC.exit( exitCode )
 

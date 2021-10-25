@@ -59,10 +59,10 @@ class ConfigCache:
         path = os.path.join( self.cacheDir, f )
         # delete session files for non running processes
         if not pid_exists( pid ) and os.access( path, os.W_OK ):
-          # print "remove old session file", path
+          # print("remove old session file", path)
           os.unlink( path )
         else:
-          # print "keep session file", path
+          # print("keep session file", path)
           pass
 
   def loadConfig( self ):
@@ -70,11 +70,11 @@ class ConfigCache:
 
     if os.path.isfile( self.configCacheName ):
       cacheStamp = os.stat( self.configCacheName ).st_mtime
-      # print time.time() - cacheStamp, self.configCacheLifetime, time.time() - cacheStamp <= self.configCacheLifetime
+      # print(time.time() - cacheStamp, self.configCacheLifetime, time.time() - cacheStamp <= self.configCacheLifetime)
       if time.time() - cacheStamp <= self.configCacheLifetime:
         Script.disableCS()
         self.newConfig = False
-        # print 'use cached config'
+        # print('use cached config')
 
   def cacheConfig( self ):
     if self.newConfig:

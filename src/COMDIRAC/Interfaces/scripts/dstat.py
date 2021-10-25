@@ -209,7 +209,7 @@ def main():
                         jobName = params.getJobName() )
 
     if not result['OK']:
-      print "Error:", result['Message']
+      print("Error:", result['Message'])
       DIRACExit( -1 )
 
     jobs = result['Value']
@@ -217,7 +217,7 @@ def main():
   try:
     jobs = [ int( job ) for job in jobs ]
   except Exception as x:
-    print 'Expected integer for jobID'
+    print('Expected integer for jobID')
     exitCode = 2
     DIRAC.exit( exitCode )
 
@@ -228,7 +228,7 @@ def main():
   for chunk in chunks( jobs, 1000 ):
     result = getJobSummary( chunk )
     if not result['OK']:
-      print "ERROR: %s" % result['Message']
+      print("ERROR: %s" % result['Message'])
       DIRAC.exit( 2 )
 
     # filter on job statuses
@@ -244,7 +244,7 @@ def main():
 
   af = ArrayFormatter( params.getFmt() )
 
-  print af.dictFormat( summaries, ["JobID"] + params.getFields(), sort = "JobID" )
+  print(af.dictFormat( summaries, ["JobID"] + params.getFields(), sort = "JobID" ))
 
   DIRAC.exit( exitCode )
 

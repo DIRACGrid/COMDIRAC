@@ -71,7 +71,7 @@ def main():
     session = DSession( profile )
 
   if not session:
-    print "Error: Session couldn't be initialized"
+    print("Error: Session couldn't be initialized")
     DIRAC.exit( -1 )
 
   session.write()
@@ -79,19 +79,19 @@ def main():
   try:
     session.checkProxyOrInit()
   except Exception as e:
-    print "Error: %s", e
+    print("Error: %s", e)
     DIRAC.exit( -1 )
 
   retVal = session.proxyInfo()
   if not retVal[ "OK" ]:
-    print retVal[ "Message" ]
+    print(retVal[ "Message" ])
     DIRAC.exit( -1 )
 
-  print ProxyInfo.formatProxyInfoAsString( retVal[ "Value" ] )
+  print(ProxyInfo.formatProxyInfoAsString( retVal[ "Value" ] ))
 
   if not check_lcg_import():
     print
-    print 'Warning: Couldn\'t import module lcg_utils. SRM file transfers will be proxied if possible.'
+    print('Warning: Couldn\'t import module lcg_utils. SRM file transfers will be proxied if possible.')
 
 
 if __name__ == "__main__":

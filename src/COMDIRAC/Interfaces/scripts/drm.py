@@ -63,7 +63,7 @@ def main():
   catalog = DCatalog( )
 
   if len( args ) < 1 and not lfnFileName:
-    print "Error: No argument provided\n%s:" % Script.scriptName
+    print("Error: No argument provided\n%s:" % Script.scriptName)
     Script.showHelp( )
     DIRAC.exit( -1 )
 
@@ -73,7 +73,7 @@ def main():
 
   if lfnFileName:
     if not os.path.exists( lfnFileName ):
-      print "Error: non-existent file %s:" % lfnFileName
+      print("Error: non-existent file %s:" % lfnFileName)
       DIRAC.exit( -1 )
     lfnFile = open( lfnFileName, 'r' )
     lfnList = lfnFile.readlines()
@@ -102,7 +102,7 @@ def main():
       if result['OK']:
         goodCounter += 1
       else:
-        print "ERROR: %s" % result['Message']
+        print("ERROR: %s" % result['Message'])
         badCounter += 1
         exitCode = 3
     else:

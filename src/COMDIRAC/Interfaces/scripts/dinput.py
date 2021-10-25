@@ -105,7 +105,7 @@ def main():
     result = dirac.selectJobs( jobGroup = jobGroup, date = jobDate )
     if not result['OK']:
       if not "No jobs selected" in result['Message']:
-        print "Error:", result['Message']
+        print("Error:", result['Message'])
         exitCode = 2
     else:
       args += result['Value']
@@ -116,7 +116,7 @@ def main():
 
   for arg in args:
     if os.path.isdir( os.path.join( outputDir, "InputSandbox%s" % arg ) ):
-      print "Input for job %s already retrieved, remove the output directory to redownload" % arg
+      print("Input for job %s already retrieved, remove the output directory to redownload" % arg)
     else:
       jobs.append( arg )
 
@@ -155,12 +155,12 @@ def main():
           exitCode = 2
 
     for error in errors:
-      print "ERROR: %s" % error
+      print("ERROR: %s" % error)
 
     if params.getVerbose():
       for j, d in inputs.items():
-        if "isb" in d: print "%s: InputSandbox" % j, d["isb"]
-        if "jdl" in d: print "%s: JDL" % j, d["jdl"]
+        if "isb" in d: print("%s: InputSandbox" % j, d["isb"])
+        if "jdl" in d: print("%s: JDL" % j, d["jdl"])
   DIRAC.exit( exitCode )
 
 

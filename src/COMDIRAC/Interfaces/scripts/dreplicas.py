@@ -48,9 +48,9 @@ def main():
     ret = returnSingleResult( catalog.catalog.getReplicas( lfn ) )
     if ret['OK']:
       replicas = ret['Value']
-      print lfn + ':'
+      print(lfn + ':')
       for se, path in replicas.items():
-        print '  ', se, path
+        print('  ', se, path)
     else:
       error( lfn + ': ' + ret['Message'] )
       exitCode = -2

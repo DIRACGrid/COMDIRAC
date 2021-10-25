@@ -37,7 +37,7 @@ def main():
   session = DSession()
 
   if len( args ) < 1:
-    print "Error: No argument provided\n%s:" % Script.scriptName
+    print("Error: No argument provided\n%s:" % Script.scriptName)
     Script.showHelp()
     DIRAC.exit( -1 )
 
@@ -47,9 +47,9 @@ def main():
   if result["OK"]:
     if result["Value"]["Failed"]:
       for p in result["Value"]["Failed"]:
-        print "ERROR - \"%s\": %s" % ( p, result["Value"]["Failed"][p] )
+        print("ERROR - \"%s\": %s" % ( p, result["Value"]["Failed"][p] ))
   else:
-    print "ERROR: %s" % result["Message"]
+    print("ERROR: %s" % result["Message"])
 
 if __name__ == "__main__":
   main()

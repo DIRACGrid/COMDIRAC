@@ -39,7 +39,7 @@ def main():
   session = DSession( )
 
   if len( args ) > 1:
-    print "Error: too many arguments provided\n%s:" % Script.scriptName
+    print("Error: too many arguments provided\n%s:" % Script.scriptName)
     Script.showHelp( )
     DIRAC.exit( -1 )
 

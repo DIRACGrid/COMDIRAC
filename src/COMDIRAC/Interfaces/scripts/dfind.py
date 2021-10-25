@@ -38,7 +38,7 @@ def main():
   catalog = DCatalog( )
 
   if len( args ) < 1:
-    print "Error: No argument provided\n%s:" % Script.scriptName
+    print("Error: No argument provided\n%s:" % Script.scriptName)
     Script.showHelp( )
     DIRAC.exit( -1 )
 

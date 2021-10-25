@@ -578,7 +578,7 @@ def guessConfigFromCS( config, section, userName, groupName ):
 def sessionFromProxy( config = DConfig(), sessionDir = None ):
   proxyPath = _getProxyLocation()
   if not proxyPath:
-    print "No proxy found"
+    print("No proxy found")
     return None
 
   retVal = _getProxyInfo( proxyPath )
@@ -617,7 +617,7 @@ def sessionFromProxy( config = DConfig(), sessionDir = None ):
 def getDNFromProxy():
   proxyPath = _getProxyLocation()
   if not proxyPath:
-    print "No proxy found"
+    print("No proxy found")
     return None
 
   retVal = _getProxyInfo( proxyPath )

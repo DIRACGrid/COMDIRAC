@@ -56,7 +56,7 @@ def main():
   catalog = DCatalog( )
 
   if len( args ) < 2:
-    print "Error: not enough arguments provided\n%s:" % Script.scriptName
+    print("Error: not enough arguments provided\n%s:" % Script.scriptName)
     Script.showHelp( )
     DIRAC.exit( -1 )
 
@@ -80,7 +80,7 @@ def main():
       if lfn in result['Value']['Failed']:
         gLogger.error( "Error:", result['Value']['Failed'][lfn] )
     except Exception as x:
-      print "Exception:", str(x)  
+      print("Exception:", str(x)  )
 
 
 if __name__ == "__main__":

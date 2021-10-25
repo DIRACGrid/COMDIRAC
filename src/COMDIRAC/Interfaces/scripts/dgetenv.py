@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 """
-print DCommands session environment variables
+print(DCommands session environment variables)
 """
 
 import DIRAC
@@ -35,10 +35,10 @@ def main():
   if not args:
     retVal = session.listEnv( )
     if not retVal[ "OK" ]:
-      print "Error:", retVal[ "Message" ]
+      print("Error:", retVal[ "Message" ])
       DIRAC.exit( -1 )
     for o, v in retVal[ "Value" ]:
-      print o + "=" + v
+      print(o + "=" + v)
     DIRAC.exit( 0 )
 
   arg = args[ 0 ]
@@ -58,9 +58,9 @@ def main():
     ret = session.getEnv( option )
 
   if not ret[ "OK" ]:
-    print critical( ret[ "Message" ] )
+    print(critical( ret[ "Message" ] ))
 
-  print ret[ "Value" ]
+  print(ret[ "Value" ])
 
 
 if __name__ == "__main__":

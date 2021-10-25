@@ -67,12 +67,12 @@ def main():
     Script.enableCS()
     result = getDNFromProxy()
     if not result["OK"]:
-      print "ERROR: %s" % result["Message"]
+      print("ERROR: %s" % result["Message"])
       DIRAC.exit( 2 )
     dn = result["Value"]
     result = guessProfilesFromCS( dn )
     if not result["OK"]:
-      print "ERROR: %s" % result["Message"]
+      print("ERROR: %s" % result["Message"])
       DIRAC.exit( 2 )
     profiles = result["Value"]
 
@@ -90,9 +90,9 @@ def main():
       if not retVal[ "OK" ]:
         critical( retVal[ "Message" ] )
 
-      print "[%s]" % s
+      print("[%s]" % s)
       for o, v in retVal["Value" ]:
-        print o, "=", v
+        print(o, "=", v)
       print
     DIRAC.exit( 0 )
 
@@ -116,11 +116,11 @@ def main():
       if not retVal[ "OK" ]: critical( retVal[ "Message" ] )
       ret = retVal[ "Value" ]
       if type( ret ) == types.ListType:
-        print "[%s]" % section
+        print("[%s]" % section)
         for o, v in ret:
-          print o, "=", v
+          print(o, "=", v)
       else:
-        print option, "=", ret
+        print(option, "=", ret)
 
   if modified:
     dconfig.write()

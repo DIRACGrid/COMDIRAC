@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 """
-print DCommands working directory
+print(DCommands working directory)
 """
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
@@ -27,7 +27,7 @@ def main():
 
   ret = session.getCwd( )
 
-  print ret
+  print(ret)
 
 
 if __name__ == "__main__":

@@ -115,7 +115,7 @@ def main():
 
   class ReplicaDirectoryListing( DirectoryListing ):
     def addFileWithReplicas( self, name, fileDict, numericid, replicas ):
-      """ Pretty print of the file ls output with replica info
+      """ Pretty print(of the file ls output with replica info)
       """
       self.addFile( name, fileDict, replicas, numericid )
   
@@ -169,18 +169,18 @@ def main():
         if humanread:
           size = self.humanReadableSize( e[ 4 ] )
 
-        print str( e[ 0 ] ),
-        print str( e[ 1 ] ).rjust( wList[ 1 ] ),
-        print str( e[ 2 ] ).ljust( wList[ 2 ] ),
-        print str( e[ 3 ] ).ljust( wList[ 3 ] ),
-        print str( size ).rjust( wList[ 4 ] ),
-        print str( e[ 5 ] ).rjust( wList[ 5 ] ),
-        print str( e[ 6 ] )
+        print(str( e[ 0 ] ),)
+        print(str( e[ 1 ] ).rjust( wList[ 1 ] ),)
+        print(str( e[ 2 ] ).ljust( wList[ 2 ] ),)
+        print(str( e[ 3 ] ).ljust( wList[ 3 ] ),)
+        print(str( size ).rjust( wList[ 4 ] ),)
+        print(str( e[ 5 ] ).rjust( wList[ 5 ] ),)
+        print(str( e[ 6 ] ))
   
-        # print replicas if present
+        # print(replicas if present)
         if len( e ) > 7:
           for r in e[ 7: ]:
-            print "  ", r
+            print("  ", r)
   
   class ReplicaFileCatalogClientCLI( FileCatalogClientCLI ):
     def getReplicas( self, path ):
@@ -192,7 +192,7 @@ def main():
             for se, entry in result[ 'Value' ][ 'Successful' ][ path ].items():
               replicas.append( se.ljust( 15 ) + " " + entry )
           else:
-            print "Replicas: ", result  # [ 'Message' ]
+            print("Replicas: ", result  # [ 'Message' ])
       except Exception as x:
         replicas.append( "replicas failed:" + str( x ) )
       return tuple( replicas )
@@ -226,8 +226,8 @@ def main():
         try:
           optlist, arguments = getopt.getopt( argss, short_opts, long_opts )
         except getopt.GetoptError as e:
-          print str( e )
-          print self.do_ls.__doc__
+          print(str( e ))
+          print(self.do_ls.__doc__)
           return
         # Duplicated options are allowed: later options have precedence, e.g.,
         # '-ltSt' will be order by time
@@ -278,7 +278,7 @@ def main():
       # Check if the target path is a file
       result = self.fc.isFile( path )          
       if not result[ 'OK' ]:
-        print "Error: can not verify path"
+        print("Error: can not verify path")
         return
       elif path in result[ 'Value' ][ 'Successful' ] and result[ 'Value' ][ 'Successful' ][ path ]:
         result = self.fc.getFileMetadata( path )      
@@ -293,10 +293,10 @@ def main():
       
       result = self.fc.isDirectory( path )
       if not result[ "OK" ]:
-        print "Error: can not verify path"
+        print("Error: can not verify path")
         return
       elif path not in result[ 'Value' ][ 'Successful' ] or not result[ 'Value' ][ 'Successful' ][ path ]:
-        print "Error: \"%s\" doesn't exist" % path
+        print("Error: \"%s\" doesn't exist" % path)
         return
 
       # Get directory contents now
@@ -307,7 +307,7 @@ def main():
           if result[ 'Value' ][ 'Successful' ]:
             for entry in result[ 'Value' ][ 'Successful' ][ path ][ 'Files' ]:
               fname = entry.split( '/' )[ -1 ]
-              # print entry, fname
+              # print(entry, fname)
               # fname = entry.replace( self.cwd,'' ).replace( '/','' )
               if long:
                 fileDict = result[ 'Value' ][ 'Successful' ][ path ][ 'Files' ][ entry ][ 'MetaData' ]
@@ -318,7 +318,7 @@ def main():
                 dList.addSimpleFile( fname )
             for entry in result[ 'Value' ][ 'Successful' ][ path ][ 'SubDirs' ]:
               dname = entry.split( '/' )[ -1 ]
-              # print entry, dname
+              # print(entry, dname)
               # dname = entry.replace( self.cwd,'' ).replace( '/','' )  
               if long:
                 dirDict = result[ 'Value' ][ 'Successful' ][ path ][ 'SubDirs' ][ entry ]
@@ -334,9 +334,9 @@ def main():
             else:
               dList.printOrdered()
         else:
-          print "Error:", result[ 'Message' ]
+          print("Error:", result[ 'Message' ])
       except Exception as x:
-        print "Error:", str( x )
+        print("Error:", str( x ))
 
   session = DSession()
 
@@ -380,12 +380,12 @@ def main():
         optstr = optstr + '-t '
 
     except getopt.GetoptError as e:
-      print str( e )
-      print fccli.do_ls.__doc__
+      print(str( e ))
+      print(fccli.do_ls.__doc__)
       exit( 1 )
 
   for p in pathFromArguments( session, args ):
-    print "%s:" % p
+    print("%s:" % p)
     fccli.do_ls( optstr + p )
 
 
