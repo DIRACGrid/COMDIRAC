@@ -9,7 +9,7 @@ from signal import signal, SIGPIPE, SIG_DFL
 import six
 
 from COMDIRAC.Interfaces import ConfigCache
-from DIRAC.Core.Base import Script
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 from DIRAC import S_OK
 from DIRAC.Core.Utilities.Time import toString, date, day
 
@@ -141,106 +141,112 @@ class Params:
   def getInputFile( self ):
     return self.inputFile
 
-params = Params()
 
-Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
-                                     'Usage:',
-                                     '  %s [option|cfgfile] ' % Script.scriptName,
-                                     'Arguments:', ] ) )
-Script.registerSwitch( "u:", "User=", "job owner", params.setUser )
-Script.registerSwitch( "S:", "Status=", "select job by status (comma separated list of statuses in: %s)" % ','.join( JOB_STATES ), params.setStatus )
-Script.registerSwitch( "a", "StatusAll", "display jobs of any status", params.setStatusAll )
-Script.registerSwitch( "g:", "JobGroup=", "select job by job group", params.setJobGroup )
-Script.registerSwitch( "n:", "JobName=", "select job by job name", params.setJobName )
-Script.registerSwitch( "f:", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
-Script.registerSwitch( "D:", "JobDate=", "age of jobs to display (in days)", params.setJobDate )
-Script.registerSwitch( "F:", "Fields=", "display list of job fields (comma separated list of fields. e.g. %s)" % ','.join( DEFAULT_DISPLAY_COLUMNS + EXTRA_DISPLAY_COLUMNS ), params.setFields )
-Script.registerSwitch( "i:", "input-file=", "read JobIDs from file", params.setInputFile )
+@Script()
+def main():
+  params = Params()
 
-configCache = ConfigCache()
-Script.parseCommandLine( ignoreErrors = True )
-configCache.cacheConfig()
+  Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
+                                      'Usage:',
+                                      '  %s [option|cfgfile] ' % Script.scriptName,
+                                      'Arguments:', ] ) )
+  Script.registerSwitch( "u:", "User=", "job owner", params.setUser )
+  Script.registerSwitch( "S:", "Status=", "select job by status (comma separated list of statuses in: %s)" % ','.join( JOB_STATES ), params.setStatus )
+  Script.registerSwitch( "a", "StatusAll", "display jobs of any status", params.setStatusAll )
+  Script.registerSwitch( "g:", "JobGroup=", "select job by job group", params.setJobGroup )
+  Script.registerSwitch( "n:", "JobName=", "select job by job name", params.setJobName )
+  Script.registerSwitch( "f:", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
+  Script.registerSwitch( "D:", "JobDate=", "age of jobs to display (in days)", params.setJobDate )
+  Script.registerSwitch( "F:", "Fields=", "display list of job fields (comma separated list of fields. e.g. %s)" % ','.join( DEFAULT_DISPLAY_COLUMNS + EXTRA_DISPLAY_COLUMNS ), params.setFields )
+  Script.registerSwitch( "i:", "input-file=", "read JobIDs from file", params.setInputFile )
 
-args = Script.getPositionalArgs()
+  configCache = ConfigCache()
+  Script.parseCommandLine( ignoreErrors = True )
+  configCache.cacheConfig()
 
-import DIRAC
-from DIRAC import S_OK, S_ERROR
-from DIRAC import exit as DIRACExit
-from DIRAC.Core.DISET.RPCClient import RPCClient
-from COMDIRAC.Interfaces import DSession
+  args = Script.getPositionalArgs()
 
-session = DSession()
-params.setSession( session )
+  import DIRAC
+  from DIRAC import S_OK, S_ERROR
+  from DIRAC import exit as DIRACExit
+  from DIRAC.Core.DISET.RPCClient import RPCClient
+  from COMDIRAC.Interfaces import DSession
 
-exitCode = 0
+  session = DSession()
+  params.setSession( session )
 
-if args:
-  # handle comma separated list of JobIDs
-  newargs = []
-  for arg in args:
-    newargs += arg.split( ',' )
-  args = newargs
+  exitCode = 0
 
-jobs = args
+  if args:
+    # handle comma separated list of JobIDs
+    newargs = []
+    for arg in args:
+      newargs += arg.split( ',' )
+    args = newargs
 
-if params.getInputFile() != None:
-  with open( params.getInputFile(), 'r' ) as f:
-    for l in f.readlines():
-      jobs += l.split( ',' )
+  jobs = args
 
-if not jobs:
-  # time interval
-  jobDate = toString( date() - params.getJobDate() * day )
+  if params.getInputFile() != None:
+    with open( params.getInputFile(), 'r' ) as f:
+      for l in f.readlines():
+        jobs += l.split( ',' )
 
-  # job owner
-  userName = params.getUser()
-  if userName is None:
-    result = session.getUserName()
-    if result["OK"]:
-      userName = result["Value"]
-  elif userName == "*" or userName.lower() == "__all__":
-    # jobs from all users
-    userName = None
+  if not jobs:
+    # time interval
+    jobDate = toString( date() - params.getJobDate() * day )
 
-  result = selectJobs( owner = userName, date = jobDate, jobGroup = params.getJobGroup(),
-                       jobName = params.getJobName() )
+    # job owner
+    userName = params.getUser()
+    if userName is None:
+      result = session.getUserName()
+      if result["OK"]:
+        userName = result["Value"]
+    elif userName == "*" or userName.lower() == "__all__":
+      # jobs from all users
+      userName = None
 
-  if not result['OK']:
-    print "Error:", result['Message']
-    DIRACExit( -1 )
+    result = selectJobs( owner = userName, date = jobDate, jobGroup = params.getJobGroup(),
+                        jobName = params.getJobName() )
 
-  jobs = result['Value']
+    if not result['OK']:
+      print "Error:", result['Message']
+      DIRACExit( -1 )
 
-try:
-  jobs = [ int( job ) for job in jobs ]
-except Exception, x:
-  print 'Expected integer for jobID'
-  exitCode = 2
+    jobs = result['Value']
+
+  try:
+    jobs = [ int( job ) for job in jobs ]
+  except Exception, x:
+    print 'Expected integer for jobID'
+    exitCode = 2
+    DIRAC.exit( exitCode )
+
+  summaries = {}
+  statuses = params.getStatus()
+
+  # split summary requests in chunks of a reasonable size (saves memory)
+  for chunk in chunks( jobs, 1000 ):
+    result = getJobSummary( chunk )
+    if not result['OK']:
+      print "ERROR: %s" % result['Message']
+      DIRAC.exit( 2 )
+
+    # filter on job statuses
+    if "all" in statuses:
+      summaries = result['Value']
+    else:
+      for j, s in result['Value'].items():
+        if s["Status"].lower() in statuses:
+          summaries[j] = s
+
+  for s in summaries.values():
+    s["JobID"] = int( s["JobID"] )
+
+  af = ArrayFormatter( params.getFmt() )
+
+  print af.dictFormat( summaries, ["JobID"] + params.getFields(), sort = "JobID" )
+
   DIRAC.exit( exitCode )
 
-summaries = {}
-statuses = params.getStatus()
-
-# split summary requests in chunks of a reasonable size (saves memory)
-for chunk in chunks( jobs, 1000 ):
-  result = getJobSummary( chunk )
-  if not result['OK']:
-    print "ERROR: %s" % result['Message']
-    DIRAC.exit( 2 )
-
-  # filter on job statuses
-  if "all" in statuses:
-    summaries = result['Value']
-  else:
-    for j, s in result['Value'].items():
-      if s["Status"].lower() in statuses:
-        summaries[j] = s
-
-for s in summaries.values():
-  s["JobID"] = int( s["JobID"] )
-
-af = ArrayFormatter( params.getFmt() )
-
-print af.dictFormat( summaries, ["JobID"] + params.getFields(), sort = "JobID" )
-
-DIRAC.exit( exitCode )
+if __name__ == "__main__":
+  main()

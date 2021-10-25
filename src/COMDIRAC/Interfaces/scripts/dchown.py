@@ -8,7 +8,7 @@ Change file owner
 """
 
 from COMDIRAC.Interfaces import ConfigCache
-from DIRAC.Core.Base import Script
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 from DIRAC import S_OK
 
 class Params:
@@ -22,59 +22,66 @@ class Params:
   def getRecursive( self ):
     return self.recursive
 
-params = Params( )
 
-Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
-                                     'Usage:',
-                                     '  %s [options] owner Path...' % Script.scriptName,
-                                     'Arguments:',
-                                     '  owner:    new owner name',
-                                     '  Path:     path to file',
-                                     '', 'Examples:',
-                                     '  $ dchown atsareg ././some_lfn_file',
-                                     '  $ dchown -R pgay ./',
-                                     ] )
-                        )
-Script.registerSwitch( "R", "recursive", "recursive", params.setRecursive )
+@Script()
+def main():
+  params = Params( )
 
-configCache = ConfigCache()
-Script.parseCommandLine( ignoreErrors = True )
-configCache.cacheConfig()
+  Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
+                                      'Usage:',
+                                      '  %s [options] owner Path...' % Script.scriptName,
+                                      'Arguments:',
+                                      '  owner:    new owner name',
+                                      '  Path:     path to file',
+                                      '', 'Examples:',
+                                      '  $ dchown atsareg ././some_lfn_file',
+                                      '  $ dchown -R pgay ./',
+                                      ] )
+                          )
+  Script.registerSwitch( "R", "recursive", "recursive", params.setRecursive )
 
-args = Script.getPositionalArgs()
+  configCache = ConfigCache()
+  Script.parseCommandLine( ignoreErrors = True )
+  configCache.cacheConfig()
 
-import DIRAC
-from DIRAC import gLogger
-from COMDIRAC.Interfaces import DSession
-from COMDIRAC.Interfaces import DCatalog
-from COMDIRAC.Interfaces import pathFromArgument
+  args = Script.getPositionalArgs()
 
-session = DSession( )
-catalog = DCatalog( )
+  import DIRAC
+  from DIRAC import gLogger
+  from COMDIRAC.Interfaces import DSession
+  from COMDIRAC.Interfaces import DCatalog
+  from COMDIRAC.Interfaces import pathFromArgument
 
-if len( args ) < 2:
-  print "Error: not enough arguments provided\n%s:" % Script.scriptName
-  Script.showHelp( )
-  DIRAC.exit( -1 )
+  session = DSession( )
+  catalog = DCatalog( )
 
-owner = args[ 0 ]
+  if len( args ) < 2:
+    print "Error: not enough arguments provided\n%s:" % Script.scriptName
+    Script.showHelp( )
+    DIRAC.exit( -1 )
 
-lfns = [ ]
-for path in args[ 1: ]:
-  lfns.append( pathFromArgument( session, path ))
+  owner = args[ 0 ]
 
-from DIRAC.Resources.Catalog.FileCatalog import FileCatalog
+  lfns = [ ]
+  for path in args[ 1: ]:
+    lfns.append( pathFromArgument( session, path ))
 
-fc = FileCatalog()
+  from DIRAC.Resources.Catalog.FileCatalog import FileCatalog
 
-for lfn in lfns:
-  try:
-    pathDict = { lfn: owner }
-    result = fc.changePathOwner( pathDict, params.recursive )
-    if not result['OK']:
-      gLogger.error( "Error:", result['Message'] )
-      break
-    if lfn in result['Value']['Failed']:
-      gLogger.error( "Error:", result['Value']['Failed'][lfn] )
-  except Exception, x:
-    print "Exception:", str(x)  
+  fc = FileCatalog()
+
+  for lfn in lfns:
+    try:
+      pathDict = { lfn: owner }
+      result = fc.changePathOwner( pathDict, params.recursive )
+      if not result['OK']:
+        gLogger.error( "Error:", result['Message'] )
+        break
+      if lfn in result['Value']['Failed']:
+        gLogger.error( "Error:", result['Value']['Failed'][lfn] )
+    except Exception, x:
+      print "Exception:", str(x)  
+
+
+if __name__ == "__main__":
+  main()

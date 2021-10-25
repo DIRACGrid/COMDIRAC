@@ -10,17 +10,18 @@ import os
 
 import DIRAC
 from DIRAC import S_OK, S_ERROR
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
-from COMDIRAC.Interfaces import error
-from COMDIRAC.Interfaces import critical
-from COMDIRAC.Interfaces import DSession
-from COMDIRAC.Interfaces import DCatalog
-from COMDIRAC.Interfaces import pathFromArgument
 
-if __name__ == "__main__":
+@Script()
+def main():
+  from COMDIRAC.Interfaces import error
+  from COMDIRAC.Interfaces import critical
+  from COMDIRAC.Interfaces import DSession
+  from COMDIRAC.Interfaces import DCatalog
+  from COMDIRAC.Interfaces import pathFromArgument
 
   from COMDIRAC.Interfaces import ConfigCache
-  from DIRAC.Core.Base import Script
 
   class Params:
     def __init__ ( self ):
@@ -129,5 +130,7 @@ if __name__ == "__main__":
       exitCode = -2
       error( lfn + ': ' + ret['Message'] )
 
-DIRAC.exit( exitCode )
+  DIRAC.exit( exitCode )
 
+if __name__ == "__main__":
+  main()

@@ -5,15 +5,18 @@ list replicas for files in the FileCatalog
 """
 
 import DIRAC
-from COMDIRAC.Interfaces import critical, error
-from COMDIRAC.Interfaces import DSession
-from COMDIRAC.Interfaces import DCatalog
-from COMDIRAC.Interfaces import pathFromArgument
-from DIRAC.Core.Utilities.ReturnValues import returnSingleResult
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
-if __name__ == "__main__":
+
+@Script()
+def main():
+  from COMDIRAC.Interfaces import critical, error
+  from COMDIRAC.Interfaces import DSession
+  from COMDIRAC.Interfaces import DCatalog
+  from COMDIRAC.Interfaces import pathFromArgument
+  from DIRAC.Core.Utilities.ReturnValues import returnSingleResult
+
   from COMDIRAC.Interfaces import ConfigCache
-  from DIRAC.Core.Base import Script
 
   Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                        'Usage:',
@@ -52,4 +55,8 @@ if __name__ == "__main__":
       error( lfn + ': ' + ret['Message'] )
       exitCode = -2
 
-DIRAC.exit( exitCode )
+  DIRAC.exit( exitCode )
+
+
+if __name__ == "__main__":
+  main()

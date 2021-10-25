@@ -4,12 +4,15 @@
 register DCommands session environment variables
 """
 
-from COMDIRAC.Interfaces import critical
-from COMDIRAC.Interfaces import DSession
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
-if __name__ == "__main__":
+
+@Script()
+def main():
+  from COMDIRAC.Interfaces import critical
+  from COMDIRAC.Interfaces import DSession
+
   from COMDIRAC.Interfaces import ConfigCache
-  from DIRAC.Core.Base import Script
 
   Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                        'Usage:',
@@ -47,3 +50,7 @@ if __name__ == "__main__":
 
   if modified:
     session.write( )
+
+
+if __name__ == "__main__":
+  main()

@@ -5,14 +5,15 @@ print DCommands session environment variables
 """
 
 import DIRAC
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
-from COMDIRAC.Interfaces import critical
+@Script()
+def main():
+  from COMDIRAC.Interfaces import critical
 
-from COMDIRAC.Interfaces import DSession
+  from COMDIRAC.Interfaces import DSession
 
-if __name__ == "__main__":
   from COMDIRAC.Interfaces import ConfigCache
-  from DIRAC.Core.Base import Script
 
   Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                        'Usage:',
@@ -62,3 +63,5 @@ if __name__ == "__main__":
   print ret[ "Value" ]
 
 
+if __name__ == "__main__":
+  main()

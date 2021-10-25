@@ -11,7 +11,7 @@ from COMDIRAC.Interfaces import DConfig, DSession, critical
 from COMDIRAC.Interfaces.Utilities.DCommands import sessionFromProxy
 from COMDIRAC.Interfaces import ConfigCache
 from COMDIRAC.Interfaces.Utilities.DConfigCache import check_lcg_import
-from DIRAC.Core.Base import Script
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 import DIRAC.Core.Security.ProxyInfo as ProxyInfo
 
 class Params:
@@ -31,61 +31,68 @@ class Params:
   def getDestroy( self ):
     return self.destroy
 
-params = Params()
 
-Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
-                                     'Usage:',
-                                     '  %s [options] [profile_name]' % Script.scriptName,
-                                     'Arguments:',
-                                     ' profile_name:     existing profile section in DCommands config', ] )
-                        )
-Script.registerSwitch( "p", "fromProxy", "build session from existing proxy", params.setFromProxy )
-Script.registerSwitch( "D", "destroy", "destroy session information", params.setDestroy )
+@Script()
+def main():
+  params = Params()
 
-Script.disableCS()
+  Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
+                                      'Usage:',
+                                      '  %s [options] [profile_name]' % Script.scriptName,
+                                      'Arguments:',
+                                      ' profile_name:     existing profile section in DCommands config', ] )
+                          )
+  Script.registerSwitch( "p", "fromProxy", "build session from existing proxy", params.setFromProxy )
+  Script.registerSwitch( "D", "destroy", "destroy session information", params.setDestroy )
 
-Script.parseCommandLine( ignoreErrors = True )
-args = Script.getPositionalArgs()
+  Script.disableCS()
 
-profile = None
-if len( args ): profile = args[ 0 ]
+  Script.parseCommandLine( ignoreErrors = True )
+  args = Script.getPositionalArgs()
 
-if params.destroy:
-  session = DSession()
-  os.unlink( session.configPath )
-  DIRAC.exit( 0 )
+  profile = None
+  if len( args ): profile = args[ 0 ]
 
-session = None
-if params.fromProxy:
-  retVal = Script.enableCS()
-  ConfigCache( forceRefresh = True ).cacheConfig()
+  if params.destroy:
+    session = DSession()
+    os.unlink( session.configPath )
+    DIRAC.exit( 0 )
 
-  if not retVal[ 'OK' ]:
-    critical( retVal[ "Message" ] )
+  session = None
+  if params.fromProxy:
+    retVal = Script.enableCS()
+    ConfigCache( forceRefresh = True ).cacheConfig()
 
-  session = sessionFromProxy()
-else:
-  session = DSession( profile )
+    if not retVal[ 'OK' ]:
+      critical( retVal[ "Message" ] )
 
-if not session:
-  print "Error: Session couldn't be initialized"
-  DIRAC.exit( -1 )
+    session = sessionFromProxy()
+  else:
+    session = DSession( profile )
 
-session.write()
+  if not session:
+    print "Error: Session couldn't be initialized"
+    DIRAC.exit( -1 )
 
-try:
-  session.checkProxyOrInit()
-except Exception as e:
-  print "Error: %s", e
-  DIRAC.exit( -1 )
+  session.write()
 
-retVal = session.proxyInfo()
-if not retVal[ "OK" ]:
-  print retVal[ "Message" ]
-  DIRAC.exit( -1 )
+  try:
+    session.checkProxyOrInit()
+  except Exception as e:
+    print "Error: %s", e
+    DIRAC.exit( -1 )
 
-print ProxyInfo.formatProxyInfoAsString( retVal[ "Value" ] )
+  retVal = session.proxyInfo()
+  if not retVal[ "OK" ]:
+    print retVal[ "Message" ]
+    DIRAC.exit( -1 )
 
-if not check_lcg_import():
-  print
-  print 'Warning: Couldn\'t import module lcg_utils. SRM file transfers will be proxied if possible.'
+  print ProxyInfo.formatProxyInfoAsString( retVal[ "Value" ] )
+
+  if not check_lcg_import():
+    print
+    print 'Warning: Couldn\'t import module lcg_utils. SRM file transfers will be proxied if possible.'
+
+
+if __name__ == "__main__":
+  main()

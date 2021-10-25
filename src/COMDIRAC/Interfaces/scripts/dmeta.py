@@ -58,11 +58,13 @@ class DMetaList( DMetaCommand ):
         if meta in metadict.keys( ):
           print meta+"="+metadict[ meta ]
 
-if __name__ == "__main__":
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+
+@Script()
+def main():
   import sys
 
   from COMDIRAC.Interfaces import ConfigCache
-  from DIRAC.Core.Base import Script
 
   class Params:
     def __init__ ( self ):
@@ -191,3 +193,7 @@ if __name__ == "__main__":
   metas = args[ 2: ]
 
   command.run( lfn, metas )
+
+
+if __name__ == "__main__":
+  main()

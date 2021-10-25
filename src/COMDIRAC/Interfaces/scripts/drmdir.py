@@ -6,16 +6,17 @@ directories and files on the physical storage.
 """
 
 import DIRAC
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
-from COMDIRAC.Interfaces import critical
-from COMDIRAC.Interfaces import DSession
-from COMDIRAC.Interfaces import createCatalog
-from COMDIRAC.Interfaces import pathFromArguments
 
-if __name__ == "__main__":
+@Script()
+def main():
+  from COMDIRAC.Interfaces import critical
+  from COMDIRAC.Interfaces import DSession
+  from COMDIRAC.Interfaces import createCatalog
+  from COMDIRAC.Interfaces import pathFromArguments
 
   from COMDIRAC.Interfaces import ConfigCache
-  from DIRAC.Core.Base import Script
 
   Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                        'Usage:',
@@ -50,3 +51,5 @@ if __name__ == "__main__":
   else:
     print "ERROR: %s" % result["Message"]
 
+if __name__ == "__main__":
+  main()

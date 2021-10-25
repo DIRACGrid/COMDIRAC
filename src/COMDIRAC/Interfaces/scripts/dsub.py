@@ -14,7 +14,7 @@ from types import IntType
 from DIRAC import S_OK
 from DIRAC import exit as DIRACexit
 from COMDIRAC.Interfaces import ConfigCache
-from DIRAC.Core.Base import Script
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
 def parseScriptLinesJDLDirectives( lines ):
   ret = {}
@@ -291,173 +291,179 @@ class Params:
 
     return ret
 
-params = Params()
 
-Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
-                                     'Usage:',
-                                     '  %s [option|cfgfile] [executable [--] [arguments...]]' % Script.scriptName,
-                                     'Arguments:',
-                                     '  executable: command to be run inside the job. ',
-                                     '              If a relative path, local file will be included in InputSandbox',
-                                     '              If no executable is given and JDL (provided or default) doesn\'t contain one,',
-                                     '              standard input will be read for executable contents',
-                                     '  arguments: arguments to pass to executable',
-                                     '             if some arguments are to begin with a dash \'-\', prepend \'--\' before them', ] ) )
+@Script()
+def main():
+  params = Params()
 
-Script.registerSwitch( "J:", "JDL=", "JDL file or inline", params.setJDL )
-Script.registerSwitch( "N:", "JobName=", "job name", params.setName )
-Script.registerSwitch( "E:", "StdError=", "job standard error file", params.setStdError )
-Script.registerSwitch( "O:", "StdOutput=", "job standard output file", params.setStdOutput )
-Script.registerSwitch( "", "OutputSandbox=", "job output sandbox", params.setOutputSandbox )
-Script.registerSwitch( "", "InputSandbox=", "job input sandbox", params.setInputSandbox )
-Script.registerSwitch( "", "OutputData=", "job output data", params.setOutputData )
-Script.registerSwitch( "", "InputData=", "job input data", params.setInputData )
-Script.registerSwitch( "", "OutputPath=", "job output data path prefix", params.setOutputPath )
-Script.registerSwitch( "", "OutputSE=", "job output data SE", params.setOutputSE )
-Script.registerSwitch( "", "CPUTime=", "job CPU time limit (in seconds)", params.setCPUTime )
-Script.registerSwitch( "", "Site=", "job Site list", params.setSite )
-Script.registerSwitch( "", "BannedSite=", "job Site exclusion list", params.setBannedSite )
-Script.registerSwitch( "", "Platform=", "job Platform list", params.setPlatform )
-Script.registerSwitch( "", "Priority=", "job priority", params.setPriority )
-Script.registerSwitch( "", "JobGroup=", "job JobGroup", params.setJobGroup )
-Script.registerSwitch( "", "Parametric=", "comma separated list or named parameters or number loops (in the form<start>:<stop>[:<step>[:<factor>]])",
-                       params.setParametric )
-Script.registerSwitch( "", "ForceExecUpload", "Force upload of executable with InputSandbox",
-                       params.setForceExecUpload )
+  Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
+                                      'Usage:',
+                                      '  %s [option|cfgfile] [executable [--] [arguments...]]' % Script.scriptName,
+                                      'Arguments:',
+                                      '  executable: command to be run inside the job. ',
+                                      '              If a relative path, local file will be included in InputSandbox',
+                                      '              If no executable is given and JDL (provided or default) doesn\'t contain one,',
+                                      '              standard input will be read for executable contents',
+                                      '  arguments: arguments to pass to executable',
+                                      '             if some arguments are to begin with a dash \'-\', prepend \'--\' before them', ] ) )
 
-Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
+  Script.registerSwitch( "J:", "JDL=", "JDL file or inline", params.setJDL )
+  Script.registerSwitch( "N:", "JobName=", "job name", params.setName )
+  Script.registerSwitch( "E:", "StdError=", "job standard error file", params.setStdError )
+  Script.registerSwitch( "O:", "StdOutput=", "job standard output file", params.setStdOutput )
+  Script.registerSwitch( "", "OutputSandbox=", "job output sandbox", params.setOutputSandbox )
+  Script.registerSwitch( "", "InputSandbox=", "job input sandbox", params.setInputSandbox )
+  Script.registerSwitch( "", "OutputData=", "job output data", params.setOutputData )
+  Script.registerSwitch( "", "InputData=", "job input data", params.setInputData )
+  Script.registerSwitch( "", "OutputPath=", "job output data path prefix", params.setOutputPath )
+  Script.registerSwitch( "", "OutputSE=", "job output data SE", params.setOutputSE )
+  Script.registerSwitch( "", "CPUTime=", "job CPU time limit (in seconds)", params.setCPUTime )
+  Script.registerSwitch( "", "Site=", "job Site list", params.setSite )
+  Script.registerSwitch( "", "BannedSite=", "job Site exclusion list", params.setBannedSite )
+  Script.registerSwitch( "", "Platform=", "job Platform list", params.setPlatform )
+  Script.registerSwitch( "", "Priority=", "job priority", params.setPriority )
+  Script.registerSwitch( "", "JobGroup=", "job JobGroup", params.setJobGroup )
+  Script.registerSwitch( "", "Parametric=", "comma separated list or named parameters or number loops (in the form<start>:<stop>[:<step>[:<factor>]])",
+                        params.setParametric )
+  Script.registerSwitch( "", "ForceExecUpload", "Force upload of executable with InputSandbox",
+                        params.setForceExecUpload )
+
+  Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
 
 
-configCache = ConfigCache()
-Script.parseCommandLine( ignoreErrors = True )
-configCache.cacheConfig()
+  configCache = ConfigCache()
+  Script.parseCommandLine( ignoreErrors = True )
+  configCache.cacheConfig()
 
-args = Script.getPositionalArgs()
+  args = Script.getPositionalArgs()
 
-cmd = None
-cmdArgs = []
-if len( args ) >= 1:
-  cmd = args[0]
-  cmdArgs = args[1:] 
+  cmd = None
+  cmdArgs = []
+  if len( args ) >= 1:
+    cmd = args[0]
+    cmdArgs = args[1:] 
 
-from DIRAC.Core.Utilities.ClassAd.ClassAdLight import ClassAd
+  from DIRAC.Core.Utilities.ClassAd.ClassAdLight import ClassAd
 
-from COMDIRAC.Interfaces import DSession
-from COMDIRAC.Interfaces import pathFromArgument
+  from COMDIRAC.Interfaces import DSession
+  from COMDIRAC.Interfaces import pathFromArgument
 
-from DIRAC.Interfaces.API.Dirac import Dirac
+  from DIRAC.Interfaces.API.Dirac import Dirac
 
-session = DSession()
-params.setSession( session )
+  session = DSession()
+  params.setSession( session )
 
-dirac = Dirac()
-exitCode = 0
-errorList = []
+  dirac = Dirac()
+  exitCode = 0
+  errorList = []
 
-classAdJob = ClassAd( params.getJDL() )
+  classAdJob = ClassAd( params.getJDL() )
 
-params.modifyClassAd( classAdJob )
-
-# retrieve JDL provided Executable if present and user did not provide one
-jdlExecutable = classAdJob.getAttributeString( "Executable" )
-if jdlExecutable and not cmd:
-  cmd = jdlExecutable
-
-tempFiles = []
-if cmd is None:
-  # get executable script from stdin
-  if sys.stdin.isatty():
-    print "\nThe executable is not given"
-    print "Type in the executable script lines, finish with ^D"
-    print "or exit job submission with ^C\n"
-
-  lines = sys.stdin.readlines()
-
-  # Manage JDL directives inserted in cmd
-  jdlDirectives = parseScriptLinesJDLDirectives( lines )
-  classAdJob.contents.update( jdlDirectives )
-  # re-apply parameters options to take priority over script JDL directives
   params.modifyClassAd( classAdJob )
 
+  # retrieve JDL provided Executable if present and user did not provide one
+  jdlExecutable = classAdJob.getAttributeString( "Executable" )
+  if jdlExecutable and not cmd:
+    cmd = jdlExecutable
 
-  f = tempfile.NamedTemporaryFile( delete = False )
-  fn = f.name
-  for l in lines: f.write( l )
-  f.close()
-  tempFiles.append( fn )
+  tempFiles = []
+  if cmd is None:
+    # get executable script from stdin
+    if sys.stdin.isatty():
+      print "\nThe executable is not given"
+      print "Type in the executable script lines, finish with ^D"
+      print "or exit job submission with ^C\n"
 
-  classAdJob.insertAttributeString( "Executable", os.path.basename( fn ) )
+    lines = sys.stdin.readlines()
 
-  classAdAppendToInputSandbox( classAdJob, fn )
+    # Manage JDL directives inserted in cmd
+    jdlDirectives = parseScriptLinesJDLDirectives( lines )
+    classAdJob.contents.update( jdlDirectives )
+    # re-apply parameters options to take priority over script JDL directives
+    params.modifyClassAd( classAdJob )
 
-  if not classAdJob.lookupAttribute( "JobName" ):
-    classAdJob.insertAttributeString( "JobName", "STDIN" )
 
-else:
-  # Manage JDL directives inserted in cmd
-  jdlDirectives = parseScriptJDLDirectives( cmd )
-  classAdJob.contents.update( jdlDirectives )
-  # re-apply parameters options to take priority over script JDL directives
-  params.modifyClassAd( classAdJob )
+    f = tempfile.NamedTemporaryFile( delete = False )
+    fn = f.name
+    for l in lines: f.write( l )
+    f.close()
+    tempFiles.append( fn )
 
-  # Executable name provided
-  if params.getForceExecUpload() and cmd.startswith( "/" ):
-    # job will use uploaded executable (relative path)
-    classAdJob.insertAttributeString( "Executable", os.path.basename( cmd ) )
-  else:
-    classAdJob.insertAttributeString( "Executable", cmd )
+    classAdJob.insertAttributeString( "Executable", os.path.basename( fn ) )
 
-  uploadExec = params.getForceExecUpload() or not cmd.startswith( "/" )
-  if uploadExec:
-    if not os.path.isfile( cmd ):
-      print "ERROR: executable file \"%s\" not found" % cmd
-      DIRACexit( 2 )
+    classAdAppendToInputSandbox( classAdJob, fn )
 
-    classAdAppendToInputSandbox( classAdJob, cmd )
-
-    # set job name based on script file name
     if not classAdJob.lookupAttribute( "JobName" ):
-      classAdJob.insertAttributeString( "JobName", cmd )
+      classAdJob.insertAttributeString( "JobName", "STDIN" )
 
-  if cmdArgs:
-    classAdJob.insertAttributeString( "Arguments", " ".join( cmdArgs ) )
-    
-classAdJobs = params.parameterizeClassAd( classAdJob )
-
-if params.getVerbose():
-  print "JDL:"
-  for p in params.parameterizeClassAd( classAdJob ):
-    print p.asJDL()
-
-jobIDs = []
-
-
-
-for classAdJob in classAdJobs:
-  jdlString = classAdJob.asJDL()  
-  result = dirac.submitJob(jdlString)
-  if result['OK']:
-    if type( result['Value'] ) == IntType:
-      jobIDs.append( result['Value'] )
-    else:
-      jobIDs += result['Value']
   else:
-    errorList.append( ( jdlString, result['Message'] ) )
-    exitCode = 2
+    # Manage JDL directives inserted in cmd
+    jdlDirectives = parseScriptJDLDirectives( cmd )
+    classAdJob.contents.update( jdlDirectives )
+    # re-apply parameters options to take priority over script JDL directives
+    params.modifyClassAd( classAdJob )
 
-if jobIDs:
+    # Executable name provided
+    if params.getForceExecUpload() and cmd.startswith( "/" ):
+      # job will use uploaded executable (relative path)
+      classAdJob.insertAttributeString( "Executable", os.path.basename( cmd ) )
+    else:
+      classAdJob.insertAttributeString( "Executable", cmd )
+
+    uploadExec = params.getForceExecUpload() or not cmd.startswith( "/" )
+    if uploadExec:
+      if not os.path.isfile( cmd ):
+        print "ERROR: executable file \"%s\" not found" % cmd
+        DIRACexit( 2 )
+
+      classAdAppendToInputSandbox( classAdJob, cmd )
+
+      # set job name based on script file name
+      if not classAdJob.lookupAttribute( "JobName" ):
+        classAdJob.insertAttributeString( "JobName", cmd )
+
+    if cmdArgs:
+      classAdJob.insertAttributeString( "Arguments", " ".join( cmdArgs ) )
+      
+  classAdJobs = params.parameterizeClassAd( classAdJob )
+
   if params.getVerbose():
-    print "JobID:",
-  print ','.join( map ( str, jobIDs ) )
+    print "JDL:"
+    for p in params.parameterizeClassAd( classAdJob ):
+      print p.asJDL()
 
-# remove temporary generated files, if any
-for f in tempFiles:
-  try:
-    os.unlink( f )
-  except Exception, e:
-    errorList.append( str( e ) )
+  jobIDs = []
 
-for error in errorList:
-  print "ERROR %s: %s" % error
 
-DIRACexit( exitCode )
+
+  for classAdJob in classAdJobs:
+    jdlString = classAdJob.asJDL()  
+    result = dirac.submitJob(jdlString)
+    if result['OK']:
+      if type( result['Value'] ) == IntType:
+        jobIDs.append( result['Value'] )
+      else:
+        jobIDs += result['Value']
+    else:
+      errorList.append( ( jdlString, result['Message'] ) )
+      exitCode = 2
+
+  if jobIDs:
+    if params.getVerbose():
+      print "JobID:",
+    print ','.join( map ( str, jobIDs ) )
+
+  # remove temporary generated files, if any
+  for f in tempFiles:
+    try:
+      os.unlink( f )
+    except Exception, e:
+      errorList.append( str( e ) )
+
+  for error in errorList:
+    print "ERROR %s: %s" % error
+
+  DIRACexit( exitCode )
+
+if __name__ == "__main__":
+  main()

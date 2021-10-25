@@ -3,8 +3,7 @@
 """
 
 import DIRAC
-from COMDIRAC.Interfaces import ConfigCache
-from DIRAC.Core.Base import Script
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
 import os
 import pprint
@@ -55,107 +54,115 @@ class Params:
   def getInputFile( self ):
     return self.inputFile
 
-params = Params()
 
-Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
-                                     'Usage:',
-                                     '  %s [option|cfgfile] ... JobID ...' % Script.scriptName,
-                                     'Arguments:',
-                                     '  JobID:    DIRAC Job ID' ] ) )
+@Script()
+def main():
+  from COMDIRAC.Interfaces import ConfigCache
 
-Script.registerSwitch( "D:", "OutputDir=", "destination directory", params.setOutputDir )
-Script.registerSwitch( "j", "JDL", "download job JDL instead of input sandbox", params.setDownloadJDL )
-Script.registerSwitch( "", "Sandbox", "donwload input sandbox, even if JDL was required", params.setInputSandbox )
-Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
-Script.registerSwitch( "g:", "JobGroup=", "Get output for jobs in the given group", params.setJobGroup )
-Script.registerSwitch( "i:", "input-file=", "read JobIDs from file", params.setInputFile )
+  params = Params()
 
-configCache = ConfigCache()
-Script.parseCommandLine( ignoreErrors = True )
-configCache.cacheConfig()
+  Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
+                                      'Usage:',
+                                      '  %s [option|cfgfile] ... JobID ...' % Script.scriptName,
+                                      'Arguments:',
+                                      '  JobID:    DIRAC Job ID' ] ) )
 
-args = Script.getPositionalArgs()
+  Script.registerSwitch( "D:", "OutputDir=", "destination directory", params.setOutputDir )
+  Script.registerSwitch( "j", "JDL", "download job JDL instead of input sandbox", params.setDownloadJDL )
+  Script.registerSwitch( "", "Sandbox", "donwload input sandbox, even if JDL was required", params.setInputSandbox )
+  Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
+  Script.registerSwitch( "g:", "JobGroup=", "Get output for jobs in the given group", params.setJobGroup )
+  Script.registerSwitch( "i:", "input-file=", "read JobIDs from file", params.setInputFile )
 
-from DIRAC.Interfaces.API.Dirac  import Dirac
-from DIRAC.Core.Utilities.Time import toString, date, day
+  configCache = ConfigCache()
+  Script.parseCommandLine( ignoreErrors = True )
+  configCache.cacheConfig()
 
-dirac = Dirac()
-exitCode = 0
+  args = Script.getPositionalArgs()
 
-if args:
-  # handle comma separated list of JobIDs
-  newargs = []
+  from DIRAC.Interfaces.API.Dirac  import Dirac
+  from DIRAC.Core.Utilities.Time import toString, date, day
+
+  dirac = Dirac()
+  exitCode = 0
+
+  if args:
+    # handle comma separated list of JobIDs
+    newargs = []
+    for arg in args:
+      newargs += arg.split( ',' )
+    args = newargs
+
+  if params.getInputFile() != None:
+    with open( params.getInputFile(), 'r' ) as f:
+      for l in f.readlines():
+        args += l.split( ',' )
+
+  for jobGroup in params.getJobGroup():
+    jobDate = toString( date() - 30 * day )
+
+    # Choose jobs no more than 30 days old
+    result = dirac.selectJobs( jobGroup = jobGroup, date = jobDate )
+    if not result['OK']:
+      if not "No jobs selected" in result['Message']:
+        print "Error:", result['Message']
+        exitCode = 2
+    else:
+      args += result['Value']
+
+  jobs = []
+
+  outputDir = params.getOutputDir() or os.path.curdir
+
   for arg in args:
-    newargs += arg.split( ',' )
-  args = newargs
+    if os.path.isdir( os.path.join( outputDir, "InputSandbox%s" % arg ) ):
+      print "Input for job %s already retrieved, remove the output directory to redownload" % arg
+    else:
+      jobs.append( arg )
 
-if params.getInputFile() != None:
-  with open( params.getInputFile(), 'r' ) as f:
-    for l in f.readlines():
-      args += l.split( ',' )
+  if jobs:
+    if not os.path.isdir( outputDir ):
+      os.makedirs( outputDir )
 
-for jobGroup in params.getJobGroup():
-  jobDate = toString( date() - 30 * day )
+    errors = []
+    inputs = {}
+    for job in jobs:
+      destinationDir = os.path.join( outputDir, "InputSandbox%s" % job )
 
-  # Choose jobs no more than 30 days old
-  result = dirac.selectJobs( jobGroup = jobGroup, date = jobDate )
-  if not result['OK']:
-    if not "No jobs selected" in result['Message']:
-      print "Error:", result['Message']
-      exitCode = 2
-  else:
-    args += result['Value']
+      inputs[job] = {"destinationDir" : destinationDir}
 
-jobs = []
+      if params.getInputSandbox() or not params.getDownloadJDL():
 
-outputDir = params.getOutputDir() or os.path.curdir
+        result = dirac.getInputSandbox( job, outputDir = outputDir )
+        if result['OK']:
+          inputs[job]["isb"] = destinationDir
+        else:
+          errors.append( result["Message"] )
+          exitCode = 2
 
-for arg in args:
-  if os.path.isdir( os.path.join( outputDir, "InputSandbox%s" % arg ) ):
-    print "Input for job %s already retrieved, remove the output directory to redownload" % arg
-  else:
-    jobs.append( arg )
+      if params.getDownloadJDL():
+        result = dirac.getJobJDL( job, printOutput = False )
+        if result['OK']:
+          if not os.path.exists( destinationDir ): os.makedirs( destinationDir )
+          jdl = pprint.pformat( result["Value"] )
+          with open ( os.path.join( destinationDir, "%s.jdl" % job ), 'w' ) as f:
+            f.write( jdl )
+            f.close()
 
-if jobs:
-  if not os.path.isdir( outputDir ):
-    os.makedirs( outputDir )
+          inputs[job]["jdl"] = jdl
+        else:
+          errors.append( result["Message"] )
+          exitCode = 2
 
-  errors = []
-  inputs = {}
-  for job in jobs:
-    destinationDir = os.path.join( outputDir, "InputSandbox%s" % job )
+    for error in errors:
+      print "ERROR: %s" % error
 
-    inputs[job] = {"destinationDir" : destinationDir}
+    if params.getVerbose():
+      for j, d in inputs.items():
+        if "isb" in d: print "%s: InputSandbox" % j, d["isb"]
+        if "jdl" in d: print "%s: JDL" % j, d["jdl"]
+  DIRAC.exit( exitCode )
 
-    if params.getInputSandbox() or not params.getDownloadJDL():
 
-      result = dirac.getInputSandbox( job, outputDir = outputDir )
-      if result['OK']:
-        inputs[job]["isb"] = destinationDir
-      else:
-        errors.append( result["Message"] )
-        exitCode = 2
-
-    if params.getDownloadJDL():
-      result = dirac.getJobJDL( job, printOutput = False )
-      if result['OK']:
-        if not os.path.exists( destinationDir ): os.makedirs( destinationDir )
-        jdl = pprint.pformat( result["Value"] )
-        with open ( os.path.join( destinationDir, "%s.jdl" % job ), 'w' ) as f:
-          f.write( jdl )
-          f.close()
-
-        inputs[job]["jdl"] = jdl
-      else:
-        errors.append( result["Message"] )
-        exitCode = 2
-
-  for error in errors:
-    print "ERROR: %s" % error
-
-  if params.getVerbose():
-    for j, d in inputs.items():
-      if "isb" in d: print "%s: InputSandbox" % j, d["isb"]
-      if "jdl" in d: print "%s: JDL" % j, d["jdl"]
-DIRAC.exit( exitCode )
-
+if __name__ == "__main__":
+  main()

@@ -9,14 +9,17 @@ import getopt
 from signal import signal, SIGPIPE, SIG_DFL
 
 from DIRAC import S_OK
-from COMDIRAC.Interfaces import DSession
-from COMDIRAC.Interfaces import createCatalog
-from COMDIRAC.Interfaces import pathFromArguments
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
-if __name__ == "__main__":
+
+@Script()
+def main():
+  from COMDIRAC.Interfaces import DSession
+  from COMDIRAC.Interfaces import createCatalog
+  from COMDIRAC.Interfaces import pathFromArguments
+
   import sys
   from COMDIRAC.Interfaces import ConfigCache
-  from DIRAC.Core.Base import Script
 
   # broken pipe default behaviour
   signal( SIGPIPE, SIG_DFL )
@@ -72,3 +75,7 @@ if __name__ == "__main__":
 
   for p in pathFromArguments( session, args ):
     fccli.do_size( optstr + p )
+
+
+if __name__ == "__main__":
+  main()

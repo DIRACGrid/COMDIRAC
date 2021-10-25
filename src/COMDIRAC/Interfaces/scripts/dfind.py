@@ -5,16 +5,17 @@ find files in the FileCatalog
 """
 
 import DIRAC
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
-from COMDIRAC.Interfaces import critical
-from COMDIRAC.Interfaces import DSession
-from COMDIRAC.Interfaces import DCatalog
-from COMDIRAC.Interfaces import pathFromArgument
 
-if __name__ == "__main__":
+@Script()
+def main():
+  from COMDIRAC.Interfaces import critical
+  from COMDIRAC.Interfaces import DSession
+  from COMDIRAC.Interfaces import DCatalog
+  from COMDIRAC.Interfaces import pathFromArgument
 
   from COMDIRAC.Interfaces import ConfigCache
-  from DIRAC.Core.Base import Script
 
   Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
                                        'Usage:',
@@ -47,3 +48,7 @@ if __name__ == "__main__":
   fccli = FileCatalogClientCLI( catalog.catalog )
 
   fccli.do_find( "-q " + lfn + " " + " ".join( args[1:] ) )
+
+
+if __name__ == "__main__":
+  main()

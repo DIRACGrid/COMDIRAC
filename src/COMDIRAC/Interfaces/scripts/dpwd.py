@@ -3,9 +3,11 @@
 """
 print DCommands working directory
 """
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
-if __name__ == "__main__":
-  from DIRAC.Core.Base import Script
+
+@Script()
+def main():
   from COMDIRAC.Interfaces import DSession
   from COMDIRAC.Interfaces import ConfigCache
 
@@ -26,3 +28,7 @@ if __name__ == "__main__":
   ret = session.getCwd( )
 
   print ret
+
+
+if __name__ == "__main__":
+  main()

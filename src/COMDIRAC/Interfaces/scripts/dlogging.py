@@ -4,7 +4,7 @@
 
 import DIRAC
 from COMDIRAC.Interfaces import ConfigCache
-from DIRAC.Core.Base import Script
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
 class Params:
   def __init__ ( self ):
@@ -16,42 +16,48 @@ class Params:
   def getFmt( self ):
     return self.fmt
 
-params = Params()
 
-Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
-                                     'Usage:',
-                                     '  %s [option|cfgfile] ... JobID ...' % Script.scriptName,
-                                     'Arguments:',
-                                     '  JobID:    DIRAC Job ID' ] ) )
-Script.registerSwitch( "f:", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
+@Script()
+def main():
+  params = Params()
 
-configCache = ConfigCache()
-Script.parseCommandLine( ignoreErrors = True )
-configCache.cacheConfig()
+  Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
+                                      'Usage:',
+                                      '  %s [option|cfgfile] ... JobID ...' % Script.scriptName,
+                                      'Arguments:',
+                                      '  JobID:    DIRAC Job ID' ] ) )
+  Script.registerSwitch( "f:", "Fmt=", "display format (pretty, csv, json)", params.setFmt )
 
-args = Script.getPositionalArgs()
+  configCache = ConfigCache()
+  Script.parseCommandLine( ignoreErrors = True )
+  configCache.cacheConfig()
 
-from DIRAC.Core.DISET.RPCClient import RPCClient
-from COMDIRAC.Interfaces.Utilities.DCommands import ArrayFormatter
+  args = Script.getPositionalArgs()
 
-exitCode = 0
+  from DIRAC.Core.DISET.RPCClient import RPCClient
+  from COMDIRAC.Interfaces.Utilities.DCommands import ArrayFormatter
 
-jobs = map( int, args )
+  exitCode = 0
 
-monitoring = RPCClient( 'WorkloadManagement/JobMonitoring' )
-af = ArrayFormatter( params.getFmt() )
-headers = ["Status", "MinorStatus", "ApplicationStatus", "Time", "Source"]
-errors = []
-for job in jobs:
-  result = monitoring.getJobLoggingInfo( job )
-  if result['OK']:
-    print af.listFormat( result['Value'], headers, sort = headers.index( "Time" ) )
-  else:
-    errors.append( result["Message"] )
-    exitCode = 2
+  jobs = map( int, args )
 
-for error in errors:
-  print "ERROR: %s" % error
+  monitoring = RPCClient( 'WorkloadManagement/JobMonitoring' )
+  af = ArrayFormatter( params.getFmt() )
+  headers = ["Status", "MinorStatus", "ApplicationStatus", "Time", "Source"]
+  errors = []
+  for job in jobs:
+    result = monitoring.getJobLoggingInfo( job )
+    if result['OK']:
+      print af.listFormat( result['Value'], headers, sort = headers.index( "Time" ) )
+    else:
+      errors.append( result["Message"] )
+      exitCode = 2
 
-DIRAC.exit( exitCode )
+  for error in errors:
+    print "ERROR: %s" % error
 
+  DIRAC.exit( exitCode )
+
+
+if __name__ == "__main__":
+  main()
