@@ -1,4 +1,8 @@
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import os.path
 import re
 import uuid
@@ -6,7 +10,10 @@ import stat
 import json
 import random
 
-from ConfigParser import SafeConfigParser, NoOptionError, NoSectionError
+try:
+    from configparser import ConfigParser  # python3
+except ImportError:
+    from ConfigParser import SafeConfigParser as ConfigParser  # python2
 
 import DIRAC
 from DIRAC  import S_OK, S_ERROR, gConfig, gLogger
@@ -82,7 +89,7 @@ def listFormatJSON( summaries, headers = None, sortKeys = None ):
 
   return json.dumps( l )
 
-class ArrayFormatter:
+class ArrayFormatter(object):
   fmts = {"csv" : listFormatCSV, "pretty" : listFormatPretty, "json" : listFormatJSON}
 
   def __init__( self, outputFormat ):
@@ -129,9 +136,9 @@ class ArrayFormatter:
 class DConfig( object ):
   def __init__( self, configDir = None, configFilename = "dcommands.conf" ):
     try:
-      self.config = SafeConfigParser( allow_no_value = True )
+      self.config = ConfigParser( allow_no_value = True )
     except TypeError:
-      self.config = SafeConfigParser()
+      self.config = ConfigParser()
 
     if not configDir:
       var = "DCOMMANDS_CONFIG_DIR"

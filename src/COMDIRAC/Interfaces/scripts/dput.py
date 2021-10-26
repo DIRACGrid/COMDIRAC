@@ -5,6 +5,9 @@ put files in the FileCatalog (and Storage Element)
 
 When destination SE is not specified, dput will use COMDIRAC configuration option "default_se".
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import os
 
@@ -23,7 +26,7 @@ def main():
 
   from COMDIRAC.Interfaces import ConfigCache
 
-  class Params:
+  class Params(object):
     def __init__ ( self ):
       self.destinationSE = False
       self.recursive = False

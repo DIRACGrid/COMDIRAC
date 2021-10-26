@@ -6,12 +6,15 @@
 """
 Change file owner
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 from DIRAC import S_OK
 
-class Params:
+class Params(object):
   def __init__ ( self ):
     self.recursive = False
 

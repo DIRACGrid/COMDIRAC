@@ -5,11 +5,15 @@
 
   Default JDL can be configured from session in the "JDL" option
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
-import os.path, sys
+import six
+import os.path
+import sys
 import re
 import tempfile
-from types import IntType
 
 from DIRAC import S_OK
 from DIRAC import exit as DIRACexit
@@ -46,7 +50,7 @@ def classAdAppendToSandbox( classAd, f, sbName ):
   sb.append ( f )
   classAdJob.insertAttributeVectorString( sbName, sb )
 
-class Params:
+class Params(object):
   def __init__ ( self ):
     self.__session = None
     self.attribs = {}
@@ -440,7 +444,7 @@ def main():
     jdlString = classAdJob.asJDL()  
     result = dirac.submitJob(jdlString)
     if result['OK']:
-      if type( result['Value'] ) == IntType:
+      if isinstance(result['Value'], six.integer_types):
         jobIDs.append( result['Value'] )
       else:
         jobIDs += result['Value']

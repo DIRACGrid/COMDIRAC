@@ -1,6 +1,9 @@
 """
   Retrieve input sandbox for a DIRAC job
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import DIRAC
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
@@ -8,7 +11,7 @@ from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 import os
 import pprint
 
-class Params:
+class Params(object):
   def __init__ ( self ):
     self.outputDir = None
     self.verbose = False

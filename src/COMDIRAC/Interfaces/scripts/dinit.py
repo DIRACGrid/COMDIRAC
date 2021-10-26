@@ -3,6 +3,9 @@
 """
 initialize DCommands session
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import os
 
@@ -14,7 +17,7 @@ from COMDIRAC.Interfaces.Utilities.DConfigCache import check_lcg_import
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 import DIRAC.Core.Security.ProxyInfo as ProxyInfo
 
-class Params:
+class Params(object):
   def __init__ ( self ):
     self.fromProxy = False
     self.destroy = False

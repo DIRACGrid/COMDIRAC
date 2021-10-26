@@ -3,6 +3,9 @@
 """
 manipulate metadata in the FileCatalog
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import DIRAC
 from DIRAC import S_OK, S_ERROR
@@ -66,7 +69,7 @@ def main():
 
   from COMDIRAC.Interfaces import ConfigCache
 
-  class Params:
+  class Params(object):
     def __init__ ( self ):
       self.index = False
       self.listIndex = False

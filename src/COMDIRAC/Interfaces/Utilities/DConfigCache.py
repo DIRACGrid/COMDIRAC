@@ -1,10 +1,18 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import os
 import stat
 import time
-import cPickle
 import re
 
-from DIRAC.Core.Base import Script
+try:
+  import cPickle as pickle  # python 2
+except ImportError:
+  pass
+
+from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 from DIRAC.ConfigurationSystem.Client.ConfigurationData import gConfigurationData
 
 def check_lcg_import():
@@ -20,7 +28,7 @@ def proxy_lcg_protocols_if_missing():
     # if not available, mark LCG protocols to be proxied
     gConfigurationData.setOptionInCFG( '/LocalSite/StorageElements/ProxyProtocols', 'srm' )
 
-class ConfigCache:
+class ConfigCache(object):
   @classmethod
   def cacheFilePrefix( cls ):
     return 'DSession.configCache'
@@ -84,6 +92,6 @@ class ConfigCache:
 
       with open( self.configCacheName, "w" ) as f:
         os.chmod( self.configCacheName, stat.S_IRUSR | stat.S_IWUSR )
-        cPickle.dump( gConfigurationData.mergedCFG, f )
+        pickle.dump( gConfigurationData.mergedCFG, f )
     else:
-      gConfigurationData.mergedCFG = cPickle.load( open( self.configCacheName, "r" ) )
+      gConfigurationData.mergedCFG = pickle.load( open( self.configCacheName, "r" ) )

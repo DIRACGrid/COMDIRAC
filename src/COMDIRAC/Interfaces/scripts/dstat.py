@@ -3,6 +3,10 @@
 """
   Retrieve status of DIRAC jobs
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 __RCSID__ = "$Id$"
 
 from signal import signal, SIGPIPE, SIG_DFL
@@ -62,7 +66,7 @@ DEFAULT_DISPLAY_COLUMNS = [
   "Owner", "JobName", "OwnerGroup", "JobGroup", "Site", "Status", "MinorStatus", "SubmissionTime",
 ]
 
-class Params:
+class Params(object):
   def __init__ ( self ):
     self.__session = None
     self.user = None

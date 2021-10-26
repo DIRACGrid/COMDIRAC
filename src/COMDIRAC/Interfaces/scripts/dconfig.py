@@ -3,8 +3,9 @@
 """
 configure DCommands
 """
-
-import types
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import DIRAC
 from DIRAC import S_OK
@@ -13,7 +14,7 @@ from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 from COMDIRAC.Interfaces import DConfig, createMinimalConfig, critical, guessProfilesFromCS
 from COMDIRAC.Interfaces import getDNFromProxy
 
-class Params:
+class Params(object):
   def __init__ ( self ):
     self.minimal = False
     self.guessProfile = False
@@ -115,7 +116,7 @@ def main():
       retVal = dconfig.get( section, option )
       if not retVal[ "OK" ]: critical( retVal[ "Message" ] )
       ret = retVal[ "Value" ]
-      if type( ret ) == types.ListType:
+      if isinstance(ret, list):
         print("[%s]" % section)
         for o, v in ret:
           print(o, "=", v)

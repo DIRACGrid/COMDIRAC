@@ -3,6 +3,9 @@
 """
 print(FileCatalog file or directory disk usage)
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import os
 import getopt
@@ -24,7 +27,7 @@ def main():
   # broken pipe default behaviour
   signal( SIGPIPE, SIG_DFL )
 
-  class Params:
+  class Params(object):
     def __init__ ( self ):
       self.long = False
       self.rawFiles = False

@@ -3,6 +3,9 @@
 """
 list FileCatalog file or directory
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import os
 import getopt
@@ -24,7 +27,7 @@ def main():
   # broken pipe default behaviour
   signal( SIGPIPE, SIG_DFL ) 
 
-  class Params:
+  class Params(object):
     def __init__ ( self ):
       self.long = False
       self.replicas = False
@@ -192,7 +195,7 @@ def main():
             for se, entry in result[ 'Value' ][ 'Successful' ][ path ].items():
               replicas.append( se.ljust( 15 ) + " " + entry )
           else:
-            print("Replicas: ", result  # [ 'Message' ])
+            print("Replicas: ", result)  # [ 'Message' ]
       except Exception as x:
         replicas.append( "replicas failed:" + str( x ) )
       return tuple( replicas )

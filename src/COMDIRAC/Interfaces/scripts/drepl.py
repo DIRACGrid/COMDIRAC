@@ -16,6 +16,9 @@ Supported schemes for automated replication (in option "replication_scheme") are
 * random(N) - replicatefile to N randomly chosen SEs from the list in option "replication_ses"
 
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import os
 
@@ -33,7 +36,7 @@ def main():
 
   from COMDIRAC.Interfaces import ConfigCache
 
-  class Params:
+  class Params(object):
     def __init__ ( self ):
       self.destinationSE = False
       self.sourceSE = False
