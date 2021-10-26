@@ -1,0 +1,67 @@
+name: Basic tests
+
+on: [push, pull_request]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'push' || github.repository == 'DIRACGrid/COMDIRAC'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: Install pre-commit
+        run: pip install pre-commit
+      - name: Run pre-commit
+        run: pre-commit run --all-files --show-diff-on-failure
+
+  pyLint:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'push' || github.repository == 'DIRACGrid/COMDIRAC'
+    defaults:
+      # Activate the conda environment automatically in each step
+      run:
+        shell: bash -l {0}
+
+    strategy:
+      fail-fast: False
+      matrix:
+        name: [py2]
+        environment-file: [environment.yml]
+        command:
+          - pylint -E src/COMDIRAC
+          - pylint -E src/COMDIRAC --rcfile=tests/.pylintrc3k --py3k
+          - |
+            if [[ "${REFERENCE_BRANCH}" != "" ]]; then
+                git remote add upstream https://github.com/DIRACGrid/COMDIRAC.git
+                git fetch --no-tags upstream "${REFERENCE_BRANCH}"
+                git branch -vv
+                git diff -U0 "upstream/${REFERENCE_BRANCH}" | pycodestyle --diff
+            fi
+        include:
+          - name: py3
+            environment-file: .DIRAC/environment-py3.yml
+            command: pylint -E src/COMDIRAC
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          repository: DIRACGrid/DIRAC
+          path: .DIRAC
+          ref: rel-v7r3
+
+      - name: Get DIRAC
+        run: |
+          [ ! -d "DIRAC" ] && cp -r .DIRAC/src/DIRAC DIRAC
+
+      - name: Prepare environment with Micromamba
+        uses: mamba-org/provision-with-micromamba@main
+        with:
+          environment-file: ${{ matrix.environment-file }}
+
+      - name: Run tests
+        run: ${{ matrix.command }}
+        env:
+          REFERENCE_BRANCH: ${{ github['base_ref'] || github['head_ref'] }}
