@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 """
-print(DCommands session environment variables)
+print DCommands session environment variables
 """
 from __future__ import absolute_import
 from __future__ import division

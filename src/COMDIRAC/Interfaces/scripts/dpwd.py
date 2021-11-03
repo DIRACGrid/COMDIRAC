@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 """
-print(DCommands working directory)
+print DCommands working directory
 """
 from __future__ import absolute_import
 from __future__ import division

@@ -93,7 +93,7 @@ def main():
   print(ProxyInfo.formatProxyInfoAsString( retVal[ "Value" ] ))
 
   if not check_lcg_import():
-    print
+    print('')
     print('Warning: Couldn\'t import module lcg_utils. SRM file transfers will be proxied if possible.')
 
 

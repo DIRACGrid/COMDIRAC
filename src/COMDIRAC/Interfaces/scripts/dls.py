@@ -118,7 +118,7 @@ def main():
 
   class ReplicaDirectoryListing( DirectoryListing ):
     def addFileWithReplicas( self, name, fileDict, numericid, replicas ):
-      """ Pretty print(of the file ls output with replica info)
+      """ Pretty print of the file ls output with replica info
       """
       self.addFile( name, fileDict, replicas, numericid )
   
@@ -180,7 +180,7 @@ def main():
         print(str( e[ 5 ] ).rjust( wList[ 5 ] ),)
         print(str( e[ 6 ] ))
   
-        # print(replicas if present)
+        # print replicas if present
         if len( e ) > 7:
           for r in e[ 7: ]:
             print("  ", r)

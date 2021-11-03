@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 """
-print(FileCatalog file or directory disk usage)
+print FileCatalog file or directory disk usage
 """
 from __future__ import absolute_import
 from __future__ import division
