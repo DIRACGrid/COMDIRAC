@@ -10,7 +10,7 @@ import re
 try:
   import cPickle as pickle  # python 2
 except ImportError:
-  pass
+  import pickle  # python 3
 
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 from DIRAC.ConfigurationSystem.Client.ConfigurationData import gConfigurationData
