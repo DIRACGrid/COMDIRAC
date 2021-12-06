@@ -15,11 +15,11 @@ This file is a ConfigParser formatted file (see: http://docs.python.org/2/librar
 Here is a sample configuration file:
 
     # dcommands.conf
-    
+
     # global client configuration (mainly default profile)
     [global]
     default_profile = frangrilles_user
-    
+
     # frangrilles_user profile
     [frangrilles_user]
     # DIRAC group name for this profile
@@ -31,7 +31,7 @@ Here is a sample configuration file:
     # default options for command drepl
     replication_scheme = all()
     replication_ses = LAL-disk,CPPM-disk,MSFG-disk
-    
+
     # other profile
     [dirac_user]
     home_dir = /

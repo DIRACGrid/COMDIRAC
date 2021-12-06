@@ -12,27 +12,31 @@ from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
 @Script()
 def main():
-  from COMDIRAC.Interfaces import DSession
-  from COMDIRAC.Interfaces import ConfigCache
+    from COMDIRAC.Interfaces import DSession
+    from COMDIRAC.Interfaces import ConfigCache
 
-  Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
-                                       'Usage:',
-                                       '  %s [options]' % Script.scriptName,
-                                       ] )
-                          )
+    Script.setUsageMessage(
+        "\n".join(
+            [
+                __doc__.split("\n")[1],
+                "Usage:",
+                "  %s [options]" % Script.scriptName,
+            ]
+        )
+    )
 
-  configCache = ConfigCache()
-  Script.parseCommandLine( ignoreErrors = True )
-  configCache.cacheConfig()
+    configCache = ConfigCache()
+    Script.parseCommandLine(ignoreErrors=True)
+    configCache.cacheConfig()
 
-  session = DSession()
+    session = DSession()
 
-  args = Script.getPositionalArgs()
+    args = Script.getPositionalArgs()
 
-  ret = session.getCwd( )
+    ret = session.getCwd()
 
-  print(ret)
+    print(ret)
 
 
 if __name__ == "__main__":
-  main()
+    main()

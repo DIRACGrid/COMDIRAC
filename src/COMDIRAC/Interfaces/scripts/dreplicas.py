@@ -13,53 +13,58 @@ from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
 @Script()
 def main():
-  from COMDIRAC.Interfaces import critical, error
-  from COMDIRAC.Interfaces import DSession
-  from COMDIRAC.Interfaces import DCatalog
-  from COMDIRAC.Interfaces import pathFromArgument
-  from DIRAC.Core.Utilities.ReturnValues import returnSingleResult
+    from COMDIRAC.Interfaces import critical, error
+    from COMDIRAC.Interfaces import DSession
+    from COMDIRAC.Interfaces import DCatalog
+    from COMDIRAC.Interfaces import pathFromArgument
+    from DIRAC.Core.Utilities.ReturnValues import returnSingleResult
 
-  from COMDIRAC.Interfaces import ConfigCache
+    from COMDIRAC.Interfaces import ConfigCache
 
-  Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
-                                       'Usage:',
-                                       '  %s lfn...' % Script.scriptName,
-                                       'Arguments:',
-                                       '  lfn:     logical file name', ] )
-                          )
+    Script.setUsageMessage(
+        "\n".join(
+            [
+                __doc__.split("\n")[1],
+                "Usage:",
+                "  %s lfn..." % Script.scriptName,
+                "Arguments:",
+                "  lfn:     logical file name",
+            ]
+        )
+    )
 
-  configCache = ConfigCache()
-  Script.parseCommandLine( ignoreErrors = True )
-  configCache.cacheConfig()
+    configCache = ConfigCache()
+    Script.parseCommandLine(ignoreErrors=True)
+    configCache.cacheConfig()
 
-  args = Script.getPositionalArgs()
+    args = Script.getPositionalArgs()
 
-  session = DSession()
-  catalog = DCatalog()
+    session = DSession()
+    catalog = DCatalog()
 
-  if len( args ) < 1:
-    error("No argument provided\n%s:" % Script.scriptName)
-    Script.showHelp()
-    DIRAC.exit( -1 )
+    if len(args) < 1:
+        error("No argument provided\n%s:" % Script.scriptName)
+        Script.showHelp()
+        DIRAC.exit(-1)
 
-  exitCode = 0
+    exitCode = 0
 
-  for arg in args:
-    # lfn
-    lfn = pathFromArgument( session, args[ 0 ] )
-    #fccli.do_replicas( lfn )
-    ret = returnSingleResult( catalog.catalog.getReplicas( lfn ) )
-    if ret['OK']:
-      replicas = ret['Value']
-      print(lfn + ':')
-      for se, path in replicas.items():
-        print('  ', se, path)
-    else:
-      error( lfn + ': ' + ret['Message'] )
-      exitCode = -2
+    for arg in args:
+        # lfn
+        lfn = pathFromArgument(session, args[0])
+        # fccli.do_replicas( lfn )
+        ret = returnSingleResult(catalog.catalog.getReplicas(lfn))
+        if ret["OK"]:
+            replicas = ret["Value"]
+            print(lfn + ":")
+            for se, path in replicas.items():
+                print("  ", se, path)
+        else:
+            error(lfn + ": " + ret["Message"])
+            exitCode = -2
 
-  DIRAC.exit( exitCode )
+    DIRAC.exit(exitCode)
 
 
 if __name__ == "__main__":
-  main()
+    main()
