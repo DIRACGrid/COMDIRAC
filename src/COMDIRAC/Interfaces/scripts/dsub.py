@@ -20,454 +20,513 @@ from DIRAC import exit as DIRACexit
 from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
-def parseScriptLinesJDLDirectives( lines ):
-  ret = {}
 
-  for l in lines:
-    if l.startswith( '#JDL ' ):
-      c = l[5:]
-      d, v = c.split( '=', 1 )
-      ret[d.strip()] = v.strip()
-  return ret
+def parseScriptLinesJDLDirectives(lines):
+    ret = {}
 
-def parseScriptJDLDirectives( fn ):
-  f = open( fn, 'r' )
-  lines = f.readlines()
-  f.close()
+    for l in lines:
+        if l.startswith("#JDL "):
+            c = l[5:]
+            d, v = c.split("=", 1)
+            ret[d.strip()] = v.strip()
+    return ret
 
-  return parseScriptLinesJDLDirectives( lines )
 
-def classAdAppendToInputSandbox( classAd, f ):
-  classAdAppendToSandbox( classAd, f, "InputSandbox" )
+def parseScriptJDLDirectives(fn):
+    f = open(fn, "r")
+    lines = f.readlines()
+    f.close()
 
-def classAdAppendToOutputSandbox( classAd, f ):
-  classAdAppendToSandbox( classAd, f, "OutputSandbox" )
+    return parseScriptLinesJDLDirectives(lines)
 
-def classAdAppendToSandbox( classAd, f, sbName ):
-  sb = []
-  if classAd.isAttributeList( sbName ):
-    sb = classAd.getListFromExpression( sbName )
-  sb.append ( f )
-  classAdJob.insertAttributeVectorString( sbName, sb )
+
+def classAdAppendToInputSandbox(classAd, f):
+    classAdAppendToSandbox(classAd, f, "InputSandbox")
+
+
+def classAdAppendToOutputSandbox(classAd, f):
+    classAdAppendToSandbox(classAd, f, "OutputSandbox")
+
+
+def classAdAppendToSandbox(classAd, f, sbName):
+    sb = []
+    if classAd.isAttributeList(sbName):
+        sb = classAd.getListFromExpression(sbName)
+    sb.append(f)
+    classAdJob.insertAttributeVectorString(sbName, sb)
+
 
 class Params(object):
-  def __init__ ( self ):
-    self.__session = None
-    self.attribs = {}
-    self.jdl = None
-    self.parametric = None
-    self.forceExecUpload = False
-    self.verbose = False
-    self.inputData = ''
+    def __init__(self):
+        self.__session = None
+        self.attribs = {}
+        self.jdl = None
+        self.parametric = None
+        self.forceExecUpload = False
+        self.verbose = False
+        self.inputData = ""
 
-  def setSession( self, session ):
-    self.__session = session
-    if self.inputData:
-      self.attribs["InputData"] = self.pathListArg( self.inputData )
-    return S_OK()
+    def setSession(self, session):
+        self.__session = session
+        if self.inputData:
+            self.attribs["InputData"] = self.pathListArg(self.inputData)
+        return S_OK()
 
-  def listArg( self, arg ):
-    if arg and not arg.startswith( "{" ):
-      arg = "{" + arg + "}"
-    return arg
+    def listArg(self, arg):
+        if arg and not arg.startswith("{"):
+            arg = "{" + arg + "}"
+        return arg
 
-  def pathListArg( self, arg ):
-    if not arg: return arg
+    def pathListArg(self, arg):
+        if not arg:
+            return arg
 
-    arg = arg.strip( "{}" )
-    args = arg.split( "," )
+        arg = arg.strip("{}")
+        args = arg.split(",")
 
-    pathlist = []
-    for path in args:
-      pathlist.append( pathFromArgument( self.__session, path ) )
-    return "{" + ",".join( pathlist ) + "}"
+        pathlist = []
+        for path in args:
+            pathlist.append(pathFromArgument(self.__session, path))
+        return "{" + ",".join(pathlist) + "}"
 
-  def getDefaultJDL( self ):
-    if not self.__session:
-      JDL = ""
-    else:  
-      JDL = self.__session.getJDL()
+    def getDefaultJDL(self):
+        if not self.__session:
+            JDL = ""
+        else:
+            JDL = self.__session.getJDL()
 
-    if JDL == "":
-      # overall default JDL
-      JDL = "[OutputSandbox = {\"std.out\",\"std.err\"};]"
+        if JDL == "":
+            # overall default JDL
+            JDL = '[OutputSandbox = {"std.out","std.err"};]'
 
-    return JDL
+        return JDL
 
-  def setJDL( self, arg = None ):
-    if os.path.isfile( arg ):
-      f = open( arg, 'r' )
-      arg = f.read()
-      f.close()
+    def setJDL(self, arg=None):
+        if os.path.isfile(arg):
+            f = open(arg, "r")
+            arg = f.read()
+            f.close()
 
-    self.jdl = arg
-    return S_OK()
+        self.jdl = arg
+        return S_OK()
 
-  def getJDL( self ):
-    if self.jdl:
-      return self.jdl
-    else:
-      return self.getDefaultJDL()
+    def getJDL(self):
+        if self.jdl:
+            return self.jdl
+        else:
+            return self.getDefaultJDL()
 
-  def setVerbose( self, arg = None ):
-    self.verbose = True
-    return S_OK()
+    def setVerbose(self, arg=None):
+        self.verbose = True
+        return S_OK()
 
-  def getVerbose( self ):
-    return self.verbose
+    def getVerbose(self):
+        return self.verbose
 
-  def setForceExecUpload( self, arg = None ):
-    self.forceExecUpload = True
-    return S_OK()
-  def getForceExecUpload( self, arg = None ):
-    return self.forceExecUpload
+    def setForceExecUpload(self, arg=None):
+        self.forceExecUpload = True
+        return S_OK()
 
-  def setName( self, arg = None ):
-    self.attribs["JobName"] = arg
-    return S_OK()
-  def getName( self ):
-    return self.attribs["JobName"]
+    def getForceExecUpload(self, arg=None):
+        return self.forceExecUpload
 
-  def setStdError( self, arg = None ):
-    self.attribs["StdError"] = arg
-    return S_OK()
-  def getStdError( self ):
-    return self.attribs["StdError"]
+    def setName(self, arg=None):
+        self.attribs["JobName"] = arg
+        return S_OK()
 
-  def setStdOutput( self, arg = None ):
-    self.attribs["StdOutput"] = arg
-    return S_OK()
-  def getStdOutput( self ):
-    return self.attribs["StdOutput"]
+    def getName(self):
+        return self.attribs["JobName"]
 
-  def setOutputSandbox( self, arg = None ):
-    self.attribs["OutputSandbox"] = self.listArg( arg )
-    return S_OK()
-  def getOutputSandbox( self ):
-    return self.attribs["OutputSandbox"]
+    def setStdError(self, arg=None):
+        self.attribs["StdError"] = arg
+        return S_OK()
 
-  def setInputSandbox( self, arg = None ):
-    self.attribs["InputSandbox"] = self.listArg( arg )
-    return S_OK()
-  def getInputSandbox( self ):
-    return self.attribs["InputSandbox"]
+    def getStdError(self):
+        return self.attribs["StdError"]
 
-  def setInputData( self, arg = None ):
-    self.inputData = arg
-    return S_OK()
-  def getInputData( self ):
-    return self.attribs.get( "InputData", [] )
+    def setStdOutput(self, arg=None):
+        self.attribs["StdOutput"] = arg
+        return S_OK()
 
-  def setOutputData( self, arg = None ):
-    self.attribs["OutputData"] = self.listArg( arg )
-    return S_OK()
-  def getOutputData( self ):
-    return self.attribs["OutputData"]
+    def getStdOutput(self):
+        return self.attribs["StdOutput"]
 
-  def setOutputPath( self, arg = None ):
-    self.attribs["OutputPath"] = arg
-    return S_OK()
-  def getOutputPath( self ):
-    return self.attribs["OutputPath"]
+    def setOutputSandbox(self, arg=None):
+        self.attribs["OutputSandbox"] = self.listArg(arg)
+        return S_OK()
 
-  def setOutputSE( self, arg = None ):
-    self.attribs["OutputSE"] = arg
-    return S_OK()
-  def getOutputSE( self ):
-    return self.attribs["OutputSE"]
+    def getOutputSandbox(self):
+        return self.attribs["OutputSandbox"]
 
-  def setCPUTime( self, arg = None ):
-    self.attribs["CPUTime"] = arg
-    return S_OK()
-  def getCPUTime( self ):
-    return self.attribs["CPUTime"]
+    def setInputSandbox(self, arg=None):
+        self.attribs["InputSandbox"] = self.listArg(arg)
+        return S_OK()
 
-  def setSite( self, arg = None ):
-    self.attribs["Site"] = self.listArg( arg )
-    return S_OK()
-  def getSite( self ):
-    return self.attribs["Site"]
+    def getInputSandbox(self):
+        return self.attribs["InputSandbox"]
 
-  def setBannedSite( self, arg = None ):
-    self.attribs["BannedSite"] = self.listArg( arg )
-    return S_OK()
-  def getBannedSite( self ):
-    return self.attribs["BannedSite"]
+    def setInputData(self, arg=None):
+        self.inputData = arg
+        return S_OK()
 
-  def setPlatform( self, arg = None ):
-    self.attribs["Platform"] = self.listArg( arg )
-    return S_OK()
-  def getPlatform( self ):
-    return self.attribs["Platform"]
+    def getInputData(self):
+        return self.attribs.get("InputData", [])
 
-  def setPriority( self, arg = None ):
-    self.attribs["Priority"] = arg
-    return S_OK()
-  def getPriority( self ):
-    return self.attribs["Priority"]
+    def setOutputData(self, arg=None):
+        self.attribs["OutputData"] = self.listArg(arg)
+        return S_OK()
 
-  def setJobGroup( self, arg = None ):
-    self.attribs["JobGroup"] = arg
-    return S_OK()
-  def getJobGroup( self ):
-    return self.attribs["JobGroup"]
+    def getOutputData(self):
+        return self.attribs["OutputData"]
 
-  def setParametric( self, arg = None ):
-    self.parametric = arg.split( ',' )
-    return S_OK()
-  def getParametric( self ):
-    return self.parametric
+    def setOutputPath(self, arg=None):
+        self.attribs["OutputPath"] = arg
+        return S_OK()
 
-  def modifyClassAd( self, classAd ):
-    classAd.contents.update( self.attribs )
+    def getOutputPath(self):
+        return self.attribs["OutputPath"]
 
-  def parameterizeClassAd( self, classAd ):
-    def classAdClone( classAd ):
-      return ClassAd( classAd.asJDL() )
+    def setOutputSE(self, arg=None):
+        self.attribs["OutputSE"] = arg
+        return S_OK()
 
-    if not ( self.parametric or classAd.lookupAttribute( 'Parametric' ) ):
-      return [classAd]
+    def getOutputSE(self):
+        return self.attribs["OutputSE"]
 
-    parametric = self.parametric
-    if not parametric:
-      parametric = classAd.getAttributeString( 'Parametric' ).split( ',' )
+    def setCPUTime(self, arg=None):
+        self.attribs["CPUTime"] = arg
+        return S_OK()
 
-    float_pat = '[-+]?(((\d*\.)?\d+)|(\d+\.))([eE][-+]\d+)?'
-    loop_re = re.compile( "^(?P<start>%(fp)s):(?P<stop>%(fp)s)(:(?P<step>%(fp)s)(:(?P<factor>%(fp)s))?)?$" % {'fp' : float_pat} )
-    parameters = []
-    loops = []
-    for param in parametric:
-      m = loop_re.match( param )
-      if m:
-        loop = m.groupdict()
-        try:
-          start = int( loop["start"] )
-          stop = int( loop["stop"] )
-        except ValueError:
-          start = float( loop["start"] )
-          stop = float( loop["stop"] )
-        step = 1
-        factor = 1
-        if "step" in loop and loop["step"]:
-          try:
-            step = int( loop["step"] )
-          except ValueError:
-            step = float( loop["step"] )
-          if "factor" in loop and loop["factor"]:
-            try:
-              factor = int( loop["factor"] )
-            except ValueError:
-              factor = float( loop["factor"] )
-        loops.append( ( start, stop, step, factor ) )
-      else:
-        parameters.append( param )
+    def getCPUTime(self):
+        return self.attribs["CPUTime"]
 
-    ret = []
-    if parameters:
-      new = classAdClone( classAd )
-      new.insertAttributeVectorString( "Parameters", parameters )
-      ret.append( new )
+    def setSite(self, arg=None):
+        self.attribs["Site"] = self.listArg(arg)
+        return S_OK()
 
-    def pnumber( start, stop, step, factor ):
-      sign = 1. if start < stop else -1.
-      i = start
-      n = 0
-      while ( i - stop ) * sign < 0:
-        n += 1
-        ip1 = i * factor + step
+    def getSite(self):
+        return self.attribs["Site"]
 
-        # check that parameter evolves in the good direction
-        if ( ip1 - i ) * sign < 0:
-          raise Exception( "Error in parametric specification: %s:%s:%s:%s" % ( start, stop, step, factor ) )
+    def setBannedSite(self, arg=None):
+        self.attribs["BannedSite"] = self.listArg(arg)
+        return S_OK()
 
-        i = ip1
+    def getBannedSite(self):
+        return self.attribs["BannedSite"]
 
-      return n
+    def setPlatform(self, arg=None):
+        self.attribs["Platform"] = self.listArg(arg)
+        return S_OK()
 
-    for start, stop, step, factor in loops:
-      new = classAdClone( classAd )
-      number = pnumber( start, stop, step, factor )
-      new.insertAttributeString( "ParameterStart", str( start ) )
-      new.insertAttributeInt( "Parameters", number )
-      new.insertAttributeString( "ParameterStep", str( step ) )
-      new.insertAttributeString( "ParameterFactor", str( factor ) )
-      ret.append( new )
+    def getPlatform(self):
+        return self.attribs["Platform"]
 
-    return ret
+    def setPriority(self, arg=None):
+        self.attribs["Priority"] = arg
+        return S_OK()
+
+    def getPriority(self):
+        return self.attribs["Priority"]
+
+    def setJobGroup(self, arg=None):
+        self.attribs["JobGroup"] = arg
+        return S_OK()
+
+    def getJobGroup(self):
+        return self.attribs["JobGroup"]
+
+    def setParametric(self, arg=None):
+        self.parametric = arg.split(",")
+        return S_OK()
+
+    def getParametric(self):
+        return self.parametric
+
+    def modifyClassAd(self, classAd):
+        classAd.contents.update(self.attribs)
+
+    def parameterizeClassAd(self, classAd):
+        def classAdClone(classAd):
+            return ClassAd(classAd.asJDL())
+
+        if not (self.parametric or classAd.lookupAttribute("Parametric")):
+            return [classAd]
+
+        parametric = self.parametric
+        if not parametric:
+            parametric = classAd.getAttributeString("Parametric").split(",")
+
+        float_pat = "[-+]?(((\d*\.)?\d+)|(\d+\.))([eE][-+]\d+)?"
+        loop_re = re.compile(
+            "^(?P<start>%(fp)s):(?P<stop>%(fp)s)(:(?P<step>%(fp)s)(:(?P<factor>%(fp)s))?)?$"
+            % {"fp": float_pat}
+        )
+        parameters = []
+        loops = []
+        for param in parametric:
+            m = loop_re.match(param)
+            if m:
+                loop = m.groupdict()
+                try:
+                    start = int(loop["start"])
+                    stop = int(loop["stop"])
+                except ValueError:
+                    start = float(loop["start"])
+                    stop = float(loop["stop"])
+                step = 1
+                factor = 1
+                if "step" in loop and loop["step"]:
+                    try:
+                        step = int(loop["step"])
+                    except ValueError:
+                        step = float(loop["step"])
+                    if "factor" in loop and loop["factor"]:
+                        try:
+                            factor = int(loop["factor"])
+                        except ValueError:
+                            factor = float(loop["factor"])
+                loops.append((start, stop, step, factor))
+            else:
+                parameters.append(param)
+
+        ret = []
+        if parameters:
+            new = classAdClone(classAd)
+            new.insertAttributeVectorString("Parameters", parameters)
+            ret.append(new)
+
+        def pnumber(start, stop, step, factor):
+            sign = 1.0 if start < stop else -1.0
+            i = start
+            n = 0
+            while (i - stop) * sign < 0:
+                n += 1
+                ip1 = i * factor + step
+
+                # check that parameter evolves in the good direction
+                if (ip1 - i) * sign < 0:
+                    raise Exception(
+                        "Error in parametric specification: %s:%s:%s:%s"
+                        % (start, stop, step, factor)
+                    )
+
+                i = ip1
+
+            return n
+
+        for start, stop, step, factor in loops:
+            new = classAdClone(classAd)
+            number = pnumber(start, stop, step, factor)
+            new.insertAttributeString("ParameterStart", str(start))
+            new.insertAttributeInt("Parameters", number)
+            new.insertAttributeString("ParameterStep", str(step))
+            new.insertAttributeString("ParameterFactor", str(factor))
+            ret.append(new)
+
+        return ret
 
 
 @Script()
 def main():
-  params = Params()
+    params = Params()
 
-  Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
-                                      'Usage:',
-                                      '  %s [option|cfgfile] [executable [--] [arguments...]]' % Script.scriptName,
-                                      'Arguments:',
-                                      '  executable: command to be run inside the job. ',
-                                      '              If a relative path, local file will be included in InputSandbox',
-                                      '              If no executable is given and JDL (provided or default) doesn\'t contain one,',
-                                      '              standard input will be read for executable contents',
-                                      '  arguments: arguments to pass to executable',
-                                      '             if some arguments are to begin with a dash \'-\', prepend \'--\' before them', ] ) )
+    Script.setUsageMessage(
+        "\n".join(
+            [
+                __doc__.split("\n")[1],
+                "Usage:",
+                "  %s [option|cfgfile] [executable [--] [arguments...]]"
+                % Script.scriptName,
+                "Arguments:",
+                "  executable: command to be run inside the job. ",
+                "              If a relative path, local file will be included in InputSandbox",
+                "              If no executable is given and JDL (provided or default) doesn't contain one,",
+                "              standard input will be read for executable contents",
+                "  arguments: arguments to pass to executable",
+                "             if some arguments are to begin with a dash '-', prepend '--' before them",
+            ]
+        )
+    )
 
-  Script.registerSwitch( "J:", "JDL=", "JDL file or inline", params.setJDL )
-  Script.registerSwitch( "N:", "JobName=", "job name", params.setName )
-  Script.registerSwitch( "E:", "StdError=", "job standard error file", params.setStdError )
-  Script.registerSwitch( "O:", "StdOutput=", "job standard output file", params.setStdOutput )
-  Script.registerSwitch( "", "OutputSandbox=", "job output sandbox", params.setOutputSandbox )
-  Script.registerSwitch( "", "InputSandbox=", "job input sandbox", params.setInputSandbox )
-  Script.registerSwitch( "", "OutputData=", "job output data", params.setOutputData )
-  Script.registerSwitch( "", "InputData=", "job input data", params.setInputData )
-  Script.registerSwitch( "", "OutputPath=", "job output data path prefix", params.setOutputPath )
-  Script.registerSwitch( "", "OutputSE=", "job output data SE", params.setOutputSE )
-  Script.registerSwitch( "", "CPUTime=", "job CPU time limit (in seconds)", params.setCPUTime )
-  Script.registerSwitch( "", "Site=", "job Site list", params.setSite )
-  Script.registerSwitch( "", "BannedSite=", "job Site exclusion list", params.setBannedSite )
-  Script.registerSwitch( "", "Platform=", "job Platform list", params.setPlatform )
-  Script.registerSwitch( "", "Priority=", "job priority", params.setPriority )
-  Script.registerSwitch( "", "JobGroup=", "job JobGroup", params.setJobGroup )
-  Script.registerSwitch( "", "Parametric=", "comma separated list or named parameters or number loops (in the form<start>:<stop>[:<step>[:<factor>]])",
-                        params.setParametric )
-  Script.registerSwitch( "", "ForceExecUpload", "Force upload of executable with InputSandbox",
-                        params.setForceExecUpload )
+    Script.registerSwitch("J:", "JDL=", "JDL file or inline", params.setJDL)
+    Script.registerSwitch("N:", "JobName=", "job name", params.setName)
+    Script.registerSwitch(
+        "E:", "StdError=", "job standard error file", params.setStdError
+    )
+    Script.registerSwitch(
+        "O:", "StdOutput=", "job standard output file", params.setStdOutput
+    )
+    Script.registerSwitch(
+        "", "OutputSandbox=", "job output sandbox", params.setOutputSandbox
+    )
+    Script.registerSwitch(
+        "", "InputSandbox=", "job input sandbox", params.setInputSandbox
+    )
+    Script.registerSwitch("", "OutputData=", "job output data", params.setOutputData)
+    Script.registerSwitch("", "InputData=", "job input data", params.setInputData)
+    Script.registerSwitch(
+        "", "OutputPath=", "job output data path prefix", params.setOutputPath
+    )
+    Script.registerSwitch("", "OutputSE=", "job output data SE", params.setOutputSE)
+    Script.registerSwitch(
+        "", "CPUTime=", "job CPU time limit (in seconds)", params.setCPUTime
+    )
+    Script.registerSwitch("", "Site=", "job Site list", params.setSite)
+    Script.registerSwitch(
+        "", "BannedSite=", "job Site exclusion list", params.setBannedSite
+    )
+    Script.registerSwitch("", "Platform=", "job Platform list", params.setPlatform)
+    Script.registerSwitch("", "Priority=", "job priority", params.setPriority)
+    Script.registerSwitch("", "JobGroup=", "job JobGroup", params.setJobGroup)
+    Script.registerSwitch(
+        "",
+        "Parametric=",
+        "comma separated list or named parameters or number loops (in the form<start>:<stop>[:<step>[:<factor>]])",
+        params.setParametric,
+    )
+    Script.registerSwitch(
+        "",
+        "ForceExecUpload",
+        "Force upload of executable with InputSandbox",
+        params.setForceExecUpload,
+    )
 
-  Script.registerSwitch( "v", "verbose", "verbose output", params.setVerbose )
+    Script.registerSwitch("v", "verbose", "verbose output", params.setVerbose)
 
+    configCache = ConfigCache()
+    Script.parseCommandLine(ignoreErrors=True)
+    configCache.cacheConfig()
 
-  configCache = ConfigCache()
-  Script.parseCommandLine( ignoreErrors = True )
-  configCache.cacheConfig()
+    args = Script.getPositionalArgs()
 
-  args = Script.getPositionalArgs()
+    cmd = None
+    cmdArgs = []
+    if len(args) >= 1:
+        cmd = args[0]
+        cmdArgs = args[1:]
 
-  cmd = None
-  cmdArgs = []
-  if len( args ) >= 1:
-    cmd = args[0]
-    cmdArgs = args[1:] 
+    from DIRAC.Core.Utilities.ClassAd.ClassAdLight import ClassAd
 
-  from DIRAC.Core.Utilities.ClassAd.ClassAdLight import ClassAd
+    from COMDIRAC.Interfaces import DSession
+    from COMDIRAC.Interfaces import pathFromArgument
 
-  from COMDIRAC.Interfaces import DSession
-  from COMDIRAC.Interfaces import pathFromArgument
+    from DIRAC.Interfaces.API.Dirac import Dirac
 
-  from DIRAC.Interfaces.API.Dirac import Dirac
+    session = DSession()
+    params.setSession(session)
 
-  session = DSession()
-  params.setSession( session )
+    dirac = Dirac()
+    exitCode = 0
+    errorList = []
 
-  dirac = Dirac()
-  exitCode = 0
-  errorList = []
+    classAdJob = ClassAd(params.getJDL())
 
-  classAdJob = ClassAd( params.getJDL() )
+    params.modifyClassAd(classAdJob)
 
-  params.modifyClassAd( classAdJob )
+    # retrieve JDL provided Executable if present and user did not provide one
+    jdlExecutable = classAdJob.getAttributeString("Executable")
+    if jdlExecutable and not cmd:
+        cmd = jdlExecutable
 
-  # retrieve JDL provided Executable if present and user did not provide one
-  jdlExecutable = classAdJob.getAttributeString( "Executable" )
-  if jdlExecutable and not cmd:
-    cmd = jdlExecutable
+    tempFiles = []
+    if cmd is None:
+        # get executable script from stdin
+        if sys.stdin.isatty():
+            print("\nThe executable is not given")
+            print("Type in the executable script lines, finish with ^D")
+            print("or exit job submission with ^C\n")
 
-  tempFiles = []
-  if cmd is None:
-    # get executable script from stdin
-    if sys.stdin.isatty():
-      print("\nThe executable is not given")
-      print("Type in the executable script lines, finish with ^D")
-      print("or exit job submission with ^C\n")
+        lines = sys.stdin.readlines()
 
-    lines = sys.stdin.readlines()
+        # Manage JDL directives inserted in cmd
+        jdlDirectives = parseScriptLinesJDLDirectives(lines)
+        classAdJob.contents.update(jdlDirectives)
+        # re-apply parameters options to take priority over script JDL directives
+        params.modifyClassAd(classAdJob)
 
-    # Manage JDL directives inserted in cmd
-    jdlDirectives = parseScriptLinesJDLDirectives( lines )
-    classAdJob.contents.update( jdlDirectives )
-    # re-apply parameters options to take priority over script JDL directives
-    params.modifyClassAd( classAdJob )
+        f = tempfile.NamedTemporaryFile(delete=False)
+        fn = f.name
+        for l in lines:
+            f.write(l)
+        f.close()
+        tempFiles.append(fn)
 
+        classAdJob.insertAttributeString("Executable", os.path.basename(fn))
 
-    f = tempfile.NamedTemporaryFile( delete = False )
-    fn = f.name
-    for l in lines: f.write( l )
-    f.close()
-    tempFiles.append( fn )
+        classAdAppendToInputSandbox(classAdJob, fn)
 
-    classAdJob.insertAttributeString( "Executable", os.path.basename( fn ) )
+        if not classAdJob.lookupAttribute("JobName"):
+            classAdJob.insertAttributeString("JobName", "STDIN")
 
-    classAdAppendToInputSandbox( classAdJob, fn )
-
-    if not classAdJob.lookupAttribute( "JobName" ):
-      classAdJob.insertAttributeString( "JobName", "STDIN" )
-
-  else:
-    # Manage JDL directives inserted in cmd
-    jdlDirectives = parseScriptJDLDirectives( cmd )
-    classAdJob.contents.update( jdlDirectives )
-    # re-apply parameters options to take priority over script JDL directives
-    params.modifyClassAd( classAdJob )
-
-    # Executable name provided
-    if params.getForceExecUpload() and cmd.startswith( "/" ):
-      # job will use uploaded executable (relative path)
-      classAdJob.insertAttributeString( "Executable", os.path.basename( cmd ) )
     else:
-      classAdJob.insertAttributeString( "Executable", cmd )
+        # Manage JDL directives inserted in cmd
+        jdlDirectives = parseScriptJDLDirectives(cmd)
+        classAdJob.contents.update(jdlDirectives)
+        # re-apply parameters options to take priority over script JDL directives
+        params.modifyClassAd(classAdJob)
 
-    uploadExec = params.getForceExecUpload() or not cmd.startswith( "/" )
-    if uploadExec:
-      if not os.path.isfile( cmd ):
-        print("ERROR: executable file \"%s\" not found" % cmd)
-        DIRACexit( 2 )
+        # Executable name provided
+        if params.getForceExecUpload() and cmd.startswith("/"):
+            # job will use uploaded executable (relative path)
+            classAdJob.insertAttributeString("Executable", os.path.basename(cmd))
+        else:
+            classAdJob.insertAttributeString("Executable", cmd)
 
-      classAdAppendToInputSandbox( classAdJob, cmd )
+        uploadExec = params.getForceExecUpload() or not cmd.startswith("/")
+        if uploadExec:
+            if not os.path.isfile(cmd):
+                print('ERROR: executable file "%s" not found' % cmd)
+                DIRACexit(2)
 
-      # set job name based on script file name
-      if not classAdJob.lookupAttribute( "JobName" ):
-        classAdJob.insertAttributeString( "JobName", cmd )
+            classAdAppendToInputSandbox(classAdJob, cmd)
 
-    if cmdArgs:
-      classAdJob.insertAttributeString( "Arguments", " ".join( cmdArgs ) )
-      
-  classAdJobs = params.parameterizeClassAd( classAdJob )
+            # set job name based on script file name
+            if not classAdJob.lookupAttribute("JobName"):
+                classAdJob.insertAttributeString("JobName", cmd)
 
-  if params.getVerbose():
-    print("JDL:")
-    for p in params.parameterizeClassAd( classAdJob ):
-      print(p.asJDL())
+        if cmdArgs:
+            classAdJob.insertAttributeString("Arguments", " ".join(cmdArgs))
 
-  jobIDs = []
+    classAdJobs = params.parameterizeClassAd(classAdJob)
 
-
-
-  for classAdJob in classAdJobs:
-    jdlString = classAdJob.asJDL()  
-    result = dirac.submitJob(jdlString)
-    if result['OK']:
-      if isinstance(result['Value'], six.integer_types):
-        jobIDs.append( result['Value'] )
-      else:
-        jobIDs += result['Value']
-    else:
-      errorList.append( ( jdlString, result['Message'] ) )
-      exitCode = 2
-
-  if jobIDs:
     if params.getVerbose():
-      print("JobID:",)
-    print(','.join( map ( str, jobIDs ) ))
+        print("JDL:")
+        for p in params.parameterizeClassAd(classAdJob):
+            print(p.asJDL())
 
-  # remove temporary generated files, if any
-  for f in tempFiles:
-    try:
-      os.unlink( f )
-    except Exception as e:
-      errorList.append( str( e ) )
+    jobIDs = []
 
-  for error in errorList:
-    print("ERROR %s: %s" % error)
+    for classAdJob in classAdJobs:
+        jdlString = classAdJob.asJDL()
+        result = dirac.submitJob(jdlString)
+        if result["OK"]:
+            if isinstance(result["Value"], six.integer_types):
+                jobIDs.append(result["Value"])
+            else:
+                jobIDs += result["Value"]
+        else:
+            errorList.append((jdlString, result["Message"]))
+            exitCode = 2
 
-  DIRACexit( exitCode )
+    if jobIDs:
+        if params.getVerbose():
+            print(
+                "JobID:",
+            )
+        print(",".join(map(str, jobIDs)))
+
+    # remove temporary generated files, if any
+    for f in tempFiles:
+        try:
+            os.unlink(f)
+        except Exception as e:
+            errorList.append(str(e))
+
+    for error in errorList:
+        print("ERROR %s: %s" % error)
+
+    DIRACexit(exitCode)
+
 
 if __name__ == "__main__":
-  main()
+    main()

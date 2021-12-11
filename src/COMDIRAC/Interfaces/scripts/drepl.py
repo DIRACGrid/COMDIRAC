@@ -29,97 +29,108 @@ from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
 @Script()
 def main():
-  from COMDIRAC.Interfaces import error, critical
-  from COMDIRAC.Interfaces import DSession
-  from COMDIRAC.Interfaces import DCatalog
-  from COMDIRAC.Interfaces import pathFromArguments
+    from COMDIRAC.Interfaces import error, critical
+    from COMDIRAC.Interfaces import DSession
+    from COMDIRAC.Interfaces import DCatalog
+    from COMDIRAC.Interfaces import pathFromArguments
 
-  from COMDIRAC.Interfaces import ConfigCache
+    from COMDIRAC.Interfaces import ConfigCache
 
-  class Params(object):
-    def __init__ ( self ):
-      self.destinationSE = False
-      self.sourceSE = False
+    class Params(object):
+        def __init__(self):
+            self.destinationSE = False
+            self.sourceSE = False
 
-    def setDestinationSE( self, arg ):
-      self.destinationSE = arg
-      return S_OK()
+        def setDestinationSE(self, arg):
+            self.destinationSE = arg
+            return S_OK()
 
-    def getDestinationSE( self ):
-      return self.destinationSE
+        def getDestinationSE(self):
+            return self.destinationSE
 
-    def setSourceSE( self, arg ):
-      self.sourceSE = arg
-      return S_OK()
+        def setSourceSE(self, arg):
+            self.sourceSE = arg
+            return S_OK()
 
-    def getSourceSE( self ):
-      return self.sourceSE
+        def getSourceSE(self):
+            return self.sourceSE
 
-  params = Params()
+    params = Params()
 
-  Script.setUsageMessage( '\n'.join( [ __doc__.split( '\n' )[1],
-                                       'Usage:',
-                                       '  %s [options] lfn...' % Script.scriptName,
-                                       'Arguments:',
-                                       ' lfn:          file entry in the FileCatalog',
-                                       '', 'Examples',
-                                      '  $ drepl ./some_lfn_file',
-                                      '  $ drepl -D SOME-DESTINATION-SE-disk ./some_lfn_file',
-                                       ] )
-                          )
-  Script.registerSwitch( "D:", "destination-se=", "Storage Element where to put replica (or a comma separated list)", params.setDestinationSE )
-  Script.registerSwitch( "S:", "source-se=", "source Storage Element for replication", params.setSourceSE )
+    Script.setUsageMessage(
+        "\n".join(
+            [
+                __doc__.split("\n")[1],
+                "Usage:",
+                "  %s [options] lfn..." % Script.scriptName,
+                "Arguments:",
+                " lfn:          file entry in the FileCatalog",
+                "",
+                "Examples",
+                "  $ drepl ./some_lfn_file",
+                "  $ drepl -D SOME-DESTINATION-SE-disk ./some_lfn_file",
+            ]
+        )
+    )
+    Script.registerSwitch(
+        "D:",
+        "destination-se=",
+        "Storage Element where to put replica (or a comma separated list)",
+        params.setDestinationSE,
+    )
+    Script.registerSwitch(
+        "S:", "source-se=", "source Storage Element for replication", params.setSourceSE
+    )
 
-  configCache = ConfigCache()
-  Script.parseCommandLine( ignoreErrors = True )
-  configCache.cacheConfig()
+    configCache = ConfigCache()
+    Script.parseCommandLine(ignoreErrors=True)
+    configCache.cacheConfig()
 
-  args = Script.getPositionalArgs()
+    args = Script.getPositionalArgs()
 
-  session = DSession()
-  catalog = DCatalog()
+    session = DSession()
+    catalog = DCatalog()
 
-  Script.enableCS()
+    Script.enableCS()
 
-  from DIRAC.Interfaces.API.Dirac  import Dirac
+    from DIRAC.Interfaces.API.Dirac import Dirac
 
-  dirac = Dirac()
+    dirac = Dirac()
 
-  if len( args ) < 1:
-    error( "Error: No argument provided\n%s:" % Script.scriptName )
-    Script.showHelp()
-    DIRAC.exit( -1 )
+    if len(args) < 1:
+        error("Error: No argument provided\n%s:" % Script.scriptName)
+        Script.showHelp()
+        DIRAC.exit(-1)
 
-  # default lfn: same file name as local_path
-  lfns = pathFromArguments( session, args )
+    # default lfn: same file name as local_path
+    lfns = pathFromArguments(session, args)
 
-  # destination SE
-  dsts = [ ]
+    # destination SE
+    dsts = []
 
-  if params.destinationSE:
-    dsts = params.destinationSE.split( "," )
-  else:
-    dsts = session.getReplicationSEs()
-    if not dsts:
-      dsts = [ session.getEnv( "default_se", "DIRAC-USER" )[ "Value" ] ]
+    if params.destinationSE:
+        dsts = params.destinationSE.split(",")
+    else:
+        dsts = session.getReplicationSEs()
+        if not dsts:
+            dsts = [session.getEnv("default_se", "DIRAC-USER")["Value"]]
 
-  srcopt = ""
-  if params.sourceSE:
-    srcopt = params.sourceSE
+    srcopt = ""
+    if params.sourceSE:
+        srcopt = params.sourceSE
 
+    exitCode = 0
 
-  exitCode = 0
+    for lfn in lfns:
+        for dst in dsts:
+            ret = dirac.replicateFile(lfn, dst, srcopt)
 
-  for lfn in lfns:
-    for dst in dsts:
-      ret = dirac.replicateFile( lfn, dst, srcopt )
+            if not ret["OK"]:
+                error(lfn + "->" + dst + ": " + ret["Message"])
+                exitCode = -2
 
-      if not ret['OK']:
-        error( lfn + '->' + dst + ': ' + ret['Message'] )
-        exitCode = -2
-
-  DIRAC.exit( exitCode )
+    DIRAC.exit(exitCode)
 
 
 if __name__ == "__main__":
-  main()
+    main()
