@@ -60,7 +60,6 @@ jobs:
         uses: mamba-org/provision-with-micromamba@main
         with:
           environment-file: ${{ matrix.environment-file }}
-          environment-name: ${{ matrix.name }}
 
       - name: Run tests
         run: ${{ matrix.command }}
