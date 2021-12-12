@@ -5,11 +5,6 @@
 
   Default JDL can be configured from session in the "JDL" option
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import six
 import os.path
 import sys
 import re
@@ -509,7 +504,7 @@ def main():
         jdlString = classAdJob.asJDL()
         result = dirac.submitJob(jdlString)
         if result["OK"]:
-            if isinstance(result["Value"], six.integer_types):
+            if isinstance(result["Value"], int):
                 jobIDs.append(result["Value"])
             else:
                 jobIDs += result["Value"]

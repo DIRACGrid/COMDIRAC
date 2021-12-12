@@ -3,10 +3,6 @@
 """
 print FileCatalog file or directory disk usage
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from signal import signal, SIGPIPE, SIG_DFL
 
 from DIRAC import S_OK

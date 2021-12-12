@@ -9,10 +9,7 @@ import stat
 import json
 import random
 
-try:
-    from configparser import ConfigParser, NoSectionError, NoOptionError  # python3
-except ImportError:
-    from ConfigParser import ConfigParser, NoSectionError, NoOptionError  # python2
+from configparser import ConfigParser, NoSectionError, NoOptionError  # python3
 
 import DIRAC
 from DIRAC import S_OK, S_ERROR, gConfig, gLogger

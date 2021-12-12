@@ -3,16 +3,13 @@
 """
   Retrieve status of DIRAC jobs
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from signal import signal, SIGPIPE, SIG_DFL
-import six
 
+from DIRAC import exit as DIRACExit, S_OK, S_ERROR
+from DIRAC.Core.DISET.RPCClient import RPCClient
+from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
-from DIRAC import S_OK, S_ERROR
 from DIRAC.Core.Utilities.Time import toString, date, day
 from DIRAC.WorkloadManagementSystem.Client.JobMonitoringClient import (
     JobMonitoringClient,
@@ -58,7 +55,8 @@ def getJobSummary(jobs):
     result = monitoring.getJobsSummary(jobs)
     if not result["OK"]:
         return result
-    if isinstance(result["Value"], six.string_types):
+
+    if isinstance(result["Value"], str):
         try:
             jobSummary = eval(result["Value"])
         except:
@@ -224,10 +222,6 @@ def main():
 
     args = Script.getPositionalArgs()
 
-    import DIRAC
-    from DIRAC import exit as DIRACExit
-    from COMDIRAC.Interfaces import DSession
-
     session = DSession()
     params.setSession(session)
 
@@ -279,7 +273,7 @@ def main():
     except Exception as x:
         print("Expected integer for jobID")
         exitCode = 2
-        DIRAC.exit(exitCode)
+        DIRACExit(exitCode)
 
     summaries = {}
     statuses = params.getStatus()
@@ -289,7 +283,7 @@ def main():
         result = getJobSummary(chunk)
         if not result["OK"]:
             print("ERROR: %s" % result["Message"])
-            DIRAC.exit(2)
+            DIRACExit(2)
 
         # filter on job statuses
         if "all" in statuses:
@@ -306,7 +300,7 @@ def main():
 
     print(af.dictFormat(summaries, ["JobID"] + params.getFields(), sort="JobID"))
 
-    DIRAC.exit(exitCode)
+    DIRACExit(exitCode)
 
 
 if __name__ == "__main__":

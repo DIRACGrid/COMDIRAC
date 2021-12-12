@@ -5,10 +5,6 @@ put files in the FileCatalog (and Storage Element)
 
 When destination SE is not specified, dput will use COMDIRAC configuration option "default_se".
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
 
 import DIRAC
