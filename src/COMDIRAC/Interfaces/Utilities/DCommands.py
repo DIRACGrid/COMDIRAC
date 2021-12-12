@@ -10,9 +10,9 @@ import json
 import random
 
 try:
-    from configparser import ConfigParser  # python3
+    from configparser import ConfigParser, NoSectionError, NoOptionError  # python3
 except ImportError:
-    from ConfigParser import SafeConfigParser as ConfigParser  # python2
+    from ConfigParser import ConfigParser, NoSectionError, NoOptionError  # python2
 
 import DIRAC
 from DIRAC import S_OK, S_ERROR, gConfig, gLogger
@@ -241,7 +241,7 @@ class DConfig(object):
                 )
             self.config.remove_option(section, option)
         else:
-            self.config.remove_setcion(self, section)
+            self.config.remove_section(self, section)
 
         return S_OK()
 
