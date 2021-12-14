@@ -97,8 +97,8 @@ class ConfigCache(object):
 
             proxy_lcg_protocols_if_missing()
 
-            with open(self.configCacheName, "w") as f:
+            with open(self.configCacheName, "wb") as f:
                 os.chmod(self.configCacheName, stat.S_IRUSR | stat.S_IWUSR)
                 pickle.dump(gConfigurationData.mergedCFG, f)
         else:
-            gConfigurationData.mergedCFG = pickle.load(open(self.configCacheName, "r"))
+            gConfigurationData.mergedCFG = pickle.load(open(self.configCacheName, "rb"))
