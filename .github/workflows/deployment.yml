@@ -22,7 +22,6 @@ jobs:
         run: python -m readme_renderer README.* -o /tmp/README.html
       - name: Make PEP-440 style release on GitHub
         id: PEP-440
-        if: github.event_name == 'push'
         run: |
           TAG_NAME=${GITHUB_REF##*/}
           NEW_STYLE=$(python -c "import diraccfg; major, minor, patch, pre = diraccfg.parseVersion('${TAG_NAME}'); print(f'{major}.{minor}.{patch}', f'a{pre}' if pre else '', sep='')")
