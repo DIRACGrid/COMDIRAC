@@ -3,7 +3,6 @@ name: Deployment
 on:
   push:
     tags:
-      - v1r[0-9]+
   pull_request:
 
 jobs:
