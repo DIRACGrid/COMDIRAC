@@ -3,6 +3,7 @@ name: Deployment
 on:
   push:
     tags:
+      - v1r3p[0-9]+
   pull_request:
 
 jobs:
@@ -18,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: pip install build readme_renderer diraccfg
       - name: Validate README for PyPI
-        run: python -m readme_renderer README.* -o /tmp/README.html
+        run: python -m readme_renderer README.rst -o /tmp/README.html
       - name: Make PEP-440 style release on GitHub
         id: PEP-440
         if: github.event_name == 'push'
