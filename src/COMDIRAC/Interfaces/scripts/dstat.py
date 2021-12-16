@@ -14,7 +14,9 @@ from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 from DIRAC import S_OK, S_ERROR
 from DIRAC.Core.Utilities.Time import toString, date, day
-from DIRAC.WorkloadManagementSystem.Client.JobMonitoringClient import JobMonitoringClient
+from DIRAC.WorkloadManagementSystem.Client.JobMonitoringClient import (
+    JobMonitoringClient,
+)
 from COMDIRAC.Interfaces.Utilities.DCommands import ArrayFormatter
 
 # TODO: how to import job states from JobDB in client installation (lacks MySQLdb module)?

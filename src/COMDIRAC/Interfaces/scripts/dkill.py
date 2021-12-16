@@ -67,7 +67,9 @@ def main():
     exitCode = 0
 
     from DIRAC.WorkloadManagementSystem.Client.WMSClient import WMSClient
-    from DIRAC.WorkloadManagementSystem.Client.JobMonitoringClient import JobMonitoringClient
+    from DIRAC.WorkloadManagementSystem.Client.JobMonitoringClient import (
+        JobMonitoringClient,
+    )
 
     wmsClient = WMSClient()
 

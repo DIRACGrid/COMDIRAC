@@ -46,7 +46,9 @@ def main():
 
     args = Script.getPositionalArgs()
 
-    from DIRAC.WorkloadManagementSystem.Client.JobMonitoringClient import JobMonitoringClient
+    from DIRAC.WorkloadManagementSystem.Client.JobMonitoringClient import (
+        JobMonitoringClient,
+    )
     from COMDIRAC.Interfaces.Utilities.DCommands import ArrayFormatter
 
     exitCode = 0
