@@ -14,8 +14,7 @@ from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 from DIRAC import S_OK, S_ERROR
 from DIRAC.Core.Utilities.Time import toString, date, day
-from DIRAC.Core.Base.Client import Client
-
+from DIRAC.WorkloadManagementSystem.Client.JobMonitoringClient import JobMonitoringClient
 from COMDIRAC.Interfaces.Utilities.DCommands import ArrayFormatter
 
 # TODO: how to import job states from JobDB in client installation (lacks MySQLdb module)?
@@ -45,7 +44,7 @@ def selectJobs(owner, date, jobGroup, jobName):
     if jobName:
         conditions["JobName"] = jobName
 
-    monitoring = Client(url="WorkloadManagement/JobMonitoring")
+    monitoring = JobMonitoringClient()
     result = monitoring.getJobs(conditions, date)
     return result
 
@@ -53,7 +52,7 @@ def selectJobs(owner, date, jobGroup, jobName):
 def getJobSummary(jobs):
     if not jobs:
         return S_OK({})
-    monitoring = Client(url="WorkloadManagement/JobMonitoring")
+    monitoring = JobMonitoringClient()
     result = monitoring.getJobsSummary(jobs)
     if not result["OK"]:
         return result

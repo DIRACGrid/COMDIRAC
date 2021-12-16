@@ -67,7 +67,7 @@ def main():
     exitCode = 0
 
     from DIRAC.WorkloadManagementSystem.Client.WMSClient import WMSClient
-    from DIRAC.Core.Base.Client import Client
+    from DIRAC.WorkloadManagementSystem.Client.JobMonitoringClient import JobMonitoringClient
 
     wmsClient = WMSClient()
 
@@ -79,7 +79,7 @@ def main():
         if result["OK"]:
             userName = result["Value"]
 
-            monitoring = Client(url="WorkloadManagement/JobMonitoring")
+            monitoring = JobMonitoringClient()
             result = monitoring.getJobs({"Owner": userName})
             if not result["OK"]:
                 print("ERROR:", result["Message"])
