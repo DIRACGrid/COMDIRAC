@@ -79,7 +79,7 @@ def main():
 
     for lfn in lfns:
         try:
-            pathDict = {lfn: eval("0o" + mode)}
+            pathDict = {lfn: int(mode, base=8)}
             result = fc.changePathMode(pathDict, params.recursive)
             if not result["OK"]:
                 gLogger.error("Error:", result["Message"])
