@@ -58,11 +58,9 @@ def main():
     import DIRAC
     from DIRAC import gLogger
     from COMDIRAC.Interfaces import DSession
-    from COMDIRAC.Interfaces import DCatalog
     from COMDIRAC.Interfaces import pathFromArgument
 
     session = DSession()
-    catalog = DCatalog()
 
     if len(args) < 2:
         print("Error: not enough arguments provided\n%s:" % Script.scriptName)
@@ -81,7 +79,7 @@ def main():
 
     for lfn in lfns:
         try:
-            pathDict = {lfn: eval("0" + mode)}
+            pathDict = {lfn: int(mode, base=8)}
             result = fc.changePathMode(pathDict, params.recursive)
             if not result["OK"]:
                 gLogger.error("Error:", result["Message"])

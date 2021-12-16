@@ -67,7 +67,9 @@ def main():
     exitCode = 0
 
     from DIRAC.WorkloadManagementSystem.Client.WMSClient import WMSClient
-    from DIRAC.Core.DISET.RPCClient import RPCClient
+    from DIRAC.WorkloadManagementSystem.Client.JobMonitoringClient import (
+        JobMonitoringClient,
+    )
 
     wmsClient = WMSClient()
 
@@ -79,7 +81,7 @@ def main():
         if result["OK"]:
             userName = result["Value"]
 
-            monitoring = RPCClient("WorkloadManagement/JobMonitoring")
+            monitoring = JobMonitoringClient()
             result = monitoring.getJobs({"Owner": userName})
             if not result["OK"]:
                 print("ERROR:", result["Message"])
