@@ -24,6 +24,7 @@ from DIRAC.Core.Utilities.ClassAd.ClassAdLight import ClassAd
 
 classAdJob = None
 
+
 def parseScriptLinesJDLDirectives(lines):
     result = {}
 
@@ -37,11 +38,11 @@ def parseScriptLinesJDLDirectives(lines):
 
 def parseScriptJDLDirectives(fn):
     with open(fn, "r") as f:
-      try:
-        lines = f.readlines()
-      except UnicodeDecodeError:
-        # This is a binary executable, no JDL instructions there
-        return {}
+        try:
+            lines = f.readlines()
+        except UnicodeDecodeError:
+            # This is a binary executable, no JDL instructions there
+            return {}
 
     return parseScriptLinesJDLDirectives(lines)
 
