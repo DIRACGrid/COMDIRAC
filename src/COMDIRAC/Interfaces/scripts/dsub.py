@@ -18,24 +18,30 @@ import tempfile
 from DIRAC import S_OK
 from DIRAC import exit as DIRACexit
 from COMDIRAC.Interfaces import ConfigCache
+from COMDIRAC.Interfaces import pathFromArgument
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Utilities.ClassAd.ClassAdLight import ClassAd
 
+classAdJob = None
 
 def parseScriptLinesJDLDirectives(lines):
-    ret = {}
+    result = {}
 
     for l in lines:
         if l.startswith("#JDL "):
             c = l[5:]
             d, v = c.split("=", 1)
-            ret[d.strip()] = v.strip()
-    return ret
+            result[d.strip()] = v.strip()
+    return result
 
 
 def parseScriptJDLDirectives(fn):
-    f = open(fn, "r")
-    lines = f.readlines()
-    f.close()
+    with open(fn, "r") as f:
+      try:
+        lines = f.readlines()
+      except UnicodeDecodeError:
+        # This is a binary executable, no JDL instructions there
+        return {}
 
     return parseScriptLinesJDLDirectives(lines)
 
@@ -49,6 +55,9 @@ def classAdAppendToOutputSandbox(classAd, f):
 
 
 def classAdAppendToSandbox(classAd, f, sbName):
+
+    global classAdJob
+
     sb = []
     if classAd.isAttributeList(sbName):
         sb = classAd.getListFromExpression(sbName)
@@ -328,6 +337,9 @@ class Params(object):
 
 @Script()
 def main():
+
+    global classAdJob
+
     params = Params()
 
     Script.setUsageMessage(
@@ -405,11 +417,7 @@ def main():
         cmd = args[0]
         cmdArgs = args[1:]
 
-    from DIRAC.Core.Utilities.ClassAd.ClassAdLight import ClassAd
-
     from COMDIRAC.Interfaces import DSession
-    from COMDIRAC.Interfaces import pathFromArgument
-
     from DIRAC.Interfaces.API.Dirac import Dirac
 
     session = DSession()

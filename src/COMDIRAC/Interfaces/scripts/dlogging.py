@@ -46,14 +46,14 @@ def main():
 
     args = Script.getPositionalArgs()
 
-    from DIRAC.Core.DISET.RPCClient import RPCClient
+    from DIRAC.Core.Base.Client import Client
     from COMDIRAC.Interfaces.Utilities.DCommands import ArrayFormatter
 
     exitCode = 0
 
     jobs = map(int, args)
 
-    monitoring = RPCClient("WorkloadManagement/JobMonitoring")
+    monitoring = Client(url="WorkloadManagement/JobMonitoring")
     af = ArrayFormatter(params.getFmt())
     headers = ["Status", "MinorStatus", "ApplicationStatus", "Time", "Source"]
     errors = []
