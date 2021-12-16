@@ -10,7 +10,7 @@ from __future__ import print_function
 import os
 
 import DIRAC
-from COMDIRAC.Interfaces import DConfig, DSession, critical
+from COMDIRAC.Interfaces import DSession, critical
 from COMDIRAC.Interfaces.Utilities.DCommands import sessionFromProxy
 from COMDIRAC.Interfaces import ConfigCache
 from COMDIRAC.Interfaces.Utilities.DConfigCache import check_lcg_import

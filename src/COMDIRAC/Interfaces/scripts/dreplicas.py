@@ -13,7 +13,7 @@ from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
 @Script()
 def main():
-    from COMDIRAC.Interfaces import critical, error
+    from COMDIRAC.Interfaces import error
     from COMDIRAC.Interfaces import DSession
     from COMDIRAC.Interfaces import DCatalog
     from COMDIRAC.Interfaces import pathFromArgument

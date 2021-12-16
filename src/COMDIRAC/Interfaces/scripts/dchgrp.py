@@ -58,11 +58,9 @@ def main():
     import DIRAC
     from DIRAC import gLogger
     from COMDIRAC.Interfaces import DSession
-    from COMDIRAC.Interfaces import DCatalog
     from COMDIRAC.Interfaces import pathFromArgument
 
     session = DSession()
-    catalog = DCatalog()
 
     if len(args) < 2:
         print("Error: not enough arguments provided\n%s:" % Script.scriptName)

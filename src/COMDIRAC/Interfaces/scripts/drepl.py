@@ -20,18 +20,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
-
 import DIRAC
-from DIRAC import S_OK, S_ERROR
+from DIRAC import S_OK
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
 
 @Script()
 def main():
-    from COMDIRAC.Interfaces import error, critical
+    from COMDIRAC.Interfaces import error
     from COMDIRAC.Interfaces import DSession
-    from COMDIRAC.Interfaces import DCatalog
     from COMDIRAC.Interfaces import pathFromArguments
 
     from COMDIRAC.Interfaces import ConfigCache
@@ -89,7 +86,6 @@ def main():
     args = Script.getPositionalArgs()
 
     session = DSession()
-    catalog = DCatalog()
 
     Script.enableCS()
 
