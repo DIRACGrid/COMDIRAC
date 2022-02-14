@@ -7,8 +7,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
-import getopt
 from signal import signal, SIGPIPE, SIG_DFL
 
 from DIRAC import S_OK
@@ -21,7 +19,6 @@ def main():
     from COMDIRAC.Interfaces import createCatalog
     from COMDIRAC.Interfaces import pathFromArguments
 
-    import sys
     from COMDIRAC.Interfaces import ConfigCache
 
     # broken pipe default behaviour

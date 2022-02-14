@@ -8,9 +8,8 @@ from __future__ import division
 from __future__ import print_function
 
 import DIRAC
-from DIRAC import S_OK, S_ERROR
+from DIRAC import S_OK
 
-from COMDIRAC.Interfaces import critical
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import DCatalog
 from COMDIRAC.Interfaces import pathFromArgument
@@ -71,8 +70,6 @@ from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
 @Script()
 def main():
-    import sys
-
     from COMDIRAC.Interfaces import ConfigCache
 
     class Params(object):
