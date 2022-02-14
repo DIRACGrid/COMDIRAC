@@ -16,10 +16,6 @@ Supported schemes for automated replication (in option "replication_scheme") are
 * random(N) - replicatefile to N randomly chosen SEs from the list in option "replication_ses"
 
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import DIRAC
 from DIRAC import S_OK
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script

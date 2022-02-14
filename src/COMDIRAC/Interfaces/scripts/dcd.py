@@ -3,10 +3,6 @@
 """
 Change current DIRAC File Catalog working directory
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from COMDIRAC.Interfaces import critical
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import DCatalog

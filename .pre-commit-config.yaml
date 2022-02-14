@@ -17,4 +17,3 @@ repos:
     rev: 21.9b0
     hooks:
       - id: black
-        additional_dependencies: [".[python2]"]

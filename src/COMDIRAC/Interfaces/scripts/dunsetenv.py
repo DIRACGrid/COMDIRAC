@@ -3,12 +3,7 @@
 """
 remove DCommands session environment variables
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from COMDIRAC.Interfaces import DSession
-
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
 
