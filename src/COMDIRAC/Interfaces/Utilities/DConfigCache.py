@@ -2,7 +2,6 @@ import os
 import stat
 import time
 import re
-
 import pickle
 
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
