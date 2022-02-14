@@ -16,7 +16,6 @@ from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
 @Script()
 def main():
-    from COMDIRAC.Interfaces import critical
     from COMDIRAC.Interfaces import DSession
     from COMDIRAC.Interfaces import DCatalog
 

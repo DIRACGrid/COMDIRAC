@@ -7,16 +7,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-__RCSID__ = "$Id$"
-
 from signal import signal, SIGPIPE, SIG_DFL
 import six
 
 from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
-from DIRAC import S_OK
+from DIRAC import S_OK, S_ERROR
 from DIRAC.Core.Utilities.Time import toString, date, day
-
+from DIRAC.WorkloadManagementSystem.Client.JobMonitoringClient import (
+    JobMonitoringClient,
+)
 from COMDIRAC.Interfaces.Utilities.DCommands import ArrayFormatter
 
 # TODO: how to import job states from JobDB in client installation (lacks MySQLdb module)?
@@ -46,20 +46,18 @@ def selectJobs(owner, date, jobGroup, jobName):
     if jobName:
         conditions["JobName"] = jobName
 
-    monitoring = RPCClient("WorkloadManagement/JobMonitoring")
+    monitoring = JobMonitoringClient()
     result = monitoring.getJobs(conditions, date)
-
     return result
 
 
 def getJobSummary(jobs):
     if not jobs:
         return S_OK({})
-    monitoring = RPCClient("WorkloadManagement/JobMonitoring")
+    monitoring = JobMonitoringClient()
     result = monitoring.getJobsSummary(jobs)
     if not result["OK"]:
         return result
-
     if isinstance(result["Value"], six.string_types):
         try:
             jobSummary = eval(result["Value"])
@@ -98,7 +96,7 @@ class Params(object):
     def __init__(self):
         self.__session = None
         self.user = None
-        self.status = map(lambda e: e.lower(), set(JOB_STATES) - set(JOB_FINAL_STATES))
+        self.status = [e.lower() for e in set(JOB_STATES) - set(JOB_FINAL_STATES)]
         self.fmt = "pretty"
         self.jobDate = 10
         self.fields = DEFAULT_DISPLAY_COLUMNS
@@ -125,7 +123,7 @@ class Params(object):
         return S_OK()
 
     def setStatusAll(self, arg=None):
-        self.status = map(lambda e: e.lower(), JOB_STATES)
+        self.status = [e.lower() for e in JOB_STATES]
         return S_OK()
 
     def getStatus(self):
@@ -227,9 +225,7 @@ def main():
     args = Script.getPositionalArgs()
 
     import DIRAC
-    from DIRAC import S_OK, S_ERROR
     from DIRAC import exit as DIRACExit
-    from DIRAC.Core.DISET.RPCClient import RPCClient
     from COMDIRAC.Interfaces import DSession
 
     session = DSession()
@@ -299,9 +295,9 @@ def main():
         if "all" in statuses:
             summaries = result["Value"]
         else:
-            for j, s in result["Value"].items():
-                if s["Status"].lower() in statuses:
-                    summaries[j] = s
+            for j in result["Value"]:
+                if result["Value"][j]["Status"].lower() in statuses:
+                    summaries[j] = result["Value"][j]
 
     for s in summaries.values():
         s["JobID"] = int(s["JobID"])

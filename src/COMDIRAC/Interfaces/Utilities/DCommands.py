@@ -241,7 +241,7 @@ class DConfig(object):
                 )
             self.config.remove_option(section, option)
         else:
-            self.config.remove_section(self, section)
+            self.config.remove_section(section)
 
         return S_OK()
 
