@@ -6,8 +6,6 @@ from __future__ import division
 
 __RCSID__ = "$Id$"
 
-import os
-
 import six
 
 
@@ -22,9 +20,9 @@ if six.PY3:
         # package is not installed
         version = "Unknown"
 else:
-    majorVersion = 0
-    minorVersion = 20
-    patchLevel = 0
+    majorVersion = 1
+    minorVersion = 3
+    patchLevel = 3
     preVersion = 0
 
     version = "v%sr%s" % (majorVersion, minorVersion)

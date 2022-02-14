@@ -1,3 +1,7 @@
+[v1r3p3]
+CHANGE: (#83) convert ReadMe to RST
+NEW: (#80) add deployment action
+
 [v0r15]
 CHANGE : dstat, dinput, doutput - can understand comma separated lists of JobIDs in command line arguments or inside input files
 
