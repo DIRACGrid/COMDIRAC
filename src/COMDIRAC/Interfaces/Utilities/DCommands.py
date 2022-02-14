@@ -1,15 +1,10 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os.path
 import re
 import uuid
 import stat
 import json
 import random
-
-from configparser import ConfigParser, NoSectionError, NoOptionError  # python3
+from configparser import ConfigParser, NoSectionError, NoOptionError
 
 import DIRAC
 from DIRAC import S_OK, S_ERROR, gConfig, gLogger

@@ -6,7 +6,6 @@
 from signal import signal, SIGPIPE, SIG_DFL
 
 from DIRAC import exit as DIRACExit, S_OK, S_ERROR
-from DIRAC.Core.DISET.RPCClient import RPCClient
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script

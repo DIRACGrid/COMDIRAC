@@ -1,13 +1,9 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
 import stat
 import time
 import re
 
-import pickle  # python 3
+import pickle
 
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 from DIRAC.ConfigurationSystem.Client.ConfigurationData import gConfigurationData
