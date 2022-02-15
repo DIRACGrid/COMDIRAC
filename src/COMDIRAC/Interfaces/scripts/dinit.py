@@ -10,11 +10,11 @@ from COMDIRAC.Interfaces import DSession, critical
 from COMDIRAC.Interfaces.Utilities.DCommands import sessionFromProxy
 from COMDIRAC.Interfaces import ConfigCache
 from COMDIRAC.Interfaces.Utilities.DConfigCache import check_lcg_import
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 import DIRAC.Core.Security.ProxyInfo as ProxyInfo
 
 
-class Params(object):
+class Params:
     def __init__(self):
         self.fromProxy = False
         self.destroy = False
@@ -35,17 +35,8 @@ class Params(object):
 @Script()
 def main():
     params = Params()
-
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [options] [profile_name]" % Script.scriptName,
-                "Arguments:",
-                " profile_name:     existing profile section in DCommands config",
-            ]
-        )
+    Script.registerArgument(
+        "profile name: existing profile section in DCommands config", mandatory=False
     )
     Script.registerSwitch(
         "p", "fromProxy", "build session from existing proxy", params.setFromProxy
@@ -57,11 +48,7 @@ def main():
     Script.disableCS()
 
     Script.parseCommandLine(ignoreErrors=True)
-    args = Script.getPositionalArgs()
-
-    profile = None
-    if len(args):
-        profile = args[0]
+    profile = Script.getPositionalArgs(group=True)
 
     if params.destroy:
         session = DSession()

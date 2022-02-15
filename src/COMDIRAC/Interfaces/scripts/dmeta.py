@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-
 """
 manipulate metadata in the FileCatalog
 """
@@ -11,7 +10,7 @@ from COMDIRAC.Interfaces import DCatalog
 from COMDIRAC.Interfaces import pathFromArgument
 
 
-class DMetaCommand(object):
+class DMetaCommand:
     def run(self, lfn, metas):
         raise NotImplementedError
 
@@ -61,14 +60,14 @@ class DMetaList(DMetaCommand):
                     print(meta + "=" + metadict[meta])
 
 
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 
 
 @Script()
 def main():
     from COMDIRAC.Interfaces import ConfigCache
 
-    class Params(object):
+    class Params:
         def __init__(self):
             self.index = False
             self.listIndex = False
@@ -186,16 +185,14 @@ def main():
 
     if len(args) < 2:
         print("Error: Not enough arguments provided\n%s:" % Script.scriptName)
-        Script.showHelp()
-        DIRAC.exit(-1)
+        Script.showHelp(exitCode=-1)
 
     command = args[0]
 
     if command not in meta_commands.keys():
         print('Error: Unknown dmeta command "%s"' % command)
         print("%s:" % Script.scriptName)
-        Script.showHelp()
-        DIRAC.exit(-1)
+        Script.showHelp(exitCode=-1)
 
     command = meta_commands[command]
 

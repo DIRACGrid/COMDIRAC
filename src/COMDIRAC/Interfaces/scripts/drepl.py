@@ -15,10 +15,13 @@ Supported schemes for automated replication (in option "replication_scheme") are
 * first(N) - replicate file to N first SEs listed in option "replication_ses"
 * random(N) - replicatefile to N randomly chosen SEs from the list in option "replication_ses"
 
+Examples
+    $ drepl ./some_lfn_file
+    $ drepl -D SOME-DESTINATION-SE-disk ./some_lfn_file
 """
 import DIRAC
 from DIRAC import S_OK
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 
 
 @Script()
@@ -26,10 +29,9 @@ def main():
     from COMDIRAC.Interfaces import error
     from COMDIRAC.Interfaces import DSession
     from COMDIRAC.Interfaces import pathFromArguments
-
     from COMDIRAC.Interfaces import ConfigCache
 
-    class Params(object):
+    class Params:
         def __init__(self):
             self.destinationSE = False
             self.sourceSE = False
@@ -50,21 +52,7 @@ def main():
 
     params = Params()
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [options] lfn..." % Script.scriptName,
-                "Arguments:",
-                " lfn:          file entry in the FileCatalog",
-                "",
-                "Examples",
-                "  $ drepl ./some_lfn_file",
-                "  $ drepl -D SOME-DESTINATION-SE-disk ./some_lfn_file",
-            ]
-        )
-    )
+    Script.registerArgument(["lfn: file entry in the FileCatalog"])
     Script.registerSwitch(
         "D:",
         "destination-se=",
@@ -88,11 +76,6 @@ def main():
     from DIRAC.Interfaces.API.Dirac import Dirac
 
     dirac = Dirac()
-
-    if len(args) < 1:
-        error("Error: No argument provided\n%s:" % Script.scriptName)
-        Script.showHelp()
-        DIRAC.exit(-1)
 
     # default lfn: same file name as local_path
     lfns = pathFromArguments(session, args)

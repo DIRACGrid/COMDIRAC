@@ -1,9 +1,8 @@
 #! /usr/bin/env python
-
 """
-  Submit jobs to DIRAC WMS
+Submit jobs to DIRAC WMS
 
-  Default JDL can be configured from session in the "JDL" option
+Default JDL can be configured from session in the "JDL" option
 """
 import os.path
 import sys
@@ -14,7 +13,7 @@ from DIRAC import S_OK
 from DIRAC import exit as DIRACexit
 from COMDIRAC.Interfaces import ConfigCache
 from COMDIRAC.Interfaces import pathFromArgument
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 from DIRAC.Core.Utilities.ClassAd.ClassAdLight import ClassAd
 
 classAdJob = None
@@ -61,7 +60,7 @@ def classAdAppendToSandbox(classAd, f, sbName):
     classAdJob.insertAttributeVectorString(sbName, sb)
 
 
-class Params(object):
+class Params:
     def __init__(self):
         self.__session = None
         self.attribs = {}
@@ -338,24 +337,20 @@ def main():
 
     params = Params()
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [option|cfgfile] [executable [--] [arguments...]]"
-                % Script.scriptName,
-                "Arguments:",
-                "  executable: command to be run inside the job. ",
-                "              If a relative path, local file will be included in InputSandbox",
-                "              If no executable is given and JDL (provided or default) doesn't contain one,",
-                "              standard input will be read for executable contents",
-                "  arguments: arguments to pass to executable",
-                "             if some arguments are to begin with a dash '-', prepend '--' before them",
-            ]
-        )
+    Script.registerArgument(
+        "executable: command to be run inside the job.\n"
+        "            If a relative path, local file will be included in InputSandbox\n"
+        "            If no executable is given and JDL (provided or default) doesn't contain one,\n"
+        "            standard input will be read for executable contents",
+        mandatory=False,
     )
-
+    Script.registerArgument(
+        [
+            "arguments: arguments to pass to executable\n"
+            "           if some arguments are to begin with a dash '-', prepend '--' before them"
+        ],
+        mandatory=False,
+    )
     Script.registerSwitch("J:", "JDL=", "JDL file or inline", params.setJDL)
     Script.registerSwitch("N:", "JobName=", "job name", params.setName)
     Script.registerSwitch(

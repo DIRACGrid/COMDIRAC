@@ -1,22 +1,22 @@
 #! /usr/bin/env python
-
 """
-remove files from the FileCatalog (and all replicas from Storage Elements)
+Remove files from the FileCatalog (and all replicas from Storage Elements)
+
+Examples:
+    $ drm ./some_lfn_file
 """
 import os
 
 import DIRAC
 from DIRAC import S_OK
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 
 
 @Script()
 def main():
     from COMDIRAC.Interfaces import DSession
     from COMDIRAC.Interfaces import DCatalog
-
     from COMDIRAC.Interfaces import pathFromArgument
-
     from COMDIRAC.Interfaces import ConfigCache
 
     lfnFileName = ""
@@ -40,21 +40,7 @@ def main():
         rmDirFlag = True
         return S_OK()
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [options] [lfn]..." % Script.scriptName,
-                "Arguments:",
-                "  lfn:     logical file name",
-                "",
-                "Examples:",
-                "  $ drm ./some_lfn_file",
-            ]
-        )
-    )
-
+    Script.registerArgument(["lfn: logical file name"], mandatory=False)
     Script.registerSwitch(
         "F:", "lfnFile=", "file containing a list of LFNs", setLfnFileName
     )
@@ -72,10 +58,9 @@ def main():
     session = DSession()
     catalog = DCatalog()
 
-    if len(args) < 1 and not lfnFileName:
+    if not args and not lfnFileName:
         print("Error: No argument provided\n%s:" % Script.scriptName)
-        Script.showHelp()
-        DIRAC.exit(-1)
+        Script.showHelp(exitCode=-1)
 
     lfns = set()
     for path in args:
@@ -105,14 +90,13 @@ def main():
     exitCode = 0
     goodCounter = 0
     badCounter = 0
-    failed = {}
     for lfn in lfns:
         if rmDirFlag and not catalog.isFile(lfn):
             result = returnSingleResult(dm.cleanLogicalDirectory(lfn))
             if result["OK"]:
                 goodCounter += 1
             else:
-                print("ERROR: %s" % result["Message"])
+                print("ERROR:", result["Message"])
                 badCounter += 1
                 exitCode = 3
         else:
