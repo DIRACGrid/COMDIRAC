@@ -1,15 +1,15 @@
 #! /usr/bin/env python
-
 """
   Retrieve status of DIRAC jobs
 """
+import datetime
 from signal import signal, SIGPIPE, SIG_DFL
 
 from DIRAC import exit as DIRACExit, S_OK, S_ERROR
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
-from DIRAC.Core.Utilities.Time import toString, date, day
+from DIRAC.Core.Utilities.TimeUtilities import toString, day
 from DIRAC.WorkloadManagementSystem.Client.JobMonitoringClient import (
     JobMonitoringClient,
 )
@@ -242,7 +242,9 @@ def main():
 
     if not jobs:
         # time interval
-        jobDate = toString(date() - params.getJobDate() * day)
+        jobDate = toString(
+            datetime.datetime.utcnow().date() - params.getJobDate() * day
+        )
 
         # job owner
         userName = params.getUser()

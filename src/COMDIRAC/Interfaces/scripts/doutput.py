@@ -7,6 +7,7 @@ from COMDIRAC.Interfaces import ConfigCache
 from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
 
 import os
+import datetime
 
 
 class Params(object):
@@ -118,7 +119,7 @@ def main():
     args = Script.getPositionalArgs()
 
     from DIRAC.Interfaces.API.Dirac import Dirac
-    from DIRAC.Core.Utilities.Time import toString, date, day
+    from DIRAC.Core.Utilities.TimeUtilities import toString, day
 
     dirac = Dirac()
     exitCode = 0
@@ -136,7 +137,7 @@ def main():
                 args += l.split(",")
 
     for jobGroup in params.getJobGroup():
-        jobDate = toString(date() - 30 * day)
+        jobDate = toString(datetime.datetime.utcnow().date() - 30 * day)
 
         # Choose jobs in final state, no more than 30 days old
         for s in ["Done", "Failed"]:
