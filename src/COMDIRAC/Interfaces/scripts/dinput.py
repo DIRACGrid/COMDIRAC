@@ -3,14 +3,14 @@
 """
 
 import DIRAC
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 
 import os
 import pprint
 import datetime
 
 
-class Params(object):
+class Params:
     def __init__(self):
         self.outputDir = None
         self.verbose = False
@@ -63,18 +63,7 @@ def main():
 
     params = Params()
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [option|cfgfile] ... JobID ..." % Script.scriptName,
-                "Arguments:",
-                "  JobID:    DIRAC Job ID",
-            ]
-        )
-    )
-
+    Script.registerArgument(["JobID: DIRAC Job ID"], mandatory=False)
     Script.registerSwitch(
         "D:", "OutputDir=", "destination directory", params.setOutputDir
     )
@@ -99,7 +88,7 @@ def main():
     Script.parseCommandLine(ignoreErrors=True)
     configCache.cacheConfig()
 
-    args = Script.getPositionalArgs()
+    jobIDs = Script.getPositionalArgs()
 
     from DIRAC.Interfaces.API.Dirac import Dirac
     from DIRAC.Core.Utilities.TimeUtilities import toString, day
@@ -107,17 +96,17 @@ def main():
     dirac = Dirac()
     exitCode = 0
 
-    if args:
+    if jobIDs:
         # handle comma separated list of JobIDs
-        newargs = []
-        for arg in args:
-            newargs += arg.split(",")
-        args = newargs
+        add_jobIDs = []
+        for jobID in jobIDs:
+            add_jobIDs += jobID.split(",")
+        jobIDs = add_jobIDs
 
     if params.getInputFile() != None:
         with open(params.getInputFile(), "r") as f:
             for l in f.readlines():
-                args += l.split(",")
+                jobIDs += l.split(",")
 
     for jobGroup in params.getJobGroup():
         jobDate = toString(datetime.datetime.utcnow().date - 30 * day)
@@ -129,20 +118,19 @@ def main():
                 print("Error:", result["Message"])
                 exitCode = 2
         else:
-            args += result["Value"]
+            jobIDs += result["Value"]
 
     jobs = []
 
     outputDir = params.getOutputDir() or os.path.curdir
 
-    for arg in args:
-        if os.path.isdir(os.path.join(outputDir, "InputSandbox%s" % arg)):
+    for jobID in jobIDs:
+        if os.path.isdir(os.path.join(outputDir, f"InputSandbox{jobID}")):
             print(
-                "Input for job %s already retrieved, remove the output directory to redownload"
-                % arg
+                f"Input for job {jobID} already retrieved, remove the output directory to redownload"
             )
         else:
-            jobs.append(arg)
+            jobs.append(jobID)
 
     if jobs:
         if not os.path.isdir(outputDir):
@@ -151,7 +139,7 @@ def main():
         errors = []
         inputs = {}
         for job in jobs:
-            destinationDir = os.path.join(outputDir, "InputSandbox%s" % job)
+            destinationDir = os.path.join(outputDir, f"InputSandbox{job}")
 
             inputs[job] = {"destinationDir": destinationDir}
 
@@ -170,7 +158,7 @@ def main():
                     if not os.path.exists(destinationDir):
                         os.makedirs(destinationDir)
                     jdl = pprint.pformat(result["Value"])
-                    with open(os.path.join(destinationDir, "%s.jdl" % job), "w") as f:
+                    with open(os.path.join(destinationDir, f"{job}.jdl"), "w") as f:
                         f.write(jdl)
                         f.close()
 
@@ -180,14 +168,14 @@ def main():
                     exitCode = 2
 
         for error in errors:
-            print("ERROR: %s" % error)
+            print("ERROR:", error)
 
         if params.getVerbose():
             for j, d in inputs.items():
                 if "isb" in d:
-                    print("%s: InputSandbox" % j, d["isb"])
+                    print(f"{j}: InputSandbox", d["isb"])
                 if "jdl" in d:
-                    print("%s: JDL" % j, d["jdl"])
+                    print(f"{j}: JDL", d["jdl"])
     DIRAC.exit(exitCode)
 
 

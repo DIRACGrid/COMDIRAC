@@ -4,11 +4,11 @@
 """
 import DIRAC
 from COMDIRAC.Interfaces import ConfigCache
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 from COMDIRAC.Interfaces import DSession
 
 
-class Params(object):
+class Params:
     def __init__(self):
         self.delete = False
         self.selectAll = False
@@ -37,17 +37,7 @@ class Params(object):
 def main():
     params = Params()
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [option|cfgfile] JobID ..." % Script.scriptName,
-                "Arguments:",
-                "  JobID: a DIRAC job identifier",
-            ]
-        )
-    )
+    Script.registerArgument(["JobID: DIRAC Job ID"])
     Script.registerSwitch("D", "delete", "delete job", params.setDelete)
     Script.registerSwitch("a", "all", "select all jobs", params.setSelectAll)
     Script.registerSwitch("v", "verbose", "verbose output", params.setVerbose)
@@ -56,7 +46,7 @@ def main():
     Script.parseCommandLine(ignoreErrors=True)
     configCache.cacheConfig()
 
-    args = Script.getPositionalArgs()
+    jobs = Script.getPositionalArgs()
 
     exitCode = 0
 
@@ -66,8 +56,6 @@ def main():
     )
 
     wmsClient = WMSClient()
-
-    jobs = args
 
     if params.getSelectAll():
         session = DSession()
@@ -98,10 +86,10 @@ def main():
             action = "killed"
             if params.getDelete():
                 action = "deleted"
-            print("%s job %s" % (action, job))
+            print(action, "job", job)
 
     for error in errors:
-        print("ERROR: %s" % error)
+        print("ERROR:", error)
 
     DIRAC.exit(exitCode)
 

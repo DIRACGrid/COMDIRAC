@@ -1,35 +1,23 @@
 #! /usr/bin/env python
-
 """
 print DCommands session environment variables
 """
 import DIRAC
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 
 
 @Script()
 def main():
     from COMDIRAC.Interfaces import critical
-
     from COMDIRAC.Interfaces import DSession
-
     from COMDIRAC.Interfaces import ConfigCache
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [[section.]option]" % Script.scriptName,
-                "Arguments:",
-                " section:     display all options in section",
-                "++ OR ++",
-                " section.option:     display section specific option",
-            ]
-        )
-    )
-
     configCache = ConfigCache()
+    Script.registerArgument(
+        "[section.]option: section:              display all options in section\n"
+        "                  section.option:       display section specific option",
+        mandatory=False,
+    )
     Script.parseCommandLine(ignoreErrors=True)
     configCache.cacheConfig()
 
@@ -46,26 +34,14 @@ def main():
             print(o + "=" + v)
         DIRAC.exit(0)
 
-    arg = args[0]
+    section, option = arg.split(".") if "." in (arg := args[0]) else (None, arg)
 
-    section = None
-    option = None
+    result = session.get(section, option) if section else session.getEnv(option)
 
-    if "." in arg:
-        section, option = arg.split(".")
-    else:
-        option = arg
+    if not result["OK"]:
+        print(critical(result["Message"]))
 
-    ret = None
-    if section:
-        ret = session.get(section, option)
-    else:
-        ret = session.getEnv(option)
-
-    if not ret["OK"]:
-        print(critical(ret["Message"]))
-
-    print(ret["Value"])
+    print(result["Value"])
 
 
 if __name__ == "__main__":

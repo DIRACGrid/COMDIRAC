@@ -4,13 +4,13 @@
 import DIRAC
 from DIRAC import S_OK
 from COMDIRAC.Interfaces import ConfigCache
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 
 import os
 import datetime
 
 
-class Params(object):
+class Params:
     def __init__(self):
         self.outputDir = None
         self.outputData = False
@@ -75,18 +75,7 @@ class Params(object):
 def main():
     params = Params()
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [option|cfgfile] ... JobID ..." % Script.scriptName,
-                "Arguments:",
-                "  JobID:    DIRAC Job ID",
-            ]
-        )
-    )
-
+    Script.registerArgument(["JobID: DIRAC Job ID"], mandatory=False)
     Script.registerSwitch(
         "D:", "OutputDir=", "destination directory", params.setOutputDir
     )
@@ -156,8 +145,7 @@ def main():
     for arg in args:
         if os.path.isdir(os.path.join(outputDir, arg)) and not params.getNoJobDir():
             print(
-                "Output for job %s already retrieved, remove the output directory to redownload"
-                % arg
+                f"Output for job {arg} already retrieved, remove the output directory to redownload"
             )
         else:
             jobs.append(arg)
@@ -202,7 +190,7 @@ def main():
                     exitCode = 2
 
         for error in errors:
-            print("ERROR: %s" % error)
+            print("ERROR:", error)
 
         if params.getVerbose():
             for j, d in inputs.items():

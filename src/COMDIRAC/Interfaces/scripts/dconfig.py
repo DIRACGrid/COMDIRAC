@@ -1,11 +1,10 @@
 #! /usr/bin/env python
-
 """
 configure DCommands
 """
 import DIRAC
 from DIRAC import S_OK
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 
 from COMDIRAC.Interfaces import (
     DConfig,
@@ -16,7 +15,7 @@ from COMDIRAC.Interfaces import (
 from COMDIRAC.Interfaces import getDNFromProxy
 
 
-class Params(object):
+class Params:
     def __init__(self):
         self.minimal = False
         self.guessProfile = False
@@ -40,22 +39,13 @@ class Params(object):
 def main():
     params = Params()
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [options] [section[.option[=value]]]..." % Script.scriptName,
-                "Arguments:",
-                " without argument: display whole configuration content",
-                "++ OR ++",
-                " section:     display all options in section",
-                "++ OR ++",
-                " section.option:     display option",
-                "++ OR ++",
-                " section.option=value:     set option value",
-            ]
-        )
+    Script.registerArgument(
+        [
+            "section[.option[=value]]: section:              display all options in section\n"
+            "                          section.option:       display option\n"
+            "                          section.option=value: set option value"
+        ],
+        mandatory=False,
     )
     Script.registerSwitch(
         "m", "minimal", "verify and fill minimal configuration", params.setMinimal
@@ -77,12 +67,12 @@ def main():
         Script.enableCS()
         result = getDNFromProxy()
         if not result["OK"]:
-            print("ERROR: %s" % result["Message"])
+            print("ERROR:", result["Message"])
             DIRAC.exit(2)
         dn = result["Value"]
         result = guessProfilesFromCS(dn)
         if not result["OK"]:
-            print("ERROR: %s" % result["Message"])
+            print("ERROR:", result["Message"])
             DIRAC.exit(2)
         profiles = result["Value"]
 

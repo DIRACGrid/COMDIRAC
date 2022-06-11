@@ -1,13 +1,17 @@
 #! /usr/bin/env python
 """
 Change file owner
+
+Examples:
+    $ dchown atsareg ././some_lfn_file
+    $ dchown -R pgay ./
 """
 from COMDIRAC.Interfaces import ConfigCache
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 from DIRAC import S_OK
 
 
-class Params(object):
+class Params:
     def __init__(self):
         self.recursive = False
 
@@ -23,46 +27,24 @@ class Params(object):
 def main():
     params = Params()
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [options] owner Path..." % Script.scriptName,
-                "Arguments:",
-                "  owner:    new owner name",
-                "  Path:     path to file",
-                "",
-                "Examples:",
-                "  $ dchown atsareg ././some_lfn_file",
-                "  $ dchown -R pgay ./",
-            ]
-        )
-    )
+    Script.registerArgument(" owner: new owner name")
+    Script.registerArgument(["Path:  path to file"])
     Script.registerSwitch("R", "recursive", "recursive", params.setRecursive)
 
     configCache = ConfigCache()
     Script.parseCommandLine(ignoreErrors=True)
     configCache.cacheConfig()
 
-    args = Script.getPositionalArgs()
+    owner, paths = Script.getPositionalArgs(group=True)
 
-    import DIRAC
     from DIRAC import gLogger
     from COMDIRAC.Interfaces import DSession
     from COMDIRAC.Interfaces import pathFromArgument
 
     session = DSession()
 
-    if len(args) < 2:
-        print("Error: not enough arguments provided\n%s:" % Script.scriptName)
-        Script.showHelp()
-        DIRAC.exit(-1)
-
-    owner = args[0]
-
     lfns = []
-    for path in args[1:]:
+    for path in paths:
         lfns.append(pathFromArgument(session, path))
 
     from DIRAC.Resources.Catalog.FileCatalog import FileCatalog

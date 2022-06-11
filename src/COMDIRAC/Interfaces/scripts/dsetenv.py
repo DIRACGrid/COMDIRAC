@@ -1,32 +1,22 @@
 #! /usr/bin/env python
-
 """
 register DCommands session environment variables
 """
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 
 
 @Script()
 def main():
     from COMDIRAC.Interfaces import DSession
-
     from COMDIRAC.Interfaces import ConfigCache
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [[section.]option=value]..." % Script.scriptName,
-                "Arguments:",
-                '  section:     section (defaults to "session:environment")',
-                "  option:      option name",
-                "  value:       value to be set",
-            ]
-        )
-    )
-
     configCache = ConfigCache()
+    Script.registerArgument(
+        '[section.]option=value: section: section (defaults to "session:environment")\n'
+        "                        option:  option name\n"
+        "                        value:   value to be set",
+        mandatory=False,
+    )
     Script.parseCommandLine(ignoreErrors=True)
     configCache.cacheConfig()
 

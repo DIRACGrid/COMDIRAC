@@ -1,11 +1,12 @@
 #! /usr/bin/env python
-
 """
 create a directory in the FileCatalog
+
+Examples:
+    $ dmkdir ./some_lfn_dir
 """
-import DIRAC
 from COMDIRAC.Interfaces import ConfigCache
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 
 
 @Script()
@@ -14,43 +15,23 @@ def main():
     from COMDIRAC.Interfaces import createCatalog
     from COMDIRAC.Interfaces import pathFromArguments
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s Path..." % Script.scriptName,
-                "Arguments:",
-                "  Path:     path to new directory",
-                "",
-                "Examples:",
-                "  $ dmkdir ./some_lfn_dir",
-            ]
-        )
-    )
-
     configCache = ConfigCache()
+    Script.registerArgument(["Path: path to new directory"])
     Script.parseCommandLine(ignoreErrors=True)
     configCache.cacheConfig()
 
     args = Script.getPositionalArgs()
 
     session = DSession()
-
-    if len(args) < 1:
-        print("Error: No argument provided\n%s:" % Script.scriptName)
-        Script.showHelp()
-        DIRAC.exit(-1)
-
     catalog = createCatalog()
 
     result = catalog.createDirectory(pathFromArguments(session, args))
     if result["OK"]:
         if result["Value"]["Failed"]:
             for p in result["Value"]["Failed"]:
-                print('ERROR - "%s": %s' % (p, result["Value"]["Failed"][p]))
+                print(f'ERROR - "{p}":', result["Value"]["Failed"][p])
     else:
-        print("ERROR: %s" % result["Message"])
+        print("ERROR:", result["Message"])
 
 
 if __name__ == "__main__":

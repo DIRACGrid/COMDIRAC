@@ -1,13 +1,17 @@
 #! /usr/bin/env python
 """
 Change file mode bits
+
+Examples:
+    $ dchmod 755 ././some_lfn_file
+    $ dchmod -R 700 ./
 """
 from COMDIRAC.Interfaces import ConfigCache
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 from DIRAC import S_OK
 
 
-class Params(object):
+class Params:
     def __init__(self):
         self.recursive = False
 
@@ -23,46 +27,24 @@ class Params(object):
 def main():
     params = Params()
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [options] mode Path..." % Script.scriptName,
-                "Arguments:",
-                "  mode:     octal mode bits",
-                "  Path:     path to file",
-                "",
-                "Examples:",
-                "  $ dchmod 755 ././some_lfn_file",
-                "  $ dchmod -R 700 ./",
-            ]
-        )
-    )
+    Script.registerArgument(" mode: octal mode bits")
+    Script.registerArgument(["Path: path to file"])
     Script.registerSwitch("R", "recursive", "recursive", params.setRecursive)
 
     configCache = ConfigCache()
     Script.parseCommandLine(ignoreErrors=True)
     configCache.cacheConfig()
 
-    args = Script.getPositionalArgs()
+    mode, paths = Script.getPositionalArgs(group=True)
 
-    import DIRAC
     from DIRAC import gLogger
     from COMDIRAC.Interfaces import DSession
     from COMDIRAC.Interfaces import pathFromArgument
 
     session = DSession()
 
-    if len(args) < 2:
-        print("Error: not enough arguments provided\n%s:" % Script.scriptName)
-        Script.showHelp()
-        DIRAC.exit(-1)
-
-    mode = args[0]
-
     lfns = []
-    for path in args[1:]:
+    for path in paths:
         lfns.append(pathFromArgument(session, path))
 
     from DIRAC.Resources.Catalog.FileCatalog import FileCatalog
