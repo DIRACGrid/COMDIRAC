@@ -2,6 +2,7 @@
 """
   Retrieve status of DIRAC jobs
 """
+import datetime
 from signal import signal, SIGPIPE, SIG_DFL
 
 from DIRAC import exit as DIRACExit, S_OK, S_ERROR
@@ -232,7 +233,9 @@ def main():
 
     if not jobs:
         # time interval
-        jobDate = toString(date() - params.getJobDate() * day)
+        jobDate = toString(
+            datetime.datetime.utcnow().date() - params.getJobDate() * day
+        )
 
         # job owner
         userName = params.getUser()
