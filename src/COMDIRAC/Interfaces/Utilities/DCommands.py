@@ -92,7 +92,7 @@ def listFormatJSON(summaries, headers=None, sortKeys=None):
     return json.dumps(l)
 
 
-class ArrayFormatter(object):
+class ArrayFormatter:
     fmts = {"csv": listFormatCSV, "pretty": listFormatPretty, "json": listFormatJSON}
 
     def __init__(self, outputFormat):
@@ -140,7 +140,7 @@ class ArrayFormatter(object):
 # -------------------------------
 
 
-class DConfig(object):
+class DConfig:
     def __init__(self, configDir=None, configFilename="dcommands.conf"):
         try:
             self.config = ConfigParser(allow_no_value=True)
@@ -700,7 +700,7 @@ def createCatalog():
     return FileCatalog()
 
 
-class DCatalog(object):
+class DCatalog:
     """
     DIRAC File Catalog helper
     """

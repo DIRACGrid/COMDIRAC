@@ -1,7 +1,10 @@
 #! /usr/bin/env python
-
 """
 Change current DIRAC File Catalog working directory
+
+Examples:
+    $ dcd /dirac/user
+    $ dcd
 """
 from COMDIRAC.Interfaces import critical
 from COMDIRAC.Interfaces import DSession
@@ -9,25 +12,14 @@ from COMDIRAC.Interfaces import DCatalog
 from COMDIRAC.Interfaces import pathFromArgument
 from COMDIRAC.Interfaces import ConfigCache
 
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 
 
 @Script()
 def main():
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [Path]" % Script.scriptName,
-                "Arguments:",
-                "  Path:     path to new working directory (defaults to home directory)",
-                "",
-                "Examples:",
-                "  $ dcd /dirac/user",
-                "  $ dcd",
-            ]
-        )
+    Script.registerArgument(
+        "Path:     path to new working directory (defaults to home directory)",
+        mandatory=False,
     )
 
     configCache = ConfigCache()
@@ -36,14 +28,11 @@ def main():
 
     args = Script.getPositionalArgs()
 
-    import DIRAC
-
     session = DSession()
 
     if len(args) > 1:
         print("Error: too many arguments provided\n%s:" % Script.scriptName)
-        Script.showHelp()
-        DIRAC.exit(-1)
+        Script.showHelp(exitCode=-1)
 
     if len(args):
         arg = pathFromArgument(session, args[0])

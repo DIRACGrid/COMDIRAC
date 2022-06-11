@@ -1,14 +1,18 @@
 #! /usr/bin/env python
-
 """
 list FileCatalog file or directory
+
+Examples:
+    $ dls
+    $ dls ..
+    $ dls /
 """
 import os
 import getopt
 from signal import signal, SIGPIPE, SIG_DFL
 
 from DIRAC import S_OK
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 
 
 @Script()
@@ -23,7 +27,7 @@ def main():
     # broken pipe default behaviour
     signal(SIGPIPE, SIG_DFL)
 
-    class Params(object):
+    class Params:
         def __init__(self):
             self.long = False
             self.replicas = False
@@ -84,22 +88,7 @@ def main():
 
     params = Params()
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [options] [path]" % Script.scriptName,
-                "Arguments:",
-                " path:     file/directory path",
-                "",
-                "Examples:",
-                "  $ dls",
-                "  $ dls ..",
-                "  $ dls /",
-            ]
-        )
-    )
+    Script.registerArgument(["Path:  path to file"], mandatory=False)
     Script.registerSwitch("l", "long", "detailled listing", params.setLong)
     Script.registerSwitch(
         "L", "list-replicas", "detailled listing with replicas", params.setReplicas
@@ -247,7 +236,7 @@ def main():
                 "human-readable",
             ]
             path = self.cwd
-            if len(argss) > 0:
+            if argss:
                 try:
                     optlist, arguments = getopt.getopt(argss, short_opts, long_opts)
                 except getopt.GetoptError as e:

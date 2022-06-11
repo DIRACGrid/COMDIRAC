@@ -1,12 +1,13 @@
+#! /usr/bin/env python
 """
   Retrieve logging information for a DIRAC job
 """
 import DIRAC
 from COMDIRAC.Interfaces import ConfigCache
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 
 
-class Params(object):
+class Params:
     def __init__(self):
         self.fmt = "pretty"
 
@@ -21,17 +22,7 @@ class Params(object):
 def main():
     params = Params()
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [option|cfgfile] ... JobID ..." % Script.scriptName,
-                "Arguments:",
-                "  JobID:    DIRAC Job ID",
-            ]
-        )
-    )
+    Script.registerArgument(["JobID: DIRAC Job ID"])
     Script.registerSwitch(
         "f:", "Fmt=", "display format (pretty, csv, json)", params.setFmt
     )
@@ -64,7 +55,7 @@ def main():
             exitCode = 2
 
     for error in errors:
-        print("ERROR: %s" % error)
+        print("ERROR:", error)
 
     DIRAC.exit(exitCode)
 

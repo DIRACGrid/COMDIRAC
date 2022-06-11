@@ -1,10 +1,9 @@
 #! /usr/bin/env python
-
 """
-list replicas for files in the FileCatalog
+Print list replicas for files in the FileCatalog
 """
 import DIRAC
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 
 
 @Script()
@@ -17,19 +16,8 @@ def main():
 
     from COMDIRAC.Interfaces import ConfigCache
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s lfn..." % Script.scriptName,
-                "Arguments:",
-                "  lfn:     logical file name",
-            ]
-        )
-    )
-
     configCache = ConfigCache()
+    Script.registerArgument(["lfn: logical file name"])
     Script.parseCommandLine(ignoreErrors=True)
     configCache.cacheConfig()
 
@@ -37,11 +25,6 @@ def main():
 
     session = DSession()
     catalog = DCatalog()
-
-    if len(args) < 1:
-        error("No argument provided\n%s:" % Script.scriptName)
-        Script.showHelp()
-        DIRAC.exit(-1)
 
     exitCode = 0
 

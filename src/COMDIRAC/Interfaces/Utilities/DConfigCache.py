@@ -1,11 +1,10 @@
 import os
+import re
 import stat
 import time
-import re
-
 import pickle
 
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 from DIRAC.ConfigurationSystem.Client.ConfigurationData import gConfigurationData
 
 
@@ -26,7 +25,7 @@ def proxy_lcg_protocols_if_missing():
         )
 
 
-class ConfigCache(object):
+class ConfigCache:
     @classmethod
     def cacheFilePrefix(cls):
         return "DSession.configCache"

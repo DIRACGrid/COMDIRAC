@@ -1,7 +1,9 @@
 #! /usr/bin/env python
-
 """
 download files from storage element
+
+Examples:
+    $ dget ./some_lfn_file /tmp
 """
 import os
 
@@ -14,10 +16,10 @@ from COMDIRAC.Interfaces import DCatalog
 from COMDIRAC.Interfaces import pathFromArgument
 
 from COMDIRAC.Interfaces import ConfigCache
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 
 
-class Params(object):
+class Params:
     def __init__(self):
         self.recursive = False
 

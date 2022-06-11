@@ -9,7 +9,7 @@ import os
 
 import DIRAC
 from DIRAC import S_OK
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 
 
 @Script()
@@ -22,7 +22,7 @@ def main():
 
     from COMDIRAC.Interfaces import ConfigCache
 
-    class Params(object):
+    class Params:
         def __init__(self):
             self.destinationSE = False
             self.recursive = False
@@ -83,8 +83,7 @@ def main():
 
     if len(args) < 1:
         error("Error: No argument provided\n%s:" % Script.scriptName)
-        Script.showHelp()
-        DIRAC.exit(0)
+        Script.showHelp(exitCode=-1)
 
     # local file
     localPath = args[0]

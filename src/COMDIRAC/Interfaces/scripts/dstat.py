@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-
 """
   Retrieve status of DIRAC jobs
 """
@@ -8,7 +7,7 @@ from signal import signal, SIGPIPE, SIG_DFL
 from DIRAC import exit as DIRACExit, S_OK, S_ERROR
 from COMDIRAC.Interfaces import DSession
 from COMDIRAC.Interfaces import ConfigCache
-from DIRAC.Core.Utilities.DIRACScript import DIRACScript as Script
+from DIRAC.Core.Base.Script import Script
 from DIRAC.Core.Utilities.Time import toString, date, day
 from DIRAC.WorkloadManagementSystem.Client.JobMonitoringClient import (
     JobMonitoringClient,
@@ -89,7 +88,7 @@ DEFAULT_DISPLAY_COLUMNS = [
 ]
 
 
-class Params(object):
+class Params:
     def __init__(self):
         self.__session = None
         self.user = None
@@ -173,16 +172,7 @@ class Params(object):
 def main():
     params = Params()
 
-    Script.setUsageMessage(
-        "\n".join(
-            [
-                __doc__.split("\n")[1],
-                "Usage:",
-                "  %s [option|cfgfile] " % Script.scriptName,
-                "Arguments:",
-            ]
-        )
-    )
+    Script.registerArgument(["JobID: DIRAC Job ID"], mandatory=False)
     Script.registerSwitch("u:", "User=", "job owner", params.setUser)
     Script.registerSwitch(
         "S:",
@@ -281,7 +271,7 @@ def main():
     for chunk in chunks(jobs, 1000):
         result = getJobSummary(chunk)
         if not result["OK"]:
-            print("ERROR: %s" % result["Message"])
+            print("ERROR:", result["Message"])
             DIRACExit(2)
 
         # filter on job statuses
