@@ -12,4 +12,4 @@ except DistributionNotFound:
 
 
 def extension_metadata():
-    return {"priority": 10}
+    return {"priority": 11}
